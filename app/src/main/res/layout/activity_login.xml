@@ -9,137 +9,185 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="32dp"
-            android:src="@null"
-            app:tint="#FFFFFF" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="CLEAN &amp; CUP"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="POS SYSTEM"
-            android:textColor="#B0C4DE"
-            android:textSize="12sp"
-            android:letterSpacing="0.1" />
-
-        <androidx.cardview.widget.CardView
+        <!-- ===== Blue header: icon cluster + title ===== -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="8dp">
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="56dp"
+            android:paddingBottom="20dp"
+            android:paddingHorizontal="24dp">
 
+            <!-- Logo tunggal: ganti src dengan drawable logo kamu sendiri -->
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:src="@drawable/pitstop_logo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="PitStop"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:letterSpacing="0.15"
+                android:text="Cashier Management"
+                android:textColor="#B0C4DE"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- ===== Curved wave transition ===== -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/bg_wave_header" />
+
+        <!-- ===== White card body (full width, no side margins) ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FFFFFF"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Selamat Datang!"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Silakan login untuk melanjutkan"
+                android:textColor="#757575"
+                android:textSize="13sp" />
+
+            <!-- Username -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusBottomEnd="24dp"
+                app:boxCornerRadiusBottomStart="24dp"
+                app:boxCornerRadiusTopEnd="24dp"
+                app:boxCornerRadiusTopStart="24dp"
+                app:boxStrokeColor="#E0E0E0"
+                app:hintEnabled="false"
+                app:startIconDrawable="@drawable/person"
+                app:startIconTint="#9E9E9E">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:background="@null"
+                    android:hint="Username"
+                    android:inputType="text"
+                    android:paddingHorizontal="4dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Password (with built-in show/hide toggle) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusBottomEnd="24dp"
+                app:boxCornerRadiusBottomStart="24dp"
+                app:boxCornerRadiusTopEnd="24dp"
+                app:boxCornerRadiusTopStart="24dp"
+                app:boxStrokeColor="#E0E0E0"
+                app:endIconMode="password_toggle"
+                app:endIconTint="#9E9E9E"
+                app:hintEnabled="false"
+                app:startIconDrawable="@drawable/lock"
+                app:startIconTint="#9E9E9E">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:background="@null"
+                    android:hint="Password"
+                    android:inputType="textPassword"
+                    android:paddingHorizontal="4dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Pilih Peran"
+                android:textColor="#0A2D80"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- Selector Peran Admin/Kasir -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Selamat Datang!"
-                    android:textColor="#000000"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Silakan login untuk melanjutkan"
-                    android:textColor="#757575"
-                    android:textSize="13sp" />
-
-                <EditText
-                    android:id="@+id/etUsername"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="20dp"
-                    android:background="@null"
-                    android:drawableStart="@null"
-                    android:drawablePadding="12dp"
-                    android:hint="Username"
-                    android:inputType="text"
-                    android:paddingHorizontal="12dp" />
-
-                <EditText
-                    android:id="@+id/etPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@null"
-                    android:drawableStart="@null"
-                    android:drawablePadding="12dp"
-                    android:hint="Password"
-                    android:inputType="textPassword"
-                    android:paddingHorizontal="12dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Pilih Peran"
-                    android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <!-- Selector Peran Admin/Kasir -->
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRoleAdmin"
+                    android:layout_width="0dp"
                     android:layout_height="44dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@null"
-                    android:orientation="horizontal"
-                    android:padding="4dp">
-
-                    <Button
-                        android:id="@+id/btnRoleAdmin"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:backgroundTint="#0A2D80"
-                        android:text="Admin"
-                        android:textColor="#FFFFFF" />
-
-                    <Button
-                        android:id="@+id/btnRoleKasir"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="Kasir"
-                        android:textColor="#757575" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnLogin"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
                     android:backgroundTint="#0A2D80"
-                    android:text="LOGIN"
+                    android:text="Admin"
+                    android:textAllCaps="false"
                     android:textColor="#FFFFFF"
-                    android:textStyle="bold"
-                    app:cornerRadius="8dp" />
+                    app:cornerRadius="22dp"
+                    app:icon="@drawable/admin_setting"
+                    app:iconGravity="textStart"
+                    app:iconTint="#FFFFFF" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRoleKasir"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:text="Kasir"
+                    android:textAllCaps="false"
+                    android:textColor="#757575"
+                    app:cornerRadius="22dp"
+                    app:icon="@drawable/cashier"
+                    app:iconGravity="textStart"
+                    app:iconTint="#757575"
+                    app:strokeColor="#E0E0E0" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="#0A2D80"
+                android:text="LOGIN"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
