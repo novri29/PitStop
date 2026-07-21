@@ -6,18 +6,35 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.pitstop.helper.SessionManager
 import com.pitstop.save.AppDatabase
-import com.pitstop.pitstop.MainActivity
 import com.pitstop.pitstop.databinding.ActivityLoginBinding
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var sessionManager: SessionManager
     private var selectedRole = "ADMIN"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize SessionManager
+        sessionManager = SessionManager(this)
+
+        // 1. CEK SESI LOGIN
+        // Jika pengguna sudah login sebelumnya, langsung alihkan ke MainActivity
+        if (sessionManager.isLoggedIn()) {
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("EXTRA_ROLE", sessionManager.getRole())
+                putExtra("EXTRA_USERNAME", sessionManager.getUsername())
+            }
+            startActivity(intent)
+            finish()
+            return // Hentikan eksekusi onCreate agar layout login tidak dirender
+        }
+
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -27,12 +44,12 @@ class LoginActivity : AppCompatActivity() {
         binding.btnRoleAdmin.setOnClickListener {
             selectedRole = "ADMIN"
 
-            // 1. Set Admin Aktif (Background Biru, Teks Putih, Icon Putih)
+            // Set Admin Aktif
             binding.btnRoleAdmin.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_blue))
             binding.btnRoleAdmin.setTextColor(ContextCompat.getColor(this, android.R.color.white))
             binding.btnRoleAdmin.iconTint = ContextCompat.getColorStateList(this, android.R.color.white)
 
-            // 2. Set Kasir Non-aktif (Background Transparan, Teks Abu, Icon Abu)
+            // Set Kasir Non-aktif
             binding.btnRoleKasir.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent))
             binding.btnRoleKasir.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
             binding.btnRoleKasir.iconTint = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
@@ -42,12 +59,12 @@ class LoginActivity : AppCompatActivity() {
         binding.btnRoleKasir.setOnClickListener {
             selectedRole = "KASIR"
 
-            // 1. Set Kasir Aktif (Background Biru, Teks Putih, Icon Putih)
+            // Set Kasir Aktif
             binding.btnRoleKasir.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_blue))
             binding.btnRoleKasir.setTextColor(ContextCompat.getColor(this, android.R.color.white))
             binding.btnRoleKasir.iconTint = ContextCompat.getColorStateList(this, android.R.color.white)
 
-            // 2. Set Admin Non-aktif (Background Transparan, Teks Abu, Icon Abu)
+            // Set Admin Non-aktif
             binding.btnRoleAdmin.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent))
             binding.btnRoleAdmin.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
             binding.btnRoleAdmin.iconTint = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
@@ -66,6 +83,9 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val user = db.userDao().login(username, password, selectedRole)
                 if (user != null) {
+                    // 2. SIMPAN SESI LOGIN
+                    sessionManager.saveSession(user.username, user.role)
+
                     val intent = Intent(this@LoginActivity, MainActivity::class.java).apply {
                         putExtra("EXTRA_ROLE", user.role)
                         putExtra("EXTRA_USERNAME", user.username)
