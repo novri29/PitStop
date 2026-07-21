@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Warna saat Menu DIPILIH/AKTIF (Biru Gelap) -->
+    <item android:color="@color/dark_blue" android:state_checked="true" />
+
+    <!-- Warna saat Menu TIDAK DIPILIH (Abu-abu / Biru Tua Pudar) -->
+    <item android:color="#7A869A" android:state_checked="false" />
+</selector>

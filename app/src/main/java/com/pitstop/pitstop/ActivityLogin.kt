@@ -23,21 +23,34 @@ class LoginActivity : AppCompatActivity() {
 
         val db = AppDatabase.getDatabase(this)
 
-        // Toggle Pilihan Role
+        // Toggle Pilihan Role - ADMIN
         binding.btnRoleAdmin.setOnClickListener {
             selectedRole = "ADMIN"
+
+            // 1. Set Admin Aktif (Background Biru, Teks Putih, Icon Putih)
             binding.btnRoleAdmin.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_blue))
-            binding.btnRoleAdmin.setTextColor(getColor(android.R.color.white))
-            binding.btnRoleKasir.setBackgroundColor(getColor(android.R.color.transparent))
-            binding.btnRoleKasir.setTextColor(getColor(android.R.color.darker_gray))
+            binding.btnRoleAdmin.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+            binding.btnRoleAdmin.iconTint = ContextCompat.getColorStateList(this, android.R.color.white)
+
+            // 2. Set Kasir Non-aktif (Background Transparan, Teks Abu, Icon Abu)
+            binding.btnRoleKasir.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent))
+            binding.btnRoleKasir.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+            binding.btnRoleKasir.iconTint = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
         }
 
+        // Toggle Pilihan Role - KASIR
         binding.btnRoleKasir.setOnClickListener {
             selectedRole = "KASIR"
-            binding.btnRoleAdmin.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_blue))
-            binding.btnRoleKasir.setTextColor(getColor(android.R.color.white))
-            binding.btnRoleAdmin.setBackgroundColor(getColor(android.R.color.transparent))
-            binding.btnRoleAdmin.setTextColor(getColor(android.R.color.darker_gray))
+
+            // 1. Set Kasir Aktif (Background Biru, Teks Putih, Icon Putih)
+            binding.btnRoleKasir.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_blue))
+            binding.btnRoleKasir.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+            binding.btnRoleKasir.iconTint = ContextCompat.getColorStateList(this, android.R.color.white)
+
+            // 2. Set Admin Non-aktif (Background Transparan, Teks Abu, Icon Abu)
+            binding.btnRoleAdmin.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent))
+            binding.btnRoleAdmin.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+            binding.btnRoleAdmin.iconTint = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
         }
 
         // Logic Process Login

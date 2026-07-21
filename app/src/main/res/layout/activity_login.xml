@@ -99,7 +99,9 @@
                     android:background="@null"
                     android:hint="Username"
                     android:inputType="text"
-                    android:paddingHorizontal="4dp" />
+                    android:paddingHorizontal="4dp"
+                    android:textColor="#000000"
+                    android:textColorHint="#9E9E9E"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Password (with built-in show/hide toggle) -->
@@ -126,7 +128,9 @@
                     android:background="@null"
                     android:hint="Password"
                     android:inputType="textPassword"
-                    android:paddingHorizontal="4dp" />
+                    android:paddingHorizontal="4dp"
+                    android:textColor="#000000"
+                    android:textColorHint="#9E9E9E"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView

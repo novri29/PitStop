@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [UserEntity::class, BahanStokEntity::class],
-    version = 2, // dinaikkan dari 1 karena ada tabel baru (bahan_stok)
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,17 +30,21 @@ abstract class AppDatabase : RoomDatabase() {
                     "clean_and_cup_db"
                 )
                     .addCallback(object : RoomDatabase.Callback() {
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            super.onCreate(db)
-                            // Seed data default akun Admin dan Kasir
+                        // Gunakan onOpen agar dicek setiap kali database dibuka
+                        override fun onOpen(db: SupportSQLiteDatabase) {
+                            super.onOpen(db)
                             INSTANCE?.let { database ->
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    database.userDao().insertUser(
-                                        UserEntity(username = "admin", password = "123", role = "ADMIN")
-                                    )
-                                    database.userDao().insertUser(
-                                        UserEntity(username = "kasir", password = "123", role = "KASIR")
-                                    )
+                                    val userDao = database.userDao()
+                                    // Hanya isi data jika tabel user kosong
+                                    if (userDao.getAllUsers().isEmpty()) {
+                                        userDao.insertUser(
+                                            UserEntity(username = "admin", password = "123", role = "ADMIN")
+                                        )
+                                        userDao.insertUser(
+                                            UserEntity(username = "kasir", password = "123", role = "KASIR")
+                                        )
+                                    }
                                 }
                             }
                         }

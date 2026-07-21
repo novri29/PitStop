@@ -5,6 +5,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.pitstop.fragments.AdminDashboardFragment
 import com.pitstop.fragments.KasirDashboardFragment
+import com.pitstop.fragments.admin.LaporanFragment
+import com.pitstop.fragments.admin.PengaturanFragment
+import com.pitstop.fragments.admin.TransaksiFragment
+import com.pitstop.fragments.kasir.PesananFragment
+import com.pitstop.fragments.kasir.ProfilFragment
+import com.pitstop.fragments.kasir.RiwayatFragment
 import com.pitstop.pitstop.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -16,23 +22,58 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Ambil data role yang dikirim dari LoginActivity
         val role = intent.getStringExtra("EXTRA_ROLE") ?: "KASIR"
 
-        // Tampilkan Fragment sesuai Role
+        if (role == "ADMIN") {
+            setupAdminNavigation()
+        } else {
+            setupKasirNavigation()
+        }
+
+        // Tampilkan default fragment saat pertama kali dibuka
         if (savedInstanceState == null) {
-            if (role == "ADMIN") {
-                loadFragment(AdminDashboardFragment())
-            } else {
-                loadFragment(KasirDashboardFragment())
-            }
+            val defaultFragment = if (role == "ADMIN") AdminDashboardFragment() else KasirDashboardFragment()
+            loadFragment(defaultFragment)
         }
     }
 
-    // Fungsi untuk mengganti Fragment di dalam MainActivity
+    // Logic khusus Admin
+    private fun setupAdminNavigation() {
+        binding.bottomNavigation.inflateMenu(R.menu.menu_bottom_admin)
+
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            val selectedFragment: Fragment = when (item.itemId) {
+                R.id.nav_dashboard -> AdminDashboardFragment()
+                R.id.nav_transaksi -> TransaksiFragment()
+                R.id.nav_laporan -> LaporanFragment()
+                R.id.nav_pengaturan -> PengaturanFragment()
+                else -> return@setOnItemSelectedListener false
+            }
+            loadFragment(selectedFragment)
+            true
+        }
+    }
+
+    // Logic khusus Kasir
+    private fun setupKasirNavigation() {
+        binding.bottomNavigation.inflateMenu(R.menu.menu_bottom_kasir)
+
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            val selectedFragment: Fragment = when (item.itemId) {
+                R.id.nav_dashboard -> KasirDashboardFragment()
+                R.id.nav_pesanan -> PesananFragment()
+                R.id.nav_riwayat -> RiwayatFragment()
+                R.id.nav_profil -> ProfilFragment()
+                else -> return@setOnItemSelectedListener false
+            }
+            loadFragment(selectedFragment)
+            true
+        }
+    }
+
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment) // R.id.fragment_container adalah ID container di layout XML
+            .replace(R.id.fragment_container, fragment)
             .commit()
     }
 }
