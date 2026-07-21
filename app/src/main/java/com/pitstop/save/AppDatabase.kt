@@ -5,15 +5,18 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.pitstop.save.UserDao
-import com.pitstop.save.UserEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [UserEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [UserEntity::class, BahanStokEntity::class],
+    version = 2, // dinaikkan dari 1 karena ada tabel baru (bahan_stok)
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun bahanStokDao(): BahanStokDao
 
     companion object {
         @Volatile
@@ -42,6 +45,10 @@ abstract class AppDatabase : RoomDatabase() {
                             }
                         }
                     })
+                    // Karena masih tahap development: kalau skema berubah lagi nanti (nambah kolom/tabel),
+                    // Room akan hapus & bikin ulang database daripada crash minta Migration.
+                    // Hapus baris ini dan tulis Migration manual begitu app sudah rilis / datanya tidak boleh hilang.
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
