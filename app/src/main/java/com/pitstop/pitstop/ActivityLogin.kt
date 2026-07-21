@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.pitstop.save.AppDatabase
 import com.pitstop.pitstop.MainActivity
@@ -25,7 +26,7 @@ class LoginActivity : AppCompatActivity() {
         // Toggle Pilihan Role
         binding.btnRoleAdmin.setOnClickListener {
             selectedRole = "ADMIN"
-            binding.btnRoleAdmin.setBackgroundColor(getColor(android.R.color.holo_blue_dark))
+            binding.btnRoleAdmin.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_blue))
             binding.btnRoleAdmin.setTextColor(getColor(android.R.color.white))
             binding.btnRoleKasir.setBackgroundColor(getColor(android.R.color.transparent))
             binding.btnRoleKasir.setTextColor(getColor(android.R.color.darker_gray))
@@ -33,7 +34,7 @@ class LoginActivity : AppCompatActivity() {
 
         binding.btnRoleKasir.setOnClickListener {
             selectedRole = "KASIR"
-            binding.btnRoleKasir.setBackgroundColor(getColor(android.R.color.holo_blue_dark))
+            binding.btnRoleAdmin.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_blue))
             binding.btnRoleKasir.setTextColor(getColor(android.R.color.white))
             binding.btnRoleAdmin.setBackgroundColor(getColor(android.R.color.transparent))
             binding.btnRoleAdmin.setTextColor(getColor(android.R.color.darker_gray))
