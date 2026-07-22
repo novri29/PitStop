@@ -15,7 +15,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F5F6FA"
-    tools:context="com.pitstop.fragments.admin.TambahBahanFragment">
+    tools:context="com.pitstop.ui.admin.adminfragment.TambahBahanFragment">
 
     <!-- Header -->
     <LinearLayout

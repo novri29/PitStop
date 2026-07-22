@@ -1,21 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  Wave transition between the blue header and the white card.
-  Draw it into an ImageView with:
-    android:layout_width="match_parent"
-    android:layout_height="32dp"
-    android:scaleType="fitXY"
-  The transparent area lets the blue background behind it show through,
-  and the white path creates the dip in the middle. Tweak the "C" (curve)
-  points below to make the dip deeper/shallower or move it left/right.
--->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="100dp"
-    android:height="20dp"
-
+    android:width="360dp"
+    android:height="32dp"
     android:viewportWidth="360"
     android:viewportHeight="32">
+    <!-- Path warna putih berbentuk lengkungan wave -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M0,6 C55,6 55,26 130,26 C230,26 230,6 360,6 L360,32 L0,32 Z" />
+        android:pathData="M0,16 C120,32 240,0 360,16 L360,32 L0,32 Z" />
 </vector>

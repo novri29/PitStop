@@ -1,9 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.PitStop" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!--
+        PENTING: parent sengaja "Light", BUKAN "DayNight".
+        Aplikasi ini didesain dengan palet warna tetap (kartu putih, teks gelap dsb).
+        Kalau memakai DayNight, saat HP di-set dark mode maka komponen bawaan Android
+        (EditText, Spinner, AlertDialog, dst) otomatis membalik warna teks jadi putih,
+        sementara background kartu kita tetap putih (hardcoded) -> teks jadi tidak
+        kelihatan. Dengan "Light" (bukan DayNight), tema SELALU mode terang,
+        berapa pun setting dark mode di HP.
+    -->
+    <style name="Theme.Pitstop" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/primary</item>
+
+        <!-- Kunci warna teks default (dipakai EditText, Spinner, dsb yang tidak diberi
+             android:textColor eksplisit) supaya selalu gelap di atas background terang -->
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/grey</item>
+        <item name="android:textColorHint">@color/grey</item>
+
+        <!-- Kunci warna default AlertDialog (title/message/background) -->
+        <item name="alertDialogTheme">@style/ThemeOverlay.Pitsop.Dialog</item>
     </style>
 
-    <style name="Theme.PitStop" parent="Base.Theme.PitStop" />
+    <style name="ThemeOverlay.Pitsop.Dialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/grey</item>
+    </style>
+
+    <style name="Theme.Pitsop.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="titleTextColor">@color/white</item>
+        <item name="android:background">@color/primary</item>
+    </style>
 </resources>
