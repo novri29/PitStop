@@ -7,6 +7,9 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import com.pitstop.fragments.admin.TambahBahanFragment
+import com.pitstop.pitstop.MainActivity
+import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.FragmentAdminDashboardBinding
 
 class AdminDashboardFragment : Fragment() {
@@ -45,7 +48,15 @@ class AdminDashboardFragment : Fragment() {
 
         // Binding event klik menu Admin
         binding.menuStockBahan.setOnClickListener {
-            // Action navigasi ke fragment/page Stock Bahan
+            requireActivity()
+                .supportFragmentManager
+                .beginTransaction()
+                .replace(
+                    R.id.fragment_container,
+                    TambahBahanFragment()
+                )
+                .addToBackStack(null)
+                .commit()
         }
 
         binding.menuLaporan.setOnClickListener {

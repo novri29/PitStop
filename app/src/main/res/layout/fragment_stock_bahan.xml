@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Form tambah stok bahan (kopi, gula, susu, dll):
+  - Foto Bahan (ketuk untuk pilih ambil dari Kamera atau Galeri)
   - Nama Bahan
   - Jumlah + Satuan (Gram/Kilogram/Mililiter/Liter) -> otomatis dikonversi ke gram/ml saat disimpan
   - Harga Modal untuk jumlah tsb -> otomatis dihitung harga per gram/ml sebagai bantuan
@@ -9,17 +10,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tambahBahan"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F5F6FA"
-    tools:context="com.pitstop.fragments.TambahBahanFragment">
+    tools:context="com.pitstop.fragments.admin.TambahBahanFragment">
 
     <!-- Header -->
     <LinearLayout
+        android:id="@+id/headerTambahBahan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#2F6BFF"
+        android:background="#0A2D80"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="8dp"
@@ -27,23 +30,22 @@
         android:paddingTop="14dp"
         android:paddingBottom="14dp">
 
-        <TextView
+        <ImageView
             android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:gravity="center"
-            android:text="←"
-            android:textColor="@android:color/white"
-            android:textSize="22sp"
+            android:layout_width="50dp"
+            android:layout_height="30dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:gravity="center"
+            android:src="@drawable/arrow_back"
+            android:textColor="@android:color/white" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="4dp"
+            android:layout_weight="1"
             android:text="Tambah Bahan"
             android:textColor="@android:color/white"
             android:textSize="18sp"
@@ -62,19 +64,51 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Foto Bahan -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginBottom="4dp">
+
+                <ImageButton
+                    android:id="@+id/ivFotoBahan"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerCrop"
+                    android:background="@android:color/transparent"
+                    android:src="@android:drawable/ic_menu_camera"
+                    app:tint="#8A93A6"
+                    android:padding="28dp"
+                    android:contentDescription="Foto bahan" />
+
+                <TextView
+                    android:id="@+id/tvFotoHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Ketuk untuk ambil foto (kamera/galeri)"
+                    android:textColor="#8A93A6"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
             <!-- Nama Bahan -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilNamaBahan"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:hint="Nama Bahan (mis. Kopi, Gula, Susu)">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNamaBahan"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textCapWords" />
+                    android:inputType="textCapWords"
+                    android:textColor="#212121"
+                    android:textColorHint="#757575"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Jumlah + Satuan -->
@@ -96,7 +130,9 @@
                         android:id="@+id/etJumlah"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="numberDecimal" />
+                        android:inputType="numberDecimal"
+                        android:textColor="#212121"
+                        android:textColorHint="#757575" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -112,7 +148,9 @@
                         android:id="@+id/actvSatuan"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:textColor="#212121"
+                        android:textColorHint="#757575" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -138,7 +176,9 @@
                     android:id="@+id/etHargaModal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:textColor="#212121"
+                    android:textColorHint="#757575" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
@@ -159,7 +199,8 @@
                 android:text="Simpan Bahan"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp"
-                app:backgroundTint="#2F6BFF" />
+                app:backgroundTint="#0A2D80"
+                android:textColor="#ffffff"/>
 
         </LinearLayout>
     </ScrollView>

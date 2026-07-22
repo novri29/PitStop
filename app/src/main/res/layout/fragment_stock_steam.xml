@@ -15,13 +15,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F5F6FA"
-    tools:context="com.pitstop.fragments.TambahBarangFragment">
+    tools:context="com.pitstop.fragments.admin.TambahBarangFragment">
 
     <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#2F6BFF"
+        android:background="#0A2D80"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="8dp"
@@ -176,7 +176,7 @@
                 android:text="Simpan Barang"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp"
-                app:backgroundTint="#2F6BFF" />
+                app:backgroundTint="#0A2D80" />
 
         </LinearLayout>
     </ScrollView>

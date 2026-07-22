@@ -14,6 +14,7 @@ data class BahanStokEntity(
     val nama: String,
     val jumlah: Double,        // jumlah dalam satuan dasar
     val satuanDasar: String,   // "GRAM" atau "ML"
-    val hargaModal: Long,      // total harga modal untuk jumlah di atas
+    val hargaModal: Long,       // total harga modal untuk jumlah di atas
+    val fotoPath: String? = null,
     val tanggalDitambahkan: Long = System.currentTimeMillis()
 )

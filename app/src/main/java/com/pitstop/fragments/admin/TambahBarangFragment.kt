@@ -1,4 +1,4 @@
-package com.pitstop.fragments
+package com.pitstop.fragments.admin
 
 import android.net.Uri
 import android.os.Bundle
@@ -80,7 +80,7 @@ class TambahBarangFragment : Fragment(R.layout.fragment_stock_steam) {
     }
 
     private fun setupKategoriDropdown() {
-        val kategoriList = listOf("Perawatan", "Interior", "Alat", "Lainnya")
+        val kategoriList = listOf("Mobil", "Motor")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, kategoriList)
         actvKategori.setAdapter(adapter)
     }
