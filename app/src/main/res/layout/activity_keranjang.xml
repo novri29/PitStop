@@ -60,7 +60,7 @@
             android:padding="10dp"
             android:text="+ Cuci Motor"
             android:textColor="@color/black"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/btnTambahMobil"
@@ -73,7 +73,7 @@
             android:padding="10dp"
             android:text="+ Cuci Mobil"
             android:textColor="@color/black"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/btnTambahCafe"
@@ -85,7 +85,7 @@
             android:padding="10dp"
             android:text="+ Menu Cafe"
             android:textColor="@color/black"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
