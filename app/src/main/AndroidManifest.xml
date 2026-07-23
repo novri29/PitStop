@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- package="com.pitstop"> -->
-
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -17,6 +15,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/Theme.Pitstop"
         android:usesCleartextTraffic="false">
+        <activity
+            android:name="com.pitstop.ui.kasir.order.PilihProdukActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.pitstop.ui.kasir.order.PembayaranActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.pitstop.ui.kasir.order.NotaStrukActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.pitstop.ui.kasir.order.KeranjangActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -25,9 +36,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path" />
-        </provider>
-
-        <!-- Disesuaikan ke .ui.login.LoginActivity -->
+        </provider> <!-- Disesuaikan ke .ui.login.LoginActivity -->
         <activity
             android:name="com.pitstop.ui.login.LoginActivity"
             android:exported="true">
@@ -36,9 +45,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Activity Admin -->
+        </activity> <!-- Activity Admin -->
         <activity
             android:name="com.pitstop.ui.admin.AdminMainActivity"
             android:exported="false" />
@@ -56,10 +63,7 @@
             android:exported="false" />
         <activity
             android:name="com.pitstop.ui.admin.StockSteamActivity"
-            android:exported="false" />
-
-        <!-- Activity Kasir -->
-
+            android:exported="false" /> <!-- Activity Kasir -->
         <activity
             android:name="com.pitstop.ui.kasir.KasirMainActivity"
             android:exported="false"
