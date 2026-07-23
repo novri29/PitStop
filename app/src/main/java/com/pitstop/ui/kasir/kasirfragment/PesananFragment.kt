@@ -1,4 +1,4 @@
-package com.example.cafesteam.ui.kasir.fragments
+package com.pitstop.ui.kasir.kasirfragment
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.pitstop.pitstop.databinding.FragmentPesananBinding
@@ -33,6 +35,28 @@ class PesananFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+
+            // Simpan tinggi asli toolbar sekali saja (sebelum ditambah padding)
+            val originalHeight = resources.getDimensionPixelSize(
+                androidx.appcompat.R.dimen.abc_action_bar_default_height_material
+            )
+
+            view.layoutParams.height = originalHeight + statusBarInsets.top
+            view.requestLayout()
+
+            view.setPadding(
+                view.paddingLeft,
+                statusBarInsets.top,
+                view.paddingRight,
+                view.paddingBottom
+            )
+            insets
+        }
+
         val steamViewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[StockSteamViewModel::class.java]
         steamViewModel.layananList.observe(viewLifecycleOwner) { list ->
             list.find { it.jenis == JENIS_MOTOR }?.let { hargaMotor = it.harga }

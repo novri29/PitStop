@@ -1,13 +1,10 @@
 package com.pitstop.ui.kasir
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import com.example.cafesteam.ui.kasir.fragments.DashboardKasirFragment
-import com.example.cafesteam.ui.kasir.fragments.PesananFragment
+import com.pitstop.ui.kasir.kasirfragment.DashboardKasirFragment
+import com.pitstop.ui.kasir.kasirfragment.PesananFragment
 import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.ActivityKasirMainBinding
 import com.pitstop.ui.kasir.kasirfragment.ProfilFragment

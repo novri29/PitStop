@@ -37,8 +37,30 @@ class PilihProdukActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityPilihProdukBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+
+            // Simpan tinggi asli toolbar sekali saja (sebelum ditambah padding)
+            val originalHeight = resources.getDimensionPixelSize(
+                androidx.appcompat.R.dimen.abc_action_bar_default_height_material
+            )
+
+            view.layoutParams.height = originalHeight + statusBarInsets.top
+            view.requestLayout()
+
+            view.setPadding(
+                view.paddingLeft,
+                statusBarInsets.top,
+                view.paddingRight,
+                view.paddingBottom
+            )
+            insets
+        }
 
         // Keranjang boleh sudah berisi item dari layanan lain (Cuci Motor/Mobil) - sengaja TIDAK direset,
         // supaya kasir bisa menggabungkan semuanya menjadi satu transaksi/struk.

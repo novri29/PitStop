@@ -7,6 +7,8 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.pitstop.pitstop.databinding.ActivityPembayaranBinding
 import com.pitstop.repository.TransaksiItemInput
@@ -28,8 +30,30 @@ class PembayaranActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityPembayaranBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+
+            // Simpan tinggi asli toolbar sekali saja (sebelum ditambah padding)
+            val originalHeight = resources.getDimensionPixelSize(
+                androidx.appcompat.R.dimen.abc_action_bar_default_height_material
+            )
+
+            view.layoutParams.height = originalHeight + statusBarInsets.top
+            view.requestLayout()
+
+            view.setPadding(
+                view.paddingLeft,
+                statusBarInsets.top,
+                view.paddingRight,
+                view.paddingBottom
+            )
+            insets
+        }
 
         session = SessionManager(this)
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[TransaksiViewModel::class.java]
