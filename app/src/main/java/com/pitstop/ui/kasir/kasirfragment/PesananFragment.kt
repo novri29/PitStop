@@ -1,60 +1,65 @@
-package com.pitstop.ui.kasir.kasirfragment
+package com.example.cafesteam.ui.kasir.fragments
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.pitstop.pitstop.R
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.pitstop.pitstop.databinding.FragmentPesananBinding
+import com.pitstop.save.entity.JENIS_MOBIL
+import com.pitstop.save.entity.JENIS_MOTOR
+import com.pitstop.save.entity.TIPE_MOBIL
+import com.pitstop.save.entity.TIPE_MOTOR
+import com.pitstop.ui.admin.StockSteamViewModel
+import com.pitstop.ui.kasir.order.KonfirmasiLayananDialog
+import com.pitstop.ui.kasir.order.PilihProdukActivity
+import com.pitstop.util.ViewModelFactory
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [PesananFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class PesananFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private var _binding: FragmentPesananBinding? = null
+    private val binding get() = _binding!!
+    private var hargaMotor = 0.0
+    private var hargaMobil = 0.0
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentPesananBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val steamViewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[StockSteamViewModel::class.java]
+        steamViewModel.layananList.observe(viewLifecycleOwner) { list ->
+            list.find { it.jenis == JENIS_MOTOR }?.let { hargaMotor = it.harga }
+            list.find { it.jenis == JENIS_MOBIL }?.let { hargaMobil = it.harga }
+        }
+
+        binding.btnMotor.setOnClickListener {
+            if (hargaMotor <= 0.0) {
+                Toast.makeText(requireContext(), "Harga Cuci Motor belum diatur Admin", Toast.LENGTH_SHORT).show()
+            } else {
+                KonfirmasiLayananDialog.tampilkan(requireContext(), TIPE_MOTOR, "Cuci Motor", hargaMotor)
+            }
+        }
+        binding.btnMobil.setOnClickListener {
+            if (hargaMobil <= 0.0) {
+                Toast.makeText(requireContext(), "Harga Cuci Mobil belum diatur Admin", Toast.LENGTH_SHORT).show()
+            } else {
+                KonfirmasiLayananDialog.tampilkan(requireContext(), TIPE_MOBIL, "Cuci Mobil", hargaMobil)
+            }
+        }
+        binding.btnCafe.setOnClickListener {
+            startActivity(Intent(requireContext(), PilihProdukActivity::class.java))
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_pesanan, container, false)
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment PesananFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            PesananFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
