@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:text="Atur Harga Layanan Cuci"
-                android:textColor="@color/primary"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -106,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:text="Kelola Stock Barang Steam"
-                android:textColor="@color/primary"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
             <Button
@@ -116,6 +116,78 @@
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_button_primary"
                 android:text="Buka Stock Steam"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+
+            <!-- ===== UBAH AKUN ADMIN ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Ubah Akun Admin (Akun Anda)"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etAdminUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_edittext"
+                android:hint="Username Admin" />
+
+            <EditText
+                android:id="@+id/etAdminPasswordBaru"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_edittext"
+                android:hint="Password Baru (kosongkan jika tidak diubah)"
+                android:inputType="textPassword" />
+
+            <Button
+                android:id="@+id/btnUpdateAdmin"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_button_accent"
+                android:text="Update Akun Admin"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+
+            <!-- ===== UBAH AKUN KASIR ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Ubah Akun Kasir"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etKasirUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_edittext"
+                android:hint="Username Kasir" />
+
+            <EditText
+                android:id="@+id/etKasirPasswordBaru"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_edittext"
+                android:hint="Password Baru (kosongkan jika tidak diubah)"
+                android:inputType="textPassword" />
+
+            <Button
+                android:id="@+id/btnUpdateKasir"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_button_primary"
+                android:text="Update Akun Kasir"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 

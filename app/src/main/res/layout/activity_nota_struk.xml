@@ -80,7 +80,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="CLEAN &amp; CUP"
+                        android:text="PitStop"
                         android:textColor="@color/primary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -241,7 +241,7 @@
                     android:layout_marginTop="18dp"
                     android:gravity="center"
                     android:text="Terima kasih!"
-                    android:textColor="@color/primary"
+                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
                 <TextView

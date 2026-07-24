@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
                 android:text="Input Stock Barang (Shampo, dll)"
-                android:textColor="@color/primary"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
             <EditText
@@ -110,7 +110,7 @@
         android:layout_height="wrap_content"
         android:padding="12dp"
         android:text="Daftar Stock Steam"
-        android:textColor="@color/primary"
+        android:textColor="@color/black"
         android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView

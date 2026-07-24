@@ -6,5 +6,5 @@
     <!-- Path warna putih berbentuk lengkungan wave -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M0,16 C120,32 240,0 360,16 L360,32 L0,32 Z" />
+        android:pathData="M0,16 C145,45 250,0 360,16 L360,32 L0,32 Z" />
 </vector>

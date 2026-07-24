@@ -8,6 +8,15 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE username = :username AND password = :password LIMIT 1")
     suspend fun login(username: String, password: String): User?
 
+    @Query("SELECT * FROM user WHERE role = :role LIMIT 1")
+    suspend fun getUserByRole(role: String): User?
+
+    @Query("SELECT * FROM user WHERE username = :username LIMIT 1")
+    suspend fun getUserByUsername(username: String): User?
+
+    @Update
+    suspend fun update(user: User)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(vararg users: User)
 
