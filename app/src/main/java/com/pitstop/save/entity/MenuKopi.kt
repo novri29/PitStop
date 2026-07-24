@@ -18,5 +18,6 @@ data class MenuKopi(
     val nama: String,
     val kategori: String = KATEGORI_COFFEE,
     val hargaModal: Double,
-    val hargaJual: Double
+    val hargaJual: Double,
+    val gambarPath: String? = null
 )

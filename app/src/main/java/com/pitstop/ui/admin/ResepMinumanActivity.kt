@@ -1,6 +1,6 @@
 package com.pitstop.ui.admin
 
-import android.R
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,13 +16,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.PemakaianBahanAdapter
 import com.pitstop.adapter.PemakaianItem
 import com.pitstop.adapter.ResepAdapter
+import com.pitstop.pitstop.R
+import com.pitstop.pitstop.databinding.ActivityResepMinumanBinding
 import com.pitstop.save.entity.Bahan
 import com.pitstop.save.entity.KATEGORI_COFFEE
 import com.pitstop.save.entity.KATEGORI_NON_COFFEE
 import com.pitstop.save.entity.KATEGORI_SNACK
 import com.pitstop.save.entity.MenuKopi
 import com.pitstop.util.Formatter
-import com.pitstop.pitstop.databinding.ActivityResepMinumanBinding
+import com.pitstop.util.ImagePickerHelper
+import com.pitstop.util.ImageUtil
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -32,11 +35,15 @@ class ResepMinumanActivity : AppCompatActivity() {
     private lateinit var viewModel: MenuKopiViewModel
     private lateinit var pemakaianAdapter: PemakaianBahanAdapter
     private lateinit var resepAdapter: ResepAdapter
+    private lateinit var imagePicker: ImagePickerHelper
 
     private var daftarBahan: List<Bahan> = emptyList()
     private var semuaMenu: List<MenuKopi> = emptyList()
     private var komposisiMap: Map<Int, String> = emptyMap()
     private val kategoriOptions = listOf(KATEGORI_COFFEE, KATEGORI_NON_COFFEE, KATEGORI_SNACK)
+
+    /** Path foto yang baru dipilih/diambil untuk resep yang SEDANG dibuat (belum disimpan) */
+    private var gambarPathBaru: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,10 +71,17 @@ class ResepMinumanActivity : AppCompatActivity() {
             insets
         }
 
+        imagePicker = ImagePickerHelper(this) { path ->
+            gambarPathBaru = path
+            binding.imgPreviewBaru.setPadding(0, 0, 0, 0)
+            binding.imgPreviewBaru.imageTintList = null
+            binding.imgPreviewBaru.setImageBitmap(ImageUtil.loadThumbnail(path, 300, 300))
+        }
+
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[MenuKopiViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
 
-        binding.spinnerKategori.adapter = ArrayAdapter(this, R.layout.simple_spinner_dropdown_item, kategoriOptions)
+        binding.spinnerKategori.adapter = ArrayAdapter(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, kategoriOptions)
 
         pemakaianAdapter = PemakaianBahanAdapter(onDelete = { index ->
             val current = pemakaianAdapter.getItems().toMutableList()
@@ -94,7 +108,7 @@ class ResepMinumanActivity : AppCompatActivity() {
             daftarBahan = list
             val namaBahan = list.map { it.nama }
             binding.spinnerBahan.adapter = ArrayAdapter(
-                this, R.layout.simple_spinner_dropdown_item, namaBahan
+                this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, namaBahan
             )
         }
 
@@ -109,6 +123,9 @@ class ResepMinumanActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(s: Editable?) {}
         })
+
+        binding.btnAmbilFotoBaru.setOnClickListener { imagePicker.ambilFoto() }
+        binding.btnPilihGaleriBaru.setOnClickListener { imagePicker.pilihDariGaleri() }
 
         binding.btnTambahBahan.setOnClickListener { tambahPemakaian() }
         binding.btnSimpanMenu.setOnClickListener { simpanMenu() }
@@ -163,7 +180,7 @@ class ResepMinumanActivity : AppCompatActivity() {
         }
 
         val pasangan = pemakaian.map { it.bahan to it.jumlah }
-        viewModel.simpanMenu(nama, kategori, hargaJual, pasangan) {
+        viewModel.simpanMenu(nama, kategori, hargaJual, pasangan, gambarPathBaru) {
             runOnUiThread {
                 Toast.makeText(this, "Resep '$nama' tersimpan", Toast.LENGTH_SHORT).show()
                 binding.etNamaMenu.text.clear()
@@ -171,6 +188,13 @@ class ResepMinumanActivity : AppCompatActivity() {
                 pemakaianAdapter.setItems(emptyList())
                 updateEstimasiModal()
                 binding.formTambah.visibility = View.GONE
+
+                // reset preview foto untuk resep berikutnya
+                gambarPathBaru = null
+                binding.imgPreviewBaru.setImageResource(R.drawable.ic_cafe_cup)
+                binding.imgPreviewBaru.imageTintList = ColorStateList.valueOf(getColor(R.color.primary))
+                val paddingPx = (20 * resources.displayMetrics.density).toInt()
+                binding.imgPreviewBaru.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
             }
         }
     }

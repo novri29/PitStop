@@ -1,12 +1,14 @@
 package com.pitstop.adapter
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.pitstop.save.entity.MenuKopi
-import com.pitstop.util.Formatter
 import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.ItemProdukBinding
+import com.pitstop.save.entity.MenuKopi
+import com.pitstop.util.Formatter
+import com.pitstop.util.ImageUtil
 
 class ProdukAdapter(
     private var items: List<MenuKopi> = emptyList(),
@@ -32,6 +34,20 @@ class ProdukAdapter(
         binding.tvNama.text = menu.nama
         binding.tvHarga.text = "Rp ${Formatter.rupiah(menu.hargaJual).removePrefix("Rp").trim()}"
         binding.tvHpp.text = "HPP: ${Formatter.rupiah(menu.hargaModal)}"
+
+        val thumbnail = ImageUtil.loadThumbnail(menu.gambarPath, 150, 150)
+        if (thumbnail != null) {
+            binding.imgFoto.setPadding(0, 0, 0, 0)
+            binding.imgFoto.imageTintList = null
+            binding.imgFoto.setImageBitmap(thumbnail)
+        } else {
+            val paddingPx = (10 * binding.root.resources.displayMetrics.density).toInt()
+            binding.imgFoto.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+            binding.imgFoto.setImageResource(R.drawable.ic_cafe_cup)
+            binding.imgFoto.imageTintList = ColorStateList.valueOf(
+                binding.root.context.getColor(R.color.primary)
+            )
+        }
 
         val tersedia = ketersediaanMap[menu.id] ?: true
         if (tersedia) {

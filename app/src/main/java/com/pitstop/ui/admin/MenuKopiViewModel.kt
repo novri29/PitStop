@@ -18,10 +18,11 @@ class MenuKopiViewModel(private val repository: AppRepository) : ViewModel() {
         kategori: String,
         hargaJual: Double,
         pemakaian: List<Pair<Bahan, Double>>,
+        gambarPath: String? = null,
         onDone: () -> Unit
     ) {
         viewModelScope.launch {
-            repository.simpanMenuKopi(nama, kategori, hargaJual, pemakaian)
+            repository.simpanMenuKopi(nama, kategori, hargaJual, pemakaian, gambarPath)
             onDone()
         }
     }

@@ -14,12 +14,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.ProdukAdapter
+import com.pitstop.pitstop.databinding.ActivityProdukMinumanBinding
+import com.pitstop.pitstop.databinding.DialogEditProdukBinding
 import com.pitstop.save.entity.KATEGORI_COFFEE
 import com.pitstop.save.entity.KATEGORI_NON_COFFEE
 import com.pitstop.save.entity.KATEGORI_SNACK
 import com.pitstop.save.entity.MenuKopi
-import com.pitstop.pitstop.databinding.ActivityProdukMinumanBinding
-import com.pitstop.pitstop.databinding.DialogEditProdukBinding
+import com.pitstop.util.ImagePickerHelper
+import com.pitstop.util.ImageUtil
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -31,6 +33,12 @@ class ProdukMinumanActivity : AppCompatActivity() {
     private var semuaMenu: List<MenuKopi> = emptyList()
     private var ketersediaanMap: Map<Int, Boolean> = emptyMap()
     private val kategoriOptions = listOf(KATEGORI_COFFEE, KATEGORI_NON_COFFEE, KATEGORI_SNACK)
+
+    // Menyimpan path gambar yang baru dipilih untuk dialog edit yang sedang terbuka
+    private var gambarPathSementara: String? = null
+    private var dialogBindingAktif: DialogEditProdukBinding? = null
+
+    private lateinit var imagePicker: ImagePickerHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +66,11 @@ class ProdukMinumanActivity : AppCompatActivity() {
             insets
         }
 
-        viewModel = ViewModelProvider(this, ViewModelFactory(this))[MenuKopiViewModel::class.java]
-        binding.btnBack.setOnClickListener { finish() }
+        // WAJIB didaftarkan di onCreate (bukan di dalam dialog) karena aturan Activity Result API
+        imagePicker = ImagePickerHelper(this) { path ->
+            gambarPathSementara = path
+            dialogBindingAktif?.imgPreview?.setImageBitmap(ImageUtil.loadThumbnail(path, 300, 300))
+        }
 
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[MenuKopiViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
@@ -95,24 +106,43 @@ class ProdukMinumanActivity : AppCompatActivity() {
 
     private fun tampilkanDialogEdit(menu: MenuKopi) {
         val dialogBinding = DialogEditProdukBinding.inflate(layoutInflater)
-        dialogBinding.tvNamaProduk.text = menu.nama
+        dialogBindingAktif = dialogBinding
+        gambarPathSementara = menu.gambarPath
+
+        dialogBinding.etNamaProduk.setText(menu.nama)
         dialogBinding.spinnerKategori.adapter = ArrayAdapter(this, R.layout.simple_spinner_dropdown_item, kategoriOptions)
         dialogBinding.spinnerKategori.setSelection(kategoriOptions.indexOf(menu.kategori).coerceAtLeast(0))
         dialogBinding.etHargaJual.setText(menu.hargaJual.toInt().toString())
 
+        val thumbnail = ImageUtil.loadThumbnail(menu.gambarPath, 300, 300)
+        if (thumbnail != null) dialogBinding.imgPreview.setImageBitmap(thumbnail)
+
         val dialog = AlertDialog.Builder(this).setView(dialogBinding.root).create()
 
+        dialogBinding.btnAmbilFoto.setOnClickListener { imagePicker.ambilFoto() }
+        dialogBinding.btnPilihGaleri.setOnClickListener { imagePicker.pilihDariGaleri() }
+
         dialogBinding.btnSimpan.setOnClickListener {
+            val namaBaru = dialogBinding.etNamaProduk.text.toString().trim()
             val hargaBaru = dialogBinding.etHargaJual.text.toString().toDoubleOrNull()
+
+            if (namaBaru.isEmpty()) {
+                Toast.makeText(this, "Nama produk tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             if (hargaBaru == null) {
                 Toast.makeText(this, "Harga tidak valid", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val kategoriBaru = kategoriOptions[dialogBinding.spinnerKategori.selectedItemPosition]
-            viewModel.updateMenu(menu.copy(hargaJual = hargaBaru, kategori = kategoriBaru))
-            Toast.makeText(this, "Produk '${menu.nama}' diperbarui", Toast.LENGTH_SHORT).show()
+            viewModel.updateMenu(
+                menu.copy(nama = namaBaru, hargaJual = hargaBaru, kategori = kategoriBaru, gambarPath = gambarPathSementara)
+            )
+            Toast.makeText(this, "Produk '$namaBaru' diperbarui", Toast.LENGTH_SHORT).show()
+            dialogBindingAktif = null
             dialog.dismiss()
         }
+        dialog.setOnDismissListener { dialogBindingAktif = null }
         dialog.show()
     }
 

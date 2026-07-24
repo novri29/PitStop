@@ -12,7 +12,10 @@ import com.pitstop.save.entity.StockSteam
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.User
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
+import kotlin.text.get
 
 /**
  * Satu pintu akses data untuk seluruh aplikasi (Admin & Kasir).
@@ -45,15 +48,16 @@ class AppRepository(context: Context) {
      * Simpan menu kopi baru beserta daftar pemakaian bahan.
      * Harga modal dihitung otomatis: SUM(jumlahDigunakan * hargaPerSatuan bahan).
      */
-    suspend fun simpanMenuKopi(nama: String, kategori: String, hargaJual: Double, pemakaian: List<Pair<Bahan, Double>>): Long {
+    suspend fun simpanMenuKopi(
+        nama: String,
+        kategori: String,
+        hargaJual: Double,
+        pemakaian: List<Pair<Bahan, Double>>,
+        gambarPath: String? = null
+    ): Long {
         val hargaModal = pemakaian.sumOf { (bahan, jumlah) -> jumlah * bahan.hargaPerSatuan }
         val menuId = menuKopiDao.insertMenu(
-            MenuKopi(
-                nama = nama,
-                kategori = kategori,
-                hargaModal = hargaModal,
-                hargaJual = hargaJual
-            )
+            MenuKopi(nama = nama, kategori = kategori, hargaModal = hargaModal, hargaJual = hargaJual, gambarPath = gambarPath)
         )
         pemakaian.forEach { (bahan, jumlah) ->
             menuKopiDao.insertBahanUsage(
@@ -187,6 +191,121 @@ class AppRepository(context: Context) {
         transaksiDao.getTotalProdukTerjualHariIniLive(awalHariIni(), akhirHariIni(), tipe)
 
     fun getStokBahanHabisLive(): LiveData<Int> = transaksiDao.getStokBahanHabisLive()
+
+    // ---------- Laporan per Periode (Harian/Bulanan/Tahunan) ----------
+    fun getJumlahTransaksiPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Int> =
+        transaksiDao.getJumlahTransaksiHariIniLive(awal, akhir, tipe)
+
+    fun getOmzetPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Double?> =
+        transaksiDao.getOmzetHariIniLive(awal, akhir, tipe)
+
+    fun getTotalProdukTerjualPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Int?> =
+        transaksiDao.getTotalProdukTerjualHariIniLive(awal, akhir, tipe)
+
+    fun getTransaksiPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<List<Transaksi>> =
+        transaksiDao.getTransaksiPeriodeLive(awal, akhir, tipe)
+
+    suspend fun getTransaksiPeriode(awal: Long, akhir: Long, tipe: String = "SEMUA"): List<Transaksi> =
+        transaksiDao.getTransaksiPeriode(awal, akhir, tipe)
+
+    // ---------- Grafik: Omzet N hari terakhir (mode Harian) ----------
+    suspend fun getOmzetHarianTerakhir(jumlahHari: Int = 7): List<Pair<String, Double>> {
+        val kalenderAkhir = Calendar.getInstance()
+        val akhir = akhirHariIni()
+        val kalenderAwal = kalenderAkhir.clone() as Calendar
+        kalenderAwal.add(Calendar.DAY_OF_MONTH, -(jumlahHari - 1))
+        kalenderAwal.set(Calendar.HOUR_OF_DAY, 0); kalenderAwal.set(Calendar.MINUTE, 0)
+        kalenderAwal.set(Calendar.SECOND, 0); kalenderAwal.set(Calendar.MILLISECOND, 0)
+        val awal = kalenderAwal.timeInMillis
+
+        val rows = transaksiDao.getOmzetHarianRaw(awal, akhir)
+        val peta = rows.associate { it.tanggalStr to it.totalOmzet }
+
+        val formatKey = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val formatLabel = SimpleDateFormat("dd/MM", Locale("in", "ID"))
+
+        val hasil = mutableListOf<Pair<String, Double>>()
+        val kursor = kalenderAwal.clone() as Calendar
+        repeat(jumlahHari) {
+            val key = formatKey.format(kursor.time)
+            val label = formatLabel.format(kursor.time)
+            hasil.add(label to (peta[key] ?: 0.0))
+            kursor.add(Calendar.DAY_OF_MONTH, 1)
+        }
+        return hasil
+    }
+
+    /** Omzet per hari (dengan tanggal awal & akhir bebas), dipakai untuk hitung agregat mingguan bulan berjalan. */
+    suspend fun getOmzetHarianAntara(awal: Long, akhir: Long): List<Pair<Int, Double>> {
+        val rows = transaksiDao.getOmzetHarianRaw(awal, akhir)
+        val peta = rows.associate { it.tanggalStr to it.totalOmzet }
+        val formatKey = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        val hasil = mutableListOf<Pair<Int, Double>>()
+        val kursor = Calendar.getInstance().apply { timeInMillis = awal }
+        val batasAkhir = Calendar.getInstance().apply { timeInMillis = akhir }
+        while (!kursor.after(batasAkhir)) {
+            val key = formatKey.format(kursor.time)
+            hasil.add(kursor.get(Calendar.DAY_OF_MONTH) to (peta[key] ?: 0.0))
+            kursor.add(Calendar.DAY_OF_MONTH, 1)
+        }
+        return hasil
+    }
+
+    /** Omzet per Minggu ke-1..ke-5 dalam satu bulan (mode Bulanan). */
+    suspend fun getOmzetMingguanDalamBulan(kalenderBulan: Calendar): List<Pair<String, Double>> {
+        val awalCal = kalenderBulan.clone() as Calendar
+        awalCal.set(Calendar.DAY_OF_MONTH, 1)
+        awalCal.set(Calendar.HOUR_OF_DAY, 0); awalCal.set(Calendar.MINUTE, 0)
+        awalCal.set(Calendar.SECOND, 0); awalCal.set(Calendar.MILLISECOND, 0)
+
+        val akhirCal = kalenderBulan.clone() as Calendar
+        akhirCal.set(Calendar.DAY_OF_MONTH, akhirCal.getActualMaximum(Calendar.DAY_OF_MONTH))
+        akhirCal.set(Calendar.HOUR_OF_DAY, 23); akhirCal.set(Calendar.MINUTE, 59)
+        akhirCal.set(Calendar.SECOND, 59); akhirCal.set(Calendar.MILLISECOND, 999)
+
+        val harian = getOmzetHarianAntara(awalCal.timeInMillis, akhirCal.timeInMillis)
+        // Kelompokkan tanggal 1-7 -> Minggu 1, 8-14 -> Minggu 2, dst (maksimal Minggu 5)
+        val perMinggu = DoubleArray(5)
+        harian.forEach { (tanggal, omzet) ->
+            val indexMinggu = ((tanggal - 1) / 7).coerceAtMost(4)
+            perMinggu[indexMinggu] += omzet
+        }
+        val jumlahMingguDipakai = ((akhirCal.getActualMaximum(Calendar.DAY_OF_MONTH) - 1) / 7) + 1
+        return (0 until jumlahMingguDipakai).map { i -> "M${i + 1}" to perMinggu[i] }
+    }
+
+    /** Omzet per bulan (Jan-Des) dalam satu tahun (mode Tahunan). */
+    suspend fun getOmzetBulananDalamTahun(kalenderTahun: Calendar): List<Pair<String, Double>> {
+        val awalCal = kalenderTahun.clone() as Calendar
+        awalCal.set(Calendar.DAY_OF_YEAR, 1)
+        awalCal.set(Calendar.HOUR_OF_DAY, 0); awalCal.set(Calendar.MINUTE, 0)
+        awalCal.set(Calendar.SECOND, 0); awalCal.set(Calendar.MILLISECOND, 0)
+
+        val akhirCal = kalenderTahun.clone() as Calendar
+        akhirCal.set(Calendar.MONTH, Calendar.DECEMBER)
+        akhirCal.set(Calendar.DAY_OF_MONTH, 31)
+        akhirCal.set(Calendar.HOUR_OF_DAY, 23); akhirCal.set(Calendar.MINUTE, 59)
+        akhirCal.set(Calendar.SECOND, 59); akhirCal.set(Calendar.MILLISECOND, 999)
+
+        val rows = transaksiDao.getOmzetBulananRaw(awalCal.timeInMillis, akhirCal.timeInMillis)
+        val peta = rows.associate { it.tanggalStr to it.totalOmzet }
+        val formatKey = SimpleDateFormat("yyyy-MM", Locale.US)
+        val labelBulan = arrayOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des")
+
+        val hasil = mutableListOf<Pair<String, Double>>()
+        val kursor = awalCal.clone() as Calendar
+        repeat(12) { i ->
+            val key = formatKey.format(kursor.time)
+            hasil.add(labelBulan[i] to (peta[key] ?: 0.0))
+            kursor.add(Calendar.MONTH, 1)
+        }
+        return hasil
+    }
+
+    // ---------- Produk Terlaris ----------
+    suspend fun getProdukTerlaris(awal: Long, akhir: Long, tipe: String = "SEMUA", limit: Int = 5) =
+        transaksiDao.getProdukTerlaris(awal, akhir, tipe, limit)
 }
 
 data class TransaksiItemInput(
