@@ -75,14 +75,27 @@
                 android:hint="Username"
                 android:inputType="text" />
 
-            <EditText
-                android:id="@+id/etPassword"
+            <!-- INPUT PASSWORD DENGAN BACKGROUND COSTUM KAMU -->
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                android:background="@drawable/bg_edittext"
-                android:hint="Password"
-                android:inputType="textPassword" />
+                app:boxBackgroundMode="none"
+                app:hintEnabled="false"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/grey">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_edittext"
+                    android:hint="Password"
+                    android:inputType="textPassword"
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"

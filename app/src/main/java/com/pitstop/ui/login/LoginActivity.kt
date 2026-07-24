@@ -34,7 +34,6 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        binding.tvHint.text = "Akun default:\nAdmin -> admin / admin123\nKasir -> kasir / kasir123"
 
         pilihPeran(ROLE_ADMIN)
         binding.roleAdmin.setOnClickListener { pilihPeran(ROLE_ADMIN) }
