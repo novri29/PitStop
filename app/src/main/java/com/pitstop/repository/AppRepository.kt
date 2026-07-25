@@ -12,10 +12,12 @@ import com.pitstop.save.entity.StockSteam
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.User
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Locale
 import kotlin.text.get
+import kotlin.text.insert
+import kotlin.text.toInt
+import kotlin.times
+import kotlin.toString
 
 /**
  * Satu pintu akses data untuk seluruh aplikasi (Admin & Kasir).
@@ -61,11 +63,7 @@ class AppRepository(context: Context) {
         )
         pemakaian.forEach { (bahan, jumlah) ->
             menuKopiDao.insertBahanUsage(
-                MenuKopiBahan(
-                    menuKopiId = menuId.toInt(),
-                    bahanId = bahan.id,
-                    jumlahDigunakan = jumlah
-                )
+                MenuKopiBahan(menuKopiId = menuId.toInt(), bahanId = bahan.id, jumlahDigunakan = jumlah)
             )
         }
         return menuId
@@ -221,8 +219,8 @@ class AppRepository(context: Context) {
         val rows = transaksiDao.getOmzetHarianRaw(awal, akhir)
         val peta = rows.associate { it.tanggalStr to it.totalOmzet }
 
-        val formatKey = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        val formatLabel = SimpleDateFormat("dd/MM", Locale("in", "ID"))
+        val formatKey = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val formatLabel = java.text.SimpleDateFormat("dd/MM", java.util.Locale("in", "ID"))
 
         val hasil = mutableListOf<Pair<String, Double>>()
         val kursor = kalenderAwal.clone() as Calendar
@@ -239,7 +237,7 @@ class AppRepository(context: Context) {
     suspend fun getOmzetHarianAntara(awal: Long, akhir: Long): List<Pair<Int, Double>> {
         val rows = transaksiDao.getOmzetHarianRaw(awal, akhir)
         val peta = rows.associate { it.tanggalStr to it.totalOmzet }
-        val formatKey = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val formatKey = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
 
         val hasil = mutableListOf<Pair<Int, Double>>()
         val kursor = Calendar.getInstance().apply { timeInMillis = awal }
@@ -290,7 +288,7 @@ class AppRepository(context: Context) {
 
         val rows = transaksiDao.getOmzetBulananRaw(awalCal.timeInMillis, akhirCal.timeInMillis)
         val peta = rows.associate { it.tanggalStr to it.totalOmzet }
-        val formatKey = SimpleDateFormat("yyyy-MM", Locale.US)
+        val formatKey = java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.US)
         val labelBulan = arrayOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des")
 
         val hasil = mutableListOf<Pair<String, Double>>()

@@ -13,14 +13,12 @@
         android:paddingBottom="20dp">
 
         <LinearLayout
-            android:id="@+id/toolbarHeader"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             android:background="@color/primary"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
+            android:padding="18dp">
 
             <TextView
                 android:layout_width="0dp"
@@ -267,6 +265,29 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Tren Omzet 7 Hari Terakhir"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_stat_card"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <com.pitstop.ui.component.BarChartView
+                    android:id="@+id/chartOmzet"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp" />
             </LinearLayout>
 
             <Button
