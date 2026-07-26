@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/toolbarHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/primary"
@@ -28,7 +29,7 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:padding="14dp"
-        android:text="Seluruh transaksi Cuci Mobil, Cuci Motor, dan Cafe yang tercatat oleh Kasir (real-time)."
+        android:text="Seluruh transaksi Cuci Motor dan Cafe yang tercatat oleh Kasir (real-time)."
         android:textColor="@color/grey"
         android:textSize="12sp" />
 

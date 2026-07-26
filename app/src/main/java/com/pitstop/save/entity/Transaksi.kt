@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 const val TIPE_MOTOR = "Cuci Motor"
-const val TIPE_MOBIL = "Cuci Mobil"
 const val TIPE_CAFE = "Cafe"
 
 const val METODE_CASH = "Cash"
@@ -19,7 +18,7 @@ const val METODE_TRANSFER = "Transfer"
 data class Transaksi(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val tanggal: Long,
-    val tipe: String,       // Cuci Motor / Cuci Mobil / Cafe
+    val tipe: String,       // Cuci Motor / Cafe (atau gabungan, mis. "Cuci Motor + Cafe")
     val total: Double,
     val kasirUsername: String,
     val catatan: String = "",

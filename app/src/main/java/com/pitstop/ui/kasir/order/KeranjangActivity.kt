@@ -12,9 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.CartAdapter
-import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.ActivityKeranjangBinding
-import com.pitstop.save.entity.TIPE_MOBIL
 import com.pitstop.save.entity.TIPE_MOTOR
 import com.pitstop.ui.admin.StockSteamViewModel
 import com.pitstop.util.CartManager
@@ -77,16 +75,6 @@ class KeranjangActivity : AppCompatActivity() {
                 adapter.notifyDataSetChanged()
                 updateRingkasan()
                 Toast.makeText(this, "Cuci Motor ditambahkan", Toast.LENGTH_SHORT).show()
-            }
-        }
-        binding.btnTambahMobil.setOnClickListener {
-            if (hargaMobil <= 0.0) {
-                Toast.makeText(this, "Harga Cuci Mobil belum diatur Admin", Toast.LENGTH_SHORT).show()
-            } else {
-                CartManager.tambahItem("Cuci Mobil", hargaMobil, TIPE_MOBIL)
-                adapter.notifyDataSetChanged()
-                updateRingkasan()
-                Toast.makeText(this, "Cuci Mobil ditambahkan", Toast.LENGTH_SHORT).show()
             }
         }
         binding.btnTambahCafe.setOnClickListener {

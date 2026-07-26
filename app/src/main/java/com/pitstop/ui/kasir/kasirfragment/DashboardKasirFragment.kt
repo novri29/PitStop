@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -18,7 +20,6 @@ import com.pitstop.pitstop.databinding.FragmentDashboardKasirBinding
 import com.pitstop.save.entity.JENIS_MOBIL
 import com.pitstop.save.entity.JENIS_MOTOR
 import com.pitstop.save.entity.TIPE_CAFE
-import com.pitstop.save.entity.TIPE_MOBIL
 import com.pitstop.save.entity.TIPE_MOTOR
 import com.pitstop.ui.admin.RingkasanViewModel
 import com.pitstop.ui.admin.StockSteamViewModel
@@ -29,7 +30,6 @@ import com.pitstop.util.Formatter
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
-
 class DashboardKasirFragment : Fragment() {
 
     private var _binding: FragmentDashboardKasirBinding? = null
@@ -38,7 +38,6 @@ class DashboardKasirFragment : Fragment() {
     private lateinit var steamViewModel: StockSteamViewModel
 
     private var hargaMotor = 0.0
-    private var hargaMobil = 0.0
     private var unitTerpilih = TIPE_CAFE
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -51,15 +50,34 @@ class DashboardKasirFragment : Fragment() {
         viewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[RingkasanViewModel::class.java]
         steamViewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[StockSteamViewModel::class.java]
 
+        // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+
+            // Simpan tinggi asli toolbar sekali saja (sebelum ditambah padding)
+            val originalHeight = resources.getDimensionPixelSize(
+                androidx.appcompat.R.dimen.abc_action_bar_default_height_material
+            )
+
+            view.layoutParams.height = originalHeight + statusBarInsets.top
+            view.requestLayout()
+
+            view.setPadding(
+                view.paddingLeft,
+                statusBarInsets.top,
+                view.paddingRight,
+                view.paddingBottom
+            )
+            insets
+        }
+
         pilihUnit(TIPE_CAFE)
 
-        binding.unitMobil.setOnClickListener { pilihUnit(TIPE_MOBIL) }
         binding.unitMotor.setOnClickListener { pilihUnit(TIPE_MOTOR) }
         binding.unitCafe.setOnClickListener { pilihUnit(TIPE_CAFE) }
 
         steamViewModel.layananList.observe(viewLifecycleOwner) { list ->
             list.find { it.jenis == JENIS_MOTOR }?.let { hargaMotor = it.harga }
-            list.find { it.jenis == JENIS_MOBIL }?.let { hargaMobil = it.harga }
         }
 
         var jumlahHariIni = 0
@@ -107,13 +125,6 @@ class DashboardKasirFragment : Fragment() {
                 }
                 KonfirmasiLayananDialog.tampilkan(requireContext(), TIPE_MOTOR, "Cuci Motor", hargaMotor)
             }
-            TIPE_MOBIL -> {
-                if (hargaMobil <= 0.0) {
-                    Toast.makeText(requireContext(), "Harga Cuci Mobil belum diatur Admin", Toast.LENGTH_SHORT).show()
-                    return
-                }
-                KonfirmasiLayananDialog.tampilkan(requireContext(), TIPE_MOBIL, "Cuci Mobil", hargaMobil)
-            }
         }
     }
 
@@ -121,12 +132,10 @@ class DashboardKasirFragment : Fragment() {
         unitTerpilih = tipe
         viewModel.pilihUnit(tipe)
 
-        resetChip(binding.unitMobil, binding.iconMobil, binding.labelMobil)
         resetChip(binding.unitMotor, binding.iconMotor, binding.labelMotor)
         resetChip(binding.unitCafe, binding.iconCafe, binding.labelCafe)
 
         when (tipe) {
-            TIPE_MOBIL -> selectChip(binding.unitMobil, binding.iconMobil, binding.labelMobil)
             TIPE_MOTOR -> selectChip(binding.unitMotor, binding.iconMotor, binding.labelMotor)
             TIPE_CAFE -> selectChip(binding.unitCafe, binding.iconCafe, binding.labelCafe)
         }

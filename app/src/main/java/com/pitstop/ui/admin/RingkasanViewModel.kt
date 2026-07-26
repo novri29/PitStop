@@ -16,7 +16,7 @@ import java.util.Calendar
 data class FilterRingkasan(val awal: Long, val akhir: Long, val tipeUnit: String)
 
 /**
- * ViewModel ringkasan hari ini yang reaktif terhadap unit usaha yang dipilih (Cuci Mobil/Motor/Cafe/Semua)
+ * ViewModel ringkasan hari ini yang reaktif terhadap unit usaha yang dipilih (Cuci Motor/Cafe/Semua)
  * DAN periode waktu (Harian/Bulanan/Tahunan). Dipakai bersama oleh Dashboard Admin, Dashboard Kasir,
  * dan Laporan Penjualan.
  */

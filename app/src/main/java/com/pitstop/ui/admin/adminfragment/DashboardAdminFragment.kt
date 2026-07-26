@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -13,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.FragmentDashboardAdminBinding
 import com.pitstop.save.entity.TIPE_CAFE
-import com.pitstop.save.entity.TIPE_MOBIL
 import com.pitstop.save.entity.TIPE_MOTOR
 import com.pitstop.ui.admin.AdminMainActivity
 import com.pitstop.ui.admin.KategoriActivity
@@ -42,9 +43,10 @@ class DashboardAdminFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[RingkasanViewModel::class.java]
 
+
+
         pilihUnit(TIPE_CAFE)
 
-        binding.unitMobil.setOnClickListener { pilihUnit(TIPE_MOBIL) }
         binding.unitMotor.setOnClickListener { pilihUnit(TIPE_MOTOR) }
         binding.unitCafe.setOnClickListener { pilihUnit(TIPE_CAFE) }
 
@@ -126,12 +128,10 @@ class DashboardAdminFragment : Fragment() {
     private fun pilihUnit(tipe: String) {
         viewModel.pilihUnitPeriode(tipe)
 
-        resetChip(binding.unitMobil, binding.iconMobil, binding.labelMobil)
         resetChip(binding.unitMotor, binding.iconMotor, binding.labelMotor)
         resetChip(binding.unitCafe, binding.iconCafe, binding.labelCafe)
 
         when (tipe) {
-            TIPE_MOBIL -> selectChip(binding.unitMobil, binding.iconMobil, binding.labelMobil)
             TIPE_MOTOR -> selectChip(binding.unitMotor, binding.iconMotor, binding.labelMotor)
             TIPE_CAFE -> selectChip(binding.unitCafe, binding.iconCafe, binding.labelCafe)
         }

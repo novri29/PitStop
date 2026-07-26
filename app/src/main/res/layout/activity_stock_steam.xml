@@ -12,7 +12,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/primary"
         android:navigationIcon="@drawable/ic_back"
-        android:title="Stock Steam"
+        android:title="Stock Steam (Cuci Motor)"
         app:titleTextColor="@color/white" />
 
     <ScrollView
@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
                 android:text="Input Stock Barang (Shampo, dll)"
-                android:textColor="@color/black"
+                android:textColor="@color/primary"
                 android:textStyle="bold" />
 
             <EditText
@@ -41,28 +41,6 @@
                 android:background="@drawable/bg_edittext"
                 android:hint="Nama barang (contoh: Shampo Motor)"
                 android:inputType="text" />
-
-            <RadioGroup
-                android:id="@+id/rgJenisStock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/rbJenisMotor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Motor" />
-
-                <RadioButton
-                    android:id="@+id/rbJenisMobil"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
-                    android:text="Mobil" />
-            </RadioGroup>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -110,7 +88,7 @@
         android:layout_height="wrap_content"
         android:padding="12dp"
         android:text="Daftar Stock Steam"
-        android:textColor="@color/black"
+        android:textColor="@color/primary"
         android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView

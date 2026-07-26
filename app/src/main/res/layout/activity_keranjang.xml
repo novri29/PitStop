@@ -45,13 +45,12 @@
         android:background="@color/white"
         android:orientation="horizontal"
         android:paddingStart="16dp"
-        android:paddingTop="12dp"
         android:paddingEnd="16dp"
         android:paddingBottom="12dp">
 
         <TextView
             android:id="@+id/btnTambahMotor"
-            android:layout_width="2dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
@@ -60,20 +59,7 @@
             android:padding="10dp"
             android:text="+ Cuci Motor"
             android:textColor="@color/black"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/btnTambahMobil"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_pill_outline"
-            android:gravity="center"
-            android:padding="10dp"
-            android:text="+ Cuci Mobil"
-            android:textColor="@color/black"
-            android:textSize="12sp" />
+            android:textSize="11sp" />
 
         <TextView
             android:id="@+id/btnTambahCafe"
@@ -85,7 +71,7 @@
             android:padding="10dp"
             android:text="+ Menu Cafe"
             android:textColor="@color/black"
-            android:textSize="12sp" />
+            android:textSize="11sp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -142,7 +128,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Total: Rp0"
-                android:textColor="@color/black"
+                android:textColor="@color/primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>

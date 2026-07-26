@@ -36,7 +36,6 @@ class StockSteamActivity : AppCompatActivity() {
 
     private fun simpanStock() {
         val nama = binding.etNamaStock.text.toString().trim()
-        val jenis = if (binding.rbJenisMotor.isChecked) JENIS_MOTOR else JENIS_MOBIL
         val satuan = binding.etSatuanStock.text.toString().trim()
         val jumlah = binding.etJumlahStock.text.toString().toDoubleOrNull()
 
@@ -44,7 +43,7 @@ class StockSteamActivity : AppCompatActivity() {
             Toast.makeText(this, "Lengkapi semua data dengan benar", Toast.LENGTH_SHORT).show()
             return
         }
-        viewModel.tambahStock(nama, jenis, satuan, jumlah)
+        viewModel.tambahStock(nama, JENIS_MOTOR, satuan, jumlah)
         binding.etNamaStock.text.clear()
         binding.etSatuanStock.text.clear()
         binding.etJumlahStock.text.clear()

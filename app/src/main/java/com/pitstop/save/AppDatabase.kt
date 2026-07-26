@@ -77,7 +77,7 @@ abstract class AppDatabase : RoomDatabase() {
          * supaya aplikasi bisa langsung dicoba tanpa setup manual.
          */
         private fun seedCallback(context: Context) = object : Callback() {
-            override fun onCreate(db: SupportSQLiteDatabase) {
+            override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 super.onCreate(db)
                 CoroutineScope(Dispatchers.IO).launch {
                     val database = getInstance(context)
@@ -87,9 +87,6 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                     database.stockSteamDao().insertLayanan(
                         Layanan(nama = "Cuci Motor", jenis = JENIS_MOTOR, harga = 12000.0)
-                    )
-                    database.stockSteamDao().insertLayanan(
-                        Layanan(nama = "Cuci Mobil", jenis = JENIS_MOBIL, harga = 35000.0)
                     )
 
                     val bahanDao = database.bahanDao()
