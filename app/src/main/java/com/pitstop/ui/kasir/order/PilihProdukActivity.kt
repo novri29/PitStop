@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -41,38 +42,21 @@ class PilihProdukActivity : AppCompatActivity() {
         binding = ActivityPilihProdukBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
             val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-
-            // Simpan tinggi asli toolbar sekali saja (sebelum ditambah padding)
             val originalHeight = resources.getDimensionPixelSize(
                 androidx.appcompat.R.dimen.abc_action_bar_default_height_material
             )
-
             view.layoutParams.height = originalHeight + statusBarInsets.top
             view.requestLayout()
-
-            view.setPadding(
-                view.paddingLeft,
-                statusBarInsets.top,
-                view.paddingRight,
-                view.paddingBottom
-            )
+            view.setPadding(view.paddingLeft, statusBarInsets.top, view.paddingRight, view.paddingBottom)
             insets
         }
-
-        // Keranjang boleh sudah berisi item dari layanan lain (Cuci Motor/Mobil) - sengaja TIDAK direset,
-        // supaya kasir bisa menggabungkan semuanya menjadi satu transaksi/struk.
 
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[MenuKopiViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
 
-        adapter = ProdukGridAdapter(onTambah = { menu ->
-            CartManager.tambahItem(menu.nama, menu.hargaJual, TIPE_CAFE, menu.id)
-            updateBottomBar()
-            Toast.makeText(this, "${menu.nama} ditambahkan", Toast.LENGTH_SHORT).show()
-        })
+        adapter = ProdukGridAdapter(onTambah = { menu -> tambahKeKeranjang(menu) })
         binding.rvProduk.layoutManager = GridLayoutManager(this, 3)
         binding.rvProduk.adapter = adapter
 
@@ -112,6 +96,31 @@ class PilihProdukActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateBottomBar()
+    }
+
+    private fun tambahKeKeranjang(menu: MenuKopi) {
+        val hargaPromo = menu.hargaPromo
+        if (hargaPromo == null) {
+            CartManager.tambahItem(menu.nama, menu.hargaJual, TIPE_CAFE, menu.id)
+            updateBottomBar()
+            Toast.makeText(this, "${menu.nama} ditambahkan", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(menu.nama)
+            .setMessage("Pilih harga untuk item ini:")
+            .setPositiveButton("Promo ${Formatter.rupiah(hargaPromo)}") { _, _ ->
+                CartManager.tambahItem(menu.nama, hargaPromo, TIPE_CAFE, menu.id, isPromo = true)
+                updateBottomBar()
+                Toast.makeText(this, "${menu.nama} (Promo) ditambahkan", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Normal ${Formatter.rupiah(menu.hargaJual)}") { _, _ ->
+                CartManager.tambahItem(menu.nama, menu.hargaJual, TIPE_CAFE, menu.id, isPromo = false)
+                updateBottomBar()
+                Toast.makeText(this, "${menu.nama} ditambahkan", Toast.LENGTH_SHORT).show()
+            }
+            .show()
     }
 
     private fun terapkanFilter() {

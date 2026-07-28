@@ -55,11 +55,19 @@ class AppRepository(context: Context) {
         kategori: String,
         hargaJual: Double,
         pemakaian: List<Pair<Bahan, Double>>,
+        hargaPromo: Double? = null,
         gambarPath: String? = null
     ): Long {
         val hargaModal = pemakaian.sumOf { (bahan, jumlah) -> jumlah * bahan.hargaPerSatuan }
         val menuId = menuKopiDao.insertMenu(
-            MenuKopi(nama = nama, kategori = kategori, hargaModal = hargaModal, hargaJual = hargaJual, gambarPath = gambarPath)
+            MenuKopi(
+                nama = nama,
+                kategori = kategori,
+                hargaModal = hargaModal,
+                hargaJual = hargaJual,
+                hargaPromo = hargaPromo,
+                gambarPath = gambarPath
+            )
         )
         pemakaian.forEach { (bahan, jumlah) ->
             menuKopiDao.insertBahanUsage(
@@ -149,7 +157,8 @@ class AppRepository(context: Context) {
                     namaItem = item.nama,
                     qty = item.qty,
                     hargaSatuan = item.hargaSatuan,
-                    subtotal = item.hargaSatuan * item.qty
+                    subtotal = item.hargaSatuan * item.qty,
+                    isPromo = item.isPromo
                 )
             )
             item.menuKopiId?.let { potongStockUntukMenu(it, item.qty) }
@@ -196,6 +205,12 @@ class AppRepository(context: Context) {
 
     fun getOmzetPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Double?> =
         transaksiDao.getOmzetHariIniLive(awal, akhir, tipe)
+
+    fun getOmzetNormalPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Double?> =
+        transaksiDao.getOmzetNormalLive(awal, akhir, tipe)
+
+    fun getOmzetPromoPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Double?> =
+        transaksiDao.getOmzetPromoLive(awal, akhir, tipe)
 
     fun getTotalProdukTerjualPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Int?> =
         transaksiDao.getTotalProdukTerjualHariIniLive(awal, akhir, tipe)
@@ -310,5 +325,6 @@ data class TransaksiItemInput(
     val nama: String,
     val qty: Int,
     val hargaSatuan: Double,
-    val menuKopiId: Int? = null
+    val menuKopiId: Int? = null,
+    val isPromo: Boolean = false
 )

@@ -16,5 +16,6 @@ data class TransaksiDetail(
     val namaItem: String,
     val qty: Int,
     val hargaSatuan: Double,
-    val subtotal: Double
+    val subtotal: Double,
+    val isPromo: Boolean = false
 )

@@ -1,6 +1,7 @@
 package com.pitstop.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.pitstop.util.CartLineItem
@@ -24,6 +25,7 @@ class CartAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = items[position]
         holder.binding.tvNama.text = item.nama
+        holder.binding.tvBadgePromo.visibility = if (item.isPromo) View.VISIBLE else View.GONE
         holder.binding.tvHargaSatuan.text = Formatter.rupiah(item.harga)
         holder.binding.tvQty.text = item.qty.toString()
         holder.binding.tvSubtotal.text = Formatter.rupiah(item.harga * item.qty)

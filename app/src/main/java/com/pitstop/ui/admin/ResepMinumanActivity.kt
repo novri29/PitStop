@@ -164,6 +164,8 @@ class ResepMinumanActivity : AppCompatActivity() {
         val nama = binding.etNamaMenu.text.toString().trim()
         val kategori = kategoriOptions.getOrElse(binding.spinnerKategori.selectedItemPosition) { KATEGORI_COFFEE }
         val hargaJual = binding.etHargaJual.text.toString().toDoubleOrNull()
+        val teksPromo = binding.etHargaPromo.text.toString().trim()
+        val hargaPromo = if (teksPromo.isEmpty()) null else teksPromo.toDoubleOrNull()
         val pemakaian = pemakaianAdapter.getItems()
 
         if (nama.isEmpty()) {
@@ -178,18 +180,26 @@ class ResepMinumanActivity : AppCompatActivity() {
             Toast.makeText(this, "Isi harga jual dengan benar", Toast.LENGTH_SHORT).show()
             return
         }
+        if (teksPromo.isNotEmpty() && hargaPromo == null) {
+            Toast.makeText(this, "Isi harga promo dengan benar, atau kosongkan", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (hargaPromo != null && hargaPromo >= hargaJual) {
+            Toast.makeText(this, "Harga promo harus lebih murah dari harga normal", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val pasangan = pemakaian.map { it.bahan to it.jumlah }
-        viewModel.simpanMenu(nama, kategori, hargaJual, pasangan, gambarPathBaru) {
+        viewModel.simpanMenu(nama, kategori, hargaJual, pasangan, hargaPromo, gambarPathBaru) {
             runOnUiThread {
                 Toast.makeText(this, "Resep '$nama' tersimpan", Toast.LENGTH_SHORT).show()
                 binding.etNamaMenu.text.clear()
                 binding.etHargaJual.text.clear()
+                binding.etHargaPromo.text.clear()
                 pemakaianAdapter.setItems(emptyList())
                 updateEstimasiModal()
                 binding.formTambah.visibility = View.GONE
 
-                // reset preview foto untuk resep berikutnya
                 gambarPathBaru = null
                 binding.imgPreviewBaru.setImageResource(R.drawable.ic_cafe_cup)
                 binding.imgPreviewBaru.imageTintList = ColorStateList.valueOf(getColor(R.color.primary))

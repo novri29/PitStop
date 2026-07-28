@@ -73,6 +73,12 @@ class DashboardAdminFragment : Fragment() {
         viewModel.omzetPeriode.observe(viewLifecycleOwner) {
             binding.tvTotalOmzet.text = Formatter.rupiah(it ?: 0.0)
         }
+        viewModel.omzetNormalPeriode.observe(viewLifecycleOwner) {
+            binding.tvOmzetNormal.text = Formatter.rupiah(it ?: 0.0)
+        }
+        viewModel.omzetPromoPeriode.observe(viewLifecycleOwner) {
+            binding.tvOmzetPromo.text = Formatter.rupiah(it ?: 0.0)
+        }
         viewModel.produkTerjualPeriode.observe(viewLifecycleOwner) {
             binding.tvTotalProdukTerjual.text = (it ?: 0).toString()
         }

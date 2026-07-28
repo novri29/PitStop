@@ -112,7 +112,13 @@ class PembayaranActivity : AppCompatActivity() {
         }
 
         val items = CartManager.items.map {
-            TransaksiItemInput(nama = it.nama, qty = it.qty, hargaSatuan = it.harga, menuKopiId = it.menuKopiId)
+            TransaksiItemInput(
+                nama = it.nama,
+                qty = it.qty,
+                hargaSatuan = it.harga,
+                menuKopiId = it.menuKopiId,
+                isPromo = it.isPromo
+            )
         }
 
         viewModel.simpanTransaksi(

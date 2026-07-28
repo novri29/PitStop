@@ -7,7 +7,8 @@ data class CartLineItem(
     var qty: Int,
     val harga: Double,
     val tipeLayanan: String,       // "Cuci Motor" / "Cuci Mobil" / "Cafe"
-    val menuKopiId: Int? = null
+    val menuKopiId: Int? = null,
+    val isPromo: Boolean = false
 )
 
 /**
@@ -29,16 +30,17 @@ object CartManager {
 
     fun totalItem(): Int = items.sumOf { it.qty }
 
-    fun tambahItem(nama: String, harga: Double, tipeLayanan: String, menuKopiId: Int? = null) {
-        val existing = items.find { it.menuKopiId == menuKopiId && it.nama == nama && it.tipeLayanan == tipeLayanan }
+    fun tambahItem(nama: String, harga: Double, tipeLayanan: String, menuKopiId: Int? = null, isPromo: Boolean = false) {
+        val existing = items.find {
+            it.menuKopiId == menuKopiId && it.nama == nama && it.tipeLayanan == tipeLayanan && it.isPromo == isPromo
+        }
         if (existing != null) {
             existing.qty += 1
         } else {
-            items.add(CartLineItem(nama, 1, harga, tipeLayanan, menuKopiId))
+            items.add(CartLineItem(nama, 1, harga, tipeLayanan, menuKopiId, isPromo))
         }
     }
 
-    /** Gabungan jenis transaksi untuk disimpan sebagai header Transaksi, contoh: "Cuci Motor + Cafe" */
     fun tipeGabungan(): String {
         val tipeSet = items.map { it.tipeLayanan }.distinct()
         return when {

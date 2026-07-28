@@ -220,6 +220,15 @@
                 android:hint="Harga jual ke pelanggan"
                 android:inputType="numberDecimal" />
 
+            <EditText
+                android:id="@+id/etHargaPromo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_edittext"
+                android:hint="Harga Promo (opsional, kosongkan jika tidak ada promo)"
+                android:inputType="numberDecimal" />
+
             <Button
                 android:id="@+id/btnSimpanMenu"
                 android:layout_width="match_parent"

@@ -48,6 +48,20 @@ interface TransaksiDao {
     fun getOmzetHariIniLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
+    SELECT SUM(d.subtotal) FROM transaksi_detail d
+    INNER JOIN transaksi t ON t.id = d.transaksiId
+    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 0 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+""")
+    fun getOmzetNormalLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
+
+    @Query("""
+    SELECT SUM(d.subtotal) FROM transaksi_detail d
+    INNER JOIN transaksi t ON t.id = d.transaksiId
+    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 1 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+""")
+    fun getOmzetPromoLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
+
+    @Query("""
         SELECT SUM(d.qty) FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
         WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')

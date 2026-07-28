@@ -65,6 +65,8 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
 
     val jumlahTransaksiPeriode = filterGabungan.switchMap { f -> repository.getJumlahTransaksiPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
     val omzetPeriode = filterGabungan.switchMap { f -> repository.getOmzetPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
+    val omzetNormalPeriode = filterGabungan.switchMap { f -> repository.getOmzetNormalPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
+    val omzetPromoPeriode = filterGabungan.switchMap { f -> repository.getOmzetPromoPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
     val produkTerjualPeriode = filterGabungan.switchMap { f -> repository.getTotalProdukTerjualPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
     val transaksiPeriode = filterGabungan.switchMap { f -> repository.getTransaksiPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
 
