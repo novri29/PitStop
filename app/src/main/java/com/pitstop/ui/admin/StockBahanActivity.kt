@@ -87,7 +87,11 @@ class StockBahanActivity : AppCompatActivity() {
 
     private fun simpanBahan() {
         val nama = binding.etNama.text.toString().trim()
-        val satuan = if (binding.rbGram.isChecked) "gram" else "ml"
+        val satuan = when {
+            binding.rbGram.isChecked -> "gram"
+            binding.rbMl.isChecked -> "ml"
+            else -> "pcs"
+        }
         val stock = binding.etStock.text.toString().toDoubleOrNull()
         val harga = binding.etHargaPerSatuan.text.toString().toDoubleOrNull()
 

@@ -27,9 +27,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Stock Bahan (Cafe)"
+            android:text="Stock Bahan (Cafe: Coffee, Non Coffee, Snack)"
             android:textColor="@color/white"
-            android:textSize="17sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <ImageButton
@@ -89,7 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:background="@drawable/bg_edittext"
-            android:hint="Nama bahan (contoh: Biji Kopi Arabica)"
+            android:hint="Nama bahan/stock (contoh: Air Mineral 600ml, Matcha Bubuk)"
             android:inputType="text" />
 
         <RadioGroup
@@ -112,6 +112,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:text="Ml" />
+
+            <RadioButton
+                android:id="@+id/rbPcs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="Pcs" />
         </RadioGroup>
 
         <EditText
@@ -129,14 +136,14 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
             android:background="@drawable/bg_edittext"
-            android:hint="Harga modal per gram/ml (contoh: 120)"
+            android:hint="Harga modal per satuan (gram/ml/pcs)"
             android:inputType="numberDecimal" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:text="Tips: 1kg kopi = Rp160.000 -&gt; harga per gram = Rp160"
+            android:text="Tips: untuk barang satuan (snack, air mineral, dll) pilih Pcs lalu isi harga modal per pcs. Contoh: 1kg kopi = Rp160.000 -&gt; harga per gram = Rp160"
             android:textColor="@color/grey"
             android:textSize="11sp" />
 
