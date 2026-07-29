@@ -179,9 +179,21 @@ class LaporanFragment : Fragment() {
                 Toast.makeText(requireContext(), "Belum ada data penjualan untuk diexport", Toast.LENGTH_SHORT).show()
                 return@launch
             }
-            val file = ExcelExporter.exportLaporan(requireContext(), data)
-            Toast.makeText(requireContext(), "Laporan tersimpan: ${file.name}", Toast.LENGTH_LONG).show()
-            ExcelExporter.shareFile(requireContext(), file)
+
+            val judulPeriode = if (modeSemua) "Semua Riwayat" else viewModel.getLabelPeriodeSaatIni()
+            val produkTerjual = if (modeSemua) viewModel.getProdukTerjualLengkapSemua() else viewModel.getProdukTerjualLengkapPeriode()
+            val detailItem = if (modeSemua) viewModel.getDetailLaporanSemua() else viewModel.getDetailLaporanPeriode()
+
+            val csvFile = ExcelExporter.exportLaporanLengkap(
+                context = requireContext(),
+                judulPeriode = judulPeriode,
+                transaksiList = data,
+                produkTerjual = produkTerjual,
+                detailItem = detailItem
+            )
+
+            Toast.makeText(requireContext(), "Laporan tersimpan: ${csvFile.name}", Toast.LENGTH_LONG).show()
+            ExcelExporter.shareFile(requireContext(), csvFile)
         }
     }
 

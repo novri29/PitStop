@@ -119,6 +119,18 @@ interface TransaksiDao {
         LIMIT :limit
     """)
     suspend fun getProdukTerlaris(awal: Long, akhir: Long, tipe: String, limit: Int): List<ProdukTerlarisRow>
+
+    // ---------- Detail item per transaksi dalam rentang tanggal (untuk export laporan lengkap) ----------
+    @Query("""
+        SELECT t.tanggal as tanggal, t.tipe as tipe, t.kasirUsername as kasirUsername,
+               d.namaItem as namaItem, d.qty as qty, d.hargaSatuan as hargaSatuan,
+               d.subtotal as subtotal, d.isPromo as isPromo
+        FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+        ORDER BY t.tanggal DESC
+    """)
+    suspend fun getDetailLaporanPeriode(awal: Long, akhir: Long, tipe: String): List<DetailLaporanRow>
 }
 
 data class OmzetHarianRow(
@@ -130,4 +142,15 @@ data class ProdukTerlarisRow(
     val namaItem: String,
     val totalQty: Int,
     val totalOmzet: Double
+)
+
+data class DetailLaporanRow(
+    val tanggal: Long,
+    val tipe: String,
+    val kasirUsername: String,
+    val namaItem: String,
+    val qty: Int,
+    val hargaSatuan: Double,
+    val subtotal: Double,
+    val isPromo: Boolean
 )

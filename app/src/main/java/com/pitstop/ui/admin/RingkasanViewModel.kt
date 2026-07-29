@@ -7,6 +7,7 @@ import androidx.lifecycle.switchMap
 import com.pitstop.save.entity.Bahan
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.repository.AppRepository
+import com.pitstop.save.dao.DetailLaporanRow
 import com.pitstop.save.dao.ProdukTerlarisRow
 import com.pitstop.util.PeriodeUtil
 import com.pitstop.util.TipePeriode
@@ -141,4 +142,32 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
     /** Produk terlaris untuk seluruh riwayat (dipakai saat mode "Semua" di Laporan). */
     suspend fun getProdukTerlarisSemua(limit: Int = 5): List<ProdukTerlarisRow> =
         repository.getProdukTerlaris(0L, Long.MAX_VALUE, "SEMUA", limit)
+
+    // ---------- Export Laporan Lengkap (rekap semua produk + detail item, sesuai filter aktif) ----------
+    suspend fun getProdukTerjualLengkapPeriode(): List<ProdukTerlarisRow> {
+        val tipe = tipePeriode.value ?: TipePeriode.HARIAN
+        val kalender = kalenderAcuan.value ?: Calendar.getInstance()
+        val unit = unitPeriode.value ?: "SEMUA"
+        val (awal, akhir) = PeriodeUtil.rentang(tipe, kalender)
+        return repository.getProdukTerjualLengkap(awal, akhir, unit)
+    }
+
+    suspend fun getProdukTerjualLengkapSemua(): List<ProdukTerlarisRow> =
+        repository.getProdukTerjualLengkap(0L, Long.MAX_VALUE, "SEMUA")
+
+    suspend fun getDetailLaporanPeriode(): List<DetailLaporanRow> {
+        val tipe = tipePeriode.value ?: TipePeriode.HARIAN
+        val kalender = kalenderAcuan.value ?: Calendar.getInstance()
+        val unit = unitPeriode.value ?: "SEMUA"
+        val (awal, akhir) = PeriodeUtil.rentang(tipe, kalender)
+        return repository.getDetailLaporanPeriode(awal, akhir, unit)
+    }
+
+    suspend fun getDetailLaporanSemua(): List<DetailLaporanRow> =
+        repository.getDetailLaporanPeriode(0L, Long.MAX_VALUE, "SEMUA")
+
+    /** Label periode saat ini, dipakai sebagai judul di file export. */
+    fun getLabelPeriodeSaatIni(): String = labelPeriode.value ?: PeriodeUtil.label(
+        tipePeriode.value ?: TipePeriode.HARIAN, kalenderAcuan.value ?: Calendar.getInstance()
+    )
 }

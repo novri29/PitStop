@@ -3,6 +3,8 @@ package com.pitstop.repository
 import android.content.Context
 import androidx.lifecycle.LiveData
 import com.pitstop.save.AppDatabase
+import com.pitstop.save.dao.DetailLaporanRow
+import com.pitstop.save.dao.ProdukTerlarisRow
 import com.pitstop.save.entity.Bahan
 import com.pitstop.save.entity.Layanan
 import com.pitstop.save.entity.METODE_CASH
@@ -319,6 +321,14 @@ class AppRepository(context: Context) {
     // ---------- Produk Terlaris ----------
     suspend fun getProdukTerlaris(awal: Long, akhir: Long, tipe: String = "SEMUA", limit: Int = 5) =
         transaksiDao.getProdukTerlaris(awal, akhir, tipe, limit)
+
+    /** Semua produk terjual (tanpa batas jumlah), dipakai untuk rekap lengkap saat export laporan. */
+    suspend fun getProdukTerjualLengkap(awal: Long, akhir: Long, tipe: String = "SEMUA"): List<ProdukTerlarisRow> =
+        transaksiDao.getProdukTerlaris(awal, akhir, tipe, Int.MAX_VALUE)
+
+    /** Detail item per transaksi dalam rentang tanggal, dipakai untuk export laporan lengkap. */
+    suspend fun getDetailLaporanPeriode(awal: Long, akhir: Long, tipe: String = "SEMUA"): List<DetailLaporanRow> =
+        transaksiDao.getDetailLaporanPeriode(awal, akhir, tipe)
 }
 
 data class TransaksiItemInput(
