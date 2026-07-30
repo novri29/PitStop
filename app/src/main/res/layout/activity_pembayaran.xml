@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -21,13 +20,14 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/back"
             android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Pembayaran"
+            android:text="@string/pembayaran"
             android:textColor="@color/white"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -55,7 +55,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Total Pembayaran"
+                    android:text="@string/total_pembayaran"
                     android:textColor="@color/grey"
                     android:textSize="12sp" />
 
@@ -64,7 +64,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Rp0"
+                    android:text="@string/rp0"
                     android:textColor="@color/black"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -74,7 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Metode Pembayaran"
+                android:text="@string/metode_pembayaran"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -92,6 +92,7 @@
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
+                    android:contentDescription="@string/bayar_cash"
                     android:src="@drawable/ic_cash" />
 
                 <TextView
@@ -99,7 +100,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:layout_weight="1"
-                    android:text="Cash"
+                    android:text="@string/cash"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
 
@@ -107,6 +108,7 @@
                     android:id="@+id/checkCash"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
+                    android:contentDescription="@string/checklist"
                     android:src="@drawable/ic_check_circle" />
             </LinearLayout>
 
@@ -123,6 +125,7 @@
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
+                    android:contentDescription="@string/qris"
                     android:src="@drawable/ic_qris_small" />
 
                 <TextView
@@ -130,7 +133,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:layout_weight="1"
-                    android:text="QRIS"
+                    android:text="@string/qris"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
 
@@ -138,6 +141,7 @@
                     android:id="@+id/checkQris"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
+                    android:contentDescription="@string/checklist"
                     android:src="@drawable/ic_check_circle"
                     android:visibility="invisible" />
             </LinearLayout>
@@ -155,6 +159,7 @@
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
+                    android:contentDescription="@string/bank"
                     android:src="@drawable/ic_transfer" />
 
                 <TextView
@@ -162,7 +167,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:layout_weight="1"
-                    android:text="Lainnya (Transfer)"
+                    android:text="@string/lainnya_transfer"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
 
@@ -170,6 +175,7 @@
                     android:id="@+id/checkTransfer"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
+                    android:contentDescription="@string/checklist"
                     android:src="@drawable/ic_check_circle"
                     android:visibility="invisible" />
             </LinearLayout>
@@ -186,8 +192,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
+                    android:autofillHints=""
                     android:background="@drawable/bg_edittext"
-                    android:hint="Jumlah Dibayar"
+                    android:hint="@string/jumlah_dibayar"
                     android:inputType="numberDecimal"
                     android:textSize="16sp" />
 
@@ -202,7 +209,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Kembalian"
+                        android:text="@string/kembalian"
                         android:textColor="@color/black"
                         android:textStyle="bold" />
 
@@ -210,7 +217,7 @@
                         android:id="@+id/tvKembalian"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Rp0"
+                        android:text="@string/rp0"
                         android:textColor="@color/green"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -235,6 +242,7 @@
                     <ImageView
                         android:layout_width="160dp"
                         android:layout_height="160dp"
+                        android:contentDescription="@string/qris"
                         android:src="@drawable/ic_qris_placeholder" />
                 </LinearLayout>
 
@@ -243,7 +251,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:gravity="center"
-                    android:text="Tunjukkan QR ini kepada pelanggan untuk di-scan menggunakan aplikasi e-wallet / mobile banking."
+                    android:text="@string/tunjukkan_qr_ini_kepada_pelanggan_untuk_di_scan_menggunakan_aplikasi_e_wallet_mobile_banking"
                     android:textColor="@color/grey"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -261,7 +269,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Transfer ke rekening:"
+                    android:text="@string/transfer_ke_rekening"
                     android:textColor="@color/grey"
                     android:textSize="12sp" />
 
@@ -269,7 +277,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="BCA - 123 456 7890"
+                    android:text="@string/bca_123_456_7890"
                     android:textColor="@color/black"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -277,7 +285,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="a.n. Clean &amp; Cup POS"
+                    android:text="@string/a_n_clean_amp_cup_pos"
                     android:textColor="@color/grey"
                     android:textSize="12sp" />
 
@@ -285,7 +293,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Pastikan sudah menerima konfirmasi transfer dari pelanggan sebelum menekan tombol BAYAR."
+                    android:text="@string/pastikan_sudah_menerima_konfirmasi_transfer_dari_pelanggan_sebelum_menekan_tombol_bayar"
                     android:textColor="@color/orange"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -304,7 +312,7 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:background="@drawable/bg_button_primary"
-            android:text="✓ BAYAR"
+            android:text="@string/bayar"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="15sp"

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -21,13 +22,14 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/back"
             android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Pilih Produk (Cafe)"
+            android:text="@string/pilih_produk_cafe"
             android:textColor="@color/white"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -35,6 +37,7 @@
         <ImageView
             android:layout_width="22dp"
             android:layout_height="22dp"
+            android:contentDescription="@string/search"
             android:src="@drawable/ic_search"
             app:tint="@color/white" />
     </LinearLayout>
@@ -43,6 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        android:baselineAligned="false"
         android:orientation="horizontal"
         android:padding="12dp">
 
@@ -59,6 +63,7 @@
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
+                android:contentDescription="@string/search"
                 android:src="@drawable/ic_search" />
 
             <EditText
@@ -67,9 +72,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:background="@android:color/transparent"
-                android:hint="Cari menu..."
-                android:textSize="13sp" />
+                android:hint="@string/cari_menu"
+                android:textSize="13sp"
+                tools:ignore="NestedWeights" />
         </LinearLayout>
     </LinearLayout>
 
@@ -85,22 +92,22 @@
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Semua" />
+            android:text="@string/semua" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Coffee" />
+            android:text="@string/coffee" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Non Coffee" />
+            android:text="@string/non_coffee" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Snack" />
+            android:text="@string/snack" />
     </com.google.android.material.tabs.TabLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -126,7 +133,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="0 item - Rp0"
+            android:text="@string/_0_item_rp0"
             android:textColor="@color/black"
             android:textStyle="bold" />
 
@@ -137,7 +144,7 @@
             android:background="@drawable/bg_button_primary"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
-            android:text="Lihat Keranjang"
+            android:text="@string/lihat_keranjang"
             android:textAllCaps="false"
             android:textColor="@color/white" />
     </LinearLayout>

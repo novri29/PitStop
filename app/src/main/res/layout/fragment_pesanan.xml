@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Buat Pesanan Baru"
+            android:text="@string/buat_pesanan_baru"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Pilih jenis transaksi:"
+            android:text="@string/pilih_jenis_transaksi"
             android:textColor="@color/black"
             android:textStyle="bold" />
 
@@ -52,6 +52,7 @@
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:contentDescription="@string/cuci_motor"
                 android:src="@drawable/ic_motor" />
 
             <TextView
@@ -59,33 +60,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_weight="1"
-                android:text="Cuci Motor"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/btnMobil"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="14dp"
-            android:background="@drawable/bg_stat_card"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="18dp">
-
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/ic_car" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_weight="1"
-                android:text="Cuci Mobil"
+                android:text="@string/cuci_motor"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -103,6 +78,7 @@
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:contentDescription="@string/pesanan_cafe"
                 android:src="@drawable/ic_cafe_cup" />
 
             <TextView
@@ -110,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_weight="1"
-                android:text="Pesanan Cafe"
+                android:text="@string/pesanan_cafe"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold" />

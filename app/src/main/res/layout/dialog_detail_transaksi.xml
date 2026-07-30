@@ -50,7 +50,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Total"
+            android:text="@string/total"
             android:textColor="@color/black"
             android:textStyle="bold" />
 
@@ -73,7 +73,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Bayar"
+            android:text="@string/bayar2"
             android:textColor="@color/grey"
             android:textSize="12sp" />
 
@@ -96,7 +96,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Kembalian"
+            android:text="@string/kembalian"
             android:textColor="@color/grey"
             android:textSize="12sp" />
 
@@ -114,7 +114,7 @@
         android:layout_height="46dp"
         android:layout_marginTop="18dp"
         android:background="@drawable/bg_button_primary"
-        android:text="Tutup"
+        android:text="@string/tutup"
         android:textColor="@color/white" />
 
 </LinearLayout>

@@ -17,7 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Laporan Penjualan"
+            android:text="@string/laporan_penjualan"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -45,7 +45,7 @@
                 android:background="@drawable/bg_pill_selected"
                 android:gravity="center"
                 android:padding="8dp"
-                android:text="Harian"
+                android:text="@string/harian"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
 
@@ -58,7 +58,7 @@
                 android:background="@drawable/bg_pill_outline"
                 android:gravity="center"
                 android:padding="8dp"
-                android:text="Bulanan"
+                android:text="@string/bulanan"
                 android:textColor="@color/black"
                 android:textSize="12sp" />
 
@@ -71,7 +71,7 @@
                 android:background="@drawable/bg_pill_outline"
                 android:gravity="center"
                 android:padding="8dp"
-                android:text="Tahunan"
+                android:text="@string/tahunan"
                 android:textColor="@color/black"
                 android:textSize="12sp" />
 
@@ -83,7 +83,7 @@
                 android:background="@drawable/bg_pill_outline"
                 android:gravity="center"
                 android:padding="8dp"
-                android:text="Semua"
+                android:text="@string/semua"
                 android:textColor="@color/black"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -103,6 +103,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:background="@android:color/transparent"
+                android:contentDescription="@string/sebelum"
                 android:src="@drawable/ic_chevron_left" />
 
             <TextView
@@ -111,7 +112,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="22 Juli 2026"
+                android:text="@string/_22_juli_2026"
                 android:textColor="@color/black"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -121,6 +122,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:background="@android:color/transparent"
+                android:contentDescription="@string/sesudah"
                 android:src="@drawable/ic_chevron_right" />
         </LinearLayout>
 
@@ -135,7 +137,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:text="Total Omzet: Rp0"
+                android:text="@string/total_omzet_rp0"
                 android:textColor="@color/primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -147,7 +149,7 @@
                 android:background="@drawable/bg_button_accent"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:text="Export Excel"
+                android:text="@string/export_excel"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
         </LinearLayout>
@@ -157,7 +159,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="0 transaksi"
+            android:text="@string/_0_transaksi"
             android:textColor="@color/grey"
             android:textSize="12sp" />
 
@@ -179,7 +181,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Tren Omzet 7 Hari Terakhir"
+                android:text="@string/tren_omzet_7_hari_terakhir"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -203,7 +205,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Produk Terlaris (periode ini)"
+                android:text="@string/produk_terlaris_periode_ini"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -220,7 +222,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="12dp"
-                android:text="Belum ada produk terjual pada periode ini"
+                android:text="@string/belum_ada_produk_terjual_pada_periode_ini"
                 android:textColor="@color/grey"
                 android:textSize="12sp"
                 android:visibility="gone" />
@@ -247,7 +249,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="24dp"
-        android:text="Belum ada transaksi pada periode ini"
+        android:text="@string/belum_ada_transaksi_pada_periode_ini"
         android:textColor="@color/grey"
         android:visibility="gone" />
 

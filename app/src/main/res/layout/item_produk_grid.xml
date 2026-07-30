@@ -27,6 +27,7 @@
                     android:id="@+id/imgFoto"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/background"
                     android:padding="26dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_cafe_cup"
@@ -40,6 +41,7 @@
                 android:layout_gravity="bottom|end"
                 android:layout_margin="4dp"
                 android:background="@drawable/bg_button_primary"
+                android:contentDescription="@string/tambah"
                 android:src="@drawable/ic_plus" />
         </FrameLayout>
 

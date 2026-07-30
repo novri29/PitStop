@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
@@ -50,9 +51,10 @@
         android:paddingTop="3dp"
         android:paddingEnd="10dp"
         android:paddingBottom="3dp"
-        android:text="Aktif"
+        android:text="@string/aktif"
         android:textColor="@color/green"
         android:textSize="10sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        tools:ignore="SmallSp" />
 
 </LinearLayout>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
@@ -23,11 +24,12 @@
             android:paddingEnd="6dp"
             android:paddingTop="2dp"
             android:paddingBottom="2dp"
-            android:text="PROMO"
+            android:text="@string/promo"
             android:textColor="@color/white"
             android:textSize="9sp"
             android:textStyle="bold"
-            android:visibility="gone" />
+            android:visibility="gone"
+            tools:ignore="SmallSp" />
 
         <TextView
             android:id="@+id/tvNama"
@@ -67,6 +69,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:background="@drawable/bg_button_accent"
+            android:contentDescription="@string/minus"
             android:src="@drawable/ic_minus" />
 
         <TextView
@@ -74,7 +77,7 @@
             android:layout_width="34dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="1"
+            android:text="@string/_1"
             android:textColor="@color/black"
             android:textStyle="bold" />
 
@@ -83,6 +86,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:background="@drawable/bg_button_primary"
+            android:contentDescription="@string/plus"
             android:src="@drawable/ic_plus" />
 
     </LinearLayout>

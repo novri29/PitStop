@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/primary"
@@ -19,11 +20,13 @@
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="56dp"
-            android:paddingBottom="20dp">
+            android:paddingBottom="20dp"
+            tools:ignore="UseCompoundDrawables">
 
             <ImageView
                 android:layout_width="350dp"
                 android:layout_height="70dp"
+                android:contentDescription="@string/logo"
                 android:src="@drawable/logo"
                 app:tint="@color/white" />
 
@@ -31,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:letterSpacing="0.15"
-                android:text="POS SYSTEM"
+                android:text="@string/pos_system"
                 android:textColor="#B0C4DE"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -54,7 +57,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Selamat Datang!"
+                android:text="@string/selamat_datang"
                 android:textColor="@color/black"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -63,7 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:text="Silakan login untuk melanjutkan"
+                android:text="@string/silakan_login_untuk_melanjutkan"
                 android:textColor="@color/grey" />
 
             <EditText
@@ -72,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
                 android:background="@drawable/bg_edittext"
-                android:hint="Username"
+                android:hint="@string/username"
                 android:inputType="text" />
 
             <!-- INPUT PASSWORD DENGAN BACKGROUND COSTUM KAMU -->
@@ -90,7 +93,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_edittext"
-                    android:hint="Password"
+                    android:hint="@string/password"
                     android:inputType="textPassword"
                     android:paddingVertical="12dp"
                     android:paddingHorizontal="16dp" />
@@ -101,7 +104,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Pilih Peran"
+                android:text="@string/pilih_peran"
                 android:textColor="@color/black"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -125,7 +128,7 @@
                         android:id="@+id/labelAdmin"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Admin"
+                        android:text="@string/admin"
                         android:textColor="@color/white"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -142,7 +145,7 @@
                         android:id="@+id/labelKasir"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Kasir"
+                        android:text="@string/kasir"
                         android:textColor="@color/black"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -153,7 +156,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:background="@drawable/bg_button_primary"
-                android:text="LOGIN"
+                android:text="@string/login"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 app:backgroundTint="@null" />

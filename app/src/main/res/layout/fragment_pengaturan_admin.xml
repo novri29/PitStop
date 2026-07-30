@@ -18,7 +18,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Pengaturan"
+            android:text="@string/pengaturan"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -45,7 +45,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    android:text="Admin"
+                    android:text="@string/admin"
                     android:textColor="@color/grey"
                     android:textSize="11sp" />
 
@@ -62,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Atur Harga Layanan Cuci Motor"
+                android:text="@string/atur_harga_layanan_cuci_motor"
                 android:textColor="@color/primary"
                 android:textStyle="bold" />
 
@@ -70,8 +70,9 @@
                 android:id="@+id/etHargaMotor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints=""
                 android:background="@drawable/bg_edittext"
-                android:hint="Harga Cuci Motor"
+                android:hint="@string/harga_cuci_motor"
                 android:inputType="numberDecimal" />
 
             <Button
@@ -81,7 +82,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_button_accent"
-                android:text="Simpan Harga Layanan"
+                android:text="@string/simpan_harga_layanan"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 
@@ -89,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Kelola Stock Barang Steam"
+                android:text="@string/kelola_stock_barang_steam"
                 android:textColor="@color/primary"
                 android:textStyle="bold" />
 
@@ -99,7 +100,7 @@
                 android:layout_height="48dp"
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_button_primary"
-                android:text="Buka Stock Steam"
+                android:text="@string/buka_stock_steam"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 
@@ -108,7 +109,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Ubah Akun Admin (Akun Anda)"
+                android:text="@string/ubah_akun_admin_akun_anda"
                 android:textColor="@color/primary"
                 android:textStyle="bold" />
 
@@ -117,8 +118,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
+                android:autofillHints=""
                 android:background="@drawable/bg_edittext"
-                android:hint="Username Admin" />
+                android:hint="@string/username_admin" />
 
             <EditText
                 android:id="@+id/etAdminPasswordBaru"
@@ -126,7 +128,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:background="@drawable/bg_edittext"
-                android:hint="Password Baru (kosongkan jika tidak diubah)"
+                android:hint="@string/password_baru_kosongkan_jika_tidak_diubah"
                 android:inputType="textPassword" />
 
             <Button
@@ -135,7 +137,7 @@
                 android:layout_height="46dp"
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_button_accent"
-                android:text="Update Akun Admin"
+                android:text="@string/update_akun_admin"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 
@@ -144,7 +146,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Ubah Akun Kasir"
+                android:text="@string/ubah_akun_kasir"
                 android:textColor="@color/primary"
                 android:textStyle="bold" />
 
@@ -154,7 +156,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:background="@drawable/bg_edittext"
-                android:hint="Username Kasir" />
+                android:hint="@string/username_kasir" />
 
             <EditText
                 android:id="@+id/etKasirPasswordBaru"
@@ -162,7 +164,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:background="@drawable/bg_edittext"
-                android:hint="Password Baru (kosongkan jika tidak diubah)"
+                android:hint="@string/password_baru_kosongkan_jika_tidak_diubah"
                 android:inputType="textPassword" />
 
             <Button
@@ -171,7 +173,7 @@
                 android:layout_height="46dp"
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_button_primary"
-                android:text="Update Akun Kasir"
+                android:text="@string/update_akun_kasir"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 
@@ -181,7 +183,7 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_button_primary"
                 android:backgroundTint="@color/red"
-                android:text="Logout"
+                android:text="@string/logout"
                 android:textColor="@color/white" />
 
         </LinearLayout>

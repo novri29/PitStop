@@ -25,7 +25,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Dashboard Kasir"
+                android:text="@string/dashboard_kasir"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -33,6 +33,7 @@
             <ImageView
                 android:layout_width="22dp"
                 android:layout_height="22dp"
+                android:contentDescription="@string/notifikasi"
                 android:src="@drawable/ic_bell" />
         </LinearLayout>
 
@@ -46,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Pilih Unit Usaha"
+                android:text="@string/pilih_unit_usaha"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -55,6 +56,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -72,6 +74,7 @@
                         android:id="@+id/iconMotor"
                         android:layout_width="22dp"
                         android:layout_height="22dp"
+                        android:contentDescription="@string/cuci_motor"
                         android:src="@drawable/ic_motor" />
 
                     <TextView
@@ -79,7 +82,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Cuci Motor"
+                        android:text="@string/cuci_motor2"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -98,6 +101,7 @@
                         android:id="@+id/iconCafe"
                         android:layout_width="22dp"
                         android:layout_height="22dp"
+                        android:contentDescription="@string/cafe"
                         android:src="@drawable/ic_cafe_cup"
                         app:tint="@color/white" />
 
@@ -106,7 +110,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Cafe"
+                        android:text="@string/cafe"
                         android:textColor="@color/white"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -116,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Ringkasan Hari Ini"
+                android:text="@string/ringkasan_hari_ini"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -125,6 +129,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -139,7 +144,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Transaksi"
+                        android:text="@string/total_transaksi"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -148,7 +153,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="0"
+                        android:text="@string/_0"
                         android:textColor="@color/black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -165,7 +170,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Omzet"
+                        android:text="@string/total_omzet"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -174,7 +179,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Rp0"
+                        android:text="@string/rp0"
                         android:textColor="@color/green"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -185,6 +190,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -199,7 +205,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Pesanan"
+                        android:text="@string/total_pesanan"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -208,7 +214,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="0"
+                        android:text="@string/_0"
                         android:textColor="@color/black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -225,7 +231,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Rata-rata / Transaksi"
+                        android:text="@string/rata_rata_transaksi"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -234,7 +240,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Rp0"
+                        android:text="@string/rp0"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -245,7 +251,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Tren Omzet 7 Hari Terakhir"
+                android:text="@string/tren_omzet_7_hari_terakhir"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -269,7 +275,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:background="@drawable/bg_button_primary"
-                android:text="+ PESAN BARU"
+                android:text="@string/pesan_baru"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"

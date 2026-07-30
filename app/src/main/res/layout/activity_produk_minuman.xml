@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -20,13 +21,14 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/back"
             android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Kelola Produk (Minuman)"
+            android:text="@string/kelola_produk_minuman"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -36,6 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        android:baselineAligned="false"
         android:orientation="horizontal"
         android:padding="12dp">
 
@@ -52,6 +55,7 @@
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
+                android:contentDescription="@string/search"
                 android:src="@drawable/ic_search" />
 
             <EditText
@@ -60,9 +64,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:background="@android:color/transparent"
-                android:hint="Cari produk..."
-                android:textSize="13sp" />
+                android:hint="@string/cari_produk"
+                android:textSize="13sp"
+                tools:ignore="NestedWeights" />
         </LinearLayout>
     </LinearLayout>
 

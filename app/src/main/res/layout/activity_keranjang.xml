@@ -20,13 +20,14 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/back"
             android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Keranjang Pesanan"
+            android:text="@string/keranjang_pesanan"
             android:textColor="@color/white"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -36,6 +37,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/delete"
             android:src="@drawable/ic_delete" />
     </LinearLayout>
 
@@ -58,7 +60,7 @@
             android:background="@drawable/bg_pill_outline"
             android:gravity="center"
             android:padding="10dp"
-            android:text="+ Cuci Motor"
+            android:text="@string/cuci_motor"
             android:textColor="@color/black"
             android:textSize="11sp" />
 
@@ -70,7 +72,7 @@
             android:background="@drawable/bg_pill_outline"
             android:gravity="center"
             android:padding="10dp"
-            android:text="+ Menu Cafe"
+            android:text="@string/menu_cafe"
             android:textColor="@color/black"
             android:textSize="11sp" />
     </LinearLayout>
@@ -89,7 +91,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="24dp"
-        android:text="Keranjang masih kosong"
+        android:text="@string/keranjang_masih_kosong"
         android:textColor="@color/grey"
         android:visibility="gone" />
 
@@ -106,7 +108,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:background="@drawable/bg_edittext"
-            android:hint="Catatan (Opsional)"
+            android:hint="@string/catatan_opsional"
             android:textSize="13sp" />
 
         <LinearLayout
@@ -120,7 +122,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Total Item: 0"
+                android:text="@string/total_item_0"
                 android:textColor="@color/grey"
                 android:textSize="13sp" />
 
@@ -128,7 +130,7 @@
                 android:id="@+id/tvTotal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Total: Rp0"
+                android:text="@string/total_rp0"
                 android:textColor="@color/primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -139,7 +141,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:background="@drawable/bg_button_primary"
-            android:text="LANJUT KE PEMBAYARAN"
+            android:text="@string/lanjut_ke_pembayaran"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textStyle="bold" />

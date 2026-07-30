@@ -12,7 +12,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/primary"
         android:navigationIcon="@drawable/ic_back"
-        android:title="Stock Steam (Cuci Motor)"
+        android:title="@string/stock_steam_cuci_motor"
         app:titleTextColor="@color/white" />
 
     <ScrollView
@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
-                android:text="Input Stock Barang (Shampo, dll)"
+                android:text="@string/input_stock_barang_shampo_dll"
                 android:textColor="@color/primary"
                 android:textStyle="bold" />
 
@@ -38,8 +38,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
+                android:autofillHints=""
                 android:background="@drawable/bg_edittext"
-                android:hint="Nama barang (contoh: Shampo Motor)"
+                android:hint="@string/nama_barang_contoh_shampo_motor"
                 android:inputType="text" />
 
             <LinearLayout
@@ -53,8 +54,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
+                    android:autofillHints=""
                     android:background="@drawable/bg_edittext"
-                    android:hint="Satuan (ml/botol)"
+                    android:hint="@string/satuan_ml_botol"
                     android:inputType="text" />
 
                 <EditText
@@ -62,8 +64,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:autofillHints=""
                     android:background="@drawable/bg_edittext"
-                    android:hint="Jumlah stock"
+                    android:hint="@string/jumlah_stock"
                     android:inputType="numberDecimal" />
             </LinearLayout>
 
@@ -73,7 +76,7 @@
                 android:layout_height="46dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_button_primary"
-                android:text="Simpan Stock"
+                android:text="@string/simpan_stock"
                 android:textColor="@color/white" />
         </LinearLayout>
     </ScrollView>
@@ -87,7 +90,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="12dp"
-        android:text="Daftar Stock Steam"
+        android:text="@string/daftar_stock_steam"
         android:textColor="@color/primary"
         android:textStyle="bold" />
 

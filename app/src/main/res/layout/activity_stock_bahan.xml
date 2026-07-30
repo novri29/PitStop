@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
@@ -21,13 +21,14 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/back"
             android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Stock Bahan (Cafe: Coffee, Non Coffee, Snack)"
+            android:text="@string/stock_bahan_cafe_coffee_non_coffee_snack"
             android:textColor="@color/white"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -37,6 +38,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/tambah"
             android:src="@drawable/ic_plus" />
     </LinearLayout>
 
@@ -44,6 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        android:baselineAligned="false"
         android:orientation="horizontal"
         android:padding="12dp">
 
@@ -60,6 +63,7 @@
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
+                android:contentDescription="@string/search"
                 android:src="@drawable/ic_search" />
 
             <EditText
@@ -68,9 +72,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:background="@android:color/transparent"
-                android:hint="Cari bahan..."
-                android:textSize="13sp" />
+                android:hint="@string/cari_bahan"
+                android:textSize="13sp"
+                tools:ignore="NestedWeights" />
         </LinearLayout>
     </LinearLayout>
 
@@ -88,8 +94,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
+            android:autofillHints=""
             android:background="@drawable/bg_edittext"
-            android:hint="Nama bahan/stock (contoh: Air Mineral 600ml, Matcha Bubuk)"
+            android:hint="@string/nama_bahan_stock_contoh_air_mineral_600ml_matcha_bubuk"
             android:inputType="text" />
 
         <RadioGroup
@@ -104,21 +111,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Gram" />
+                android:text="@string/gram" />
 
             <RadioButton
                 android:id="@+id/rbMl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:text="Ml" />
+                android:text="@string/ml" />
 
             <RadioButton
                 android:id="@+id/rbPcs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:text="Pcs" />
+                android:text="@string/pcs" />
         </RadioGroup>
 
         <EditText
@@ -126,8 +133,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
+            android:autofillHints=""
             android:background="@drawable/bg_edittext"
-            android:hint="Jumlah stock (contoh: 1000)"
+            android:hint="@string/jumlah_stock_contoh_1000"
             android:inputType="numberDecimal" />
 
         <EditText
@@ -135,15 +143,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
+            android:autofillHints=""
             android:background="@drawable/bg_edittext"
-            android:hint="Harga modal per satuan (gram/ml/pcs)"
+            android:hint="@string/harga_modal_per_satuan_gram_ml_pcs"
             android:inputType="numberDecimal" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:text="Tips: untuk barang satuan (snack, air mineral, dll) pilih Pcs lalu isi harga modal per pcs. Contoh: 1kg kopi = Rp160.000 -&gt; harga per gram = Rp160"
+            android:text="@string/tips_untuk_barang_satuan_snack_air_mineral_dll_pilih_pcs_lalu_isi_harga_modal_per_pcs_contoh_1kg_kopi_rp160_000_gt_harga_per_gram_rp160"
             android:textColor="@color/grey"
             android:textSize="11sp" />
 
@@ -152,7 +161,7 @@
             android:layout_width="match_parent"
             android:layout_height="46dp"
             android:background="@drawable/bg_button_primary"
-            android:text="Simpan Bahan"
+            android:text="@string/simpan_bahan"
             android:textColor="@color/white" />
     </LinearLayout>
 

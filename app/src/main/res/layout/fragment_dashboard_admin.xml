@@ -25,6 +25,7 @@
             <ImageView
                 android:layout_width="22dp"
                 android:layout_height="22dp"
+                android:contentDescription="@string/bar_menu"
                 android:src="@drawable/ic_menu_lines" />
 
             <TextView
@@ -32,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="14dp"
                 android:layout_weight="1"
-                android:text="Dashboard Admin"
+                android:text="@string/dashboard_admin"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -40,6 +41,7 @@
             <ImageView
                 android:layout_width="22dp"
                 android:layout_height="22dp"
+                android:contentDescription="@string/notifikasi"
                 android:src="@drawable/ic_bell" />
         </LinearLayout>
 
@@ -53,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Pilih Unit Usaha"
+                android:text="@string/pilih_unit_usaha"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -62,6 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -79,6 +82,7 @@
                         android:id="@+id/iconMotor"
                         android:layout_width="22dp"
                         android:layout_height="22dp"
+                        android:contentDescription="@string/cuci_motor2"
                         android:src="@drawable/ic_motor" />
 
                     <TextView
@@ -86,7 +90,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Cuci Motor"
+                        android:text="@string/cuci_motor"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -105,6 +109,7 @@
                         android:id="@+id/iconCafe"
                         android:layout_width="22dp"
                         android:layout_height="22dp"
+                        android:contentDescription="@string/cafe"
                         android:src="@drawable/ic_cafe_cup"
                         app:tint="@color/white" />
 
@@ -113,7 +118,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Cafe"
+                        android:text="@string/cafe"
                         android:textColor="@color/white"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -124,7 +129,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Ringkasan"
+                android:text="@string/ringkasan"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -144,7 +149,7 @@
                     android:background="@drawable/bg_pill_selected"
                     android:gravity="center"
                     android:padding="8dp"
-                    android:text="Harian"
+                    android:text="@string/harian"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
 
@@ -157,7 +162,7 @@
                     android:background="@drawable/bg_pill_outline"
                     android:gravity="center"
                     android:padding="8dp"
-                    android:text="Bulanan"
+                    android:text="@string/bulanan"
                     android:textColor="@color/black"
                     android:textSize="12sp" />
 
@@ -169,7 +174,7 @@
                     android:background="@drawable/bg_pill_outline"
                     android:gravity="center"
                     android:padding="8dp"
-                    android:text="Tahunan"
+                    android:text="@string/tahunan"
                     android:textColor="@color/black"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -188,6 +193,7 @@
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@android:color/transparent"
+                    android:contentDescription="@string/sebelum"
                     android:src="@drawable/ic_chevron_left" />
 
                 <TextView
@@ -196,7 +202,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="22 Juli 2026"
+                    android:text="@string/_22_juli_2026"
                     android:textColor="@color/black"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -206,6 +212,7 @@
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@android:color/transparent"
+                    android:contentDescription="@string/sesudah"
                     android:src="@drawable/ic_chevron_right" />
             </LinearLayout>
 
@@ -213,6 +220,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -227,7 +235,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Transaksi"
+                        android:text="@string/total_transaksi"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -236,7 +244,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="0"
+                        android:text="@string/_0"
                         android:textColor="@color/black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -253,7 +261,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Omzet"
+                        android:text="@string/total_omzet"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -262,7 +270,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Rp0"
+                        android:text="@string/rp0"
                         android:textColor="@color/green"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -273,6 +281,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -287,7 +296,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Omzet Normal"
+                        android:text="@string/omzet_normal"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -296,7 +305,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Rp0"
+                        android:text="@string/rp0"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -313,7 +322,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Omzet Promo"
+                        android:text="@string/omzet_promo"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -322,7 +331,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Rp0"
+                        android:text="@string/rp0"
                         android:textColor="@color/primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -333,6 +342,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -347,7 +357,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Produk Terjual"
+                        android:text="@string/total_produk_terjual"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -356,7 +366,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="0"
+                        android:text="@string/_0"
                         android:textColor="@color/black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -373,7 +383,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Stok Bahan Habis"
+                        android:text="@string/stok_bahan_habis"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
 
@@ -382,7 +392,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="0"
+                        android:text="@string/_0"
                         android:textColor="@color/red"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -394,7 +404,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Tren Omzet 7 Hari Terakhir"
+                android:text="@string/tren_omzet_7_hari_terakhir"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -417,7 +427,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Menu Admin (Cafe)"
+                android:text="@string/menu_admin_cafe"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -426,7 +436,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:orientation="horizontal">
+                android:baselineAligned="false" android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/menuStockBahan"
@@ -446,6 +456,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
+                            android:contentDescription="@string/stock_bahan"
                             android:src="@drawable/ic_stock_bahan" />
                     </LinearLayout>
 
@@ -454,7 +465,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:gravity="center"
-                        android:text="Stock Bahan"
+                        android:text="@string/stock_bahan"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -477,6 +488,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
+                            android:contentDescription="@string/resep_minuman"
                             android:src="@drawable/ic_resep" />
                     </LinearLayout>
 
@@ -485,7 +497,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:gravity="center"
-                        android:text="Resep Minuman"
+                        android:text="@string/resep_minuman"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -507,6 +519,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
+                            android:contentDescription="@string/produk_minuman"
                             android:src="@drawable/ic_produk" />
                     </LinearLayout>
 
@@ -515,7 +528,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:gravity="center"
-                        android:text="Produk Minuman"
+                        android:text="@string/produk_minuman"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -524,6 +537,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -544,6 +558,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
+                            android:contentDescription="@string/kategori"
                             android:src="@drawable/ic_kategori" />
                     </LinearLayout>
 
@@ -552,7 +567,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:gravity="center"
-                        android:text="Kategori"
+                        android:text="@string/kategori"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -575,6 +590,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
+                            android:contentDescription="@string/laporan"
                             android:src="@drawable/ic_laporan_menu" />
                     </LinearLayout>
 
@@ -583,7 +599,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:gravity="center"
-                        android:text="Laporan"
+                        android:text="@string/laporan"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -605,6 +621,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
+                            android:contentDescription="@string/pengaturan"
                             android:src="@drawable/ic_pengaturan_menu" />
                     </LinearLayout>
 
@@ -613,7 +630,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:gravity="center"
-                        android:text="Pengaturan"
+                        android:text="@string/pengaturan"
                         android:textColor="@color/black"
                         android:textSize="11sp" />
                 </LinearLayout>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -21,13 +22,14 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/back"
             android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Resep / Komposisi Minuman"
+            android:text="@string/resep_komposisi_minuman"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -37,6 +39,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/tambah"
             android:src="@drawable/ic_plus" />
     </LinearLayout>
 
@@ -44,6 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        android:baselineAligned="false"
         android:orientation="horizontal"
         android:padding="12dp">
 
@@ -60,6 +64,7 @@
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
+                android:contentDescription="@string/search"
                 android:src="@drawable/ic_search" />
 
             <EditText
@@ -68,9 +73,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:background="@android:color/transparent"
-                android:hint="Cari resep minuman..."
-                android:textSize="13sp" />
+                android:hint="@string/cari_resep_minuman"
+                android:textSize="13sp"
+                tools:ignore="NestedWeights" />
         </LinearLayout>
     </LinearLayout>
 
@@ -100,6 +107,7 @@
                     android:id="@+id/imgPreviewBaru"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/background"
                     android:padding="20dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_cafe_cup"
@@ -107,6 +115,7 @@
             </LinearLayout>
 
             <LinearLayout
+                style="?android:attr/buttonBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
@@ -114,23 +123,25 @@
 
                 <Button
                     android:id="@+id/btnAmbilFotoBaru"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_marginEnd="6dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_button_accent"
-                    android:text="📷 Kamera"
+                    android:text="@string/kamera"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
 
                 <Button
                     android:id="@+id/btnPilihGaleriBaru"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_button_primary"
-                    android:text="🖼️ Galeri"
+                    android:text="@string/galeri"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
@@ -141,8 +152,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
+                android:autofillHints=""
                 android:background="@drawable/bg_edittext"
-                android:hint="Nama menu (contoh: Kopi Susu)"
+                android:hint="@string/nama_menu_contoh_kopi_susu"
                 android:inputType="text" />
 
             <Spinner
@@ -156,7 +168,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
-                android:text="Pilih bahan dan atur jumlah pemakaian:"
+                android:text="@string/pilih_bahan_dan_atur_jumlah_pemakaian"
                 android:textColor="@color/primary"
                 android:textStyle="bold" />
 
@@ -178,8 +190,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
+                    android:autofillHints=""
                     android:background="@drawable/bg_edittext"
-                    android:hint="Jumlah dipakai (gram/ml)"
+                    android:hint="@string/jumlah_dipakai_gram_ml"
                     android:inputType="numberDecimal" />
 
                 <Button
@@ -189,7 +202,7 @@
                     android:background="@drawable/bg_button_accent"
                     android:paddingStart="18dp"
                     android:paddingEnd="18dp"
-                    android:text="+ Tambah"
+                    android:text="@string/tambah2"
                     android:textAllCaps="false"
                     android:textColor="@color/white" />
             </LinearLayout>
@@ -206,7 +219,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="Estimasi Harga Modal (HPP): Rp0"
+                android:text="@string/estimasi_harga_modal_hpp_rp0"
                 android:textColor="@color/green"
                 android:textStyle="bold" />
 
@@ -216,8 +229,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
+                android:autofillHints=""
                 android:background="@drawable/bg_edittext"
-                android:hint="Harga jual ke pelanggan"
+                android:hint="@string/harga_jual_ke_pelanggan"
                 android:inputType="numberDecimal" />
 
             <EditText
@@ -225,8 +239,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:autofillHints=""
                 android:background="@drawable/bg_edittext"
-                android:hint="Harga Promo (opsional, kosongkan jika tidak ada promo)"
+                android:hint="@string/harga_promo_opsional_kosongkan_jika_tidak_ada_promo"
                 android:inputType="numberDecimal" />
 
             <Button
@@ -234,7 +249,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:background="@drawable/bg_button_primary"
-                android:text="Simpan Resep"
+                android:text="@string/simpan_resep"
                 android:textColor="@color/white" />
         </LinearLayout>
     </ScrollView>

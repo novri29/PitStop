@@ -21,5 +21,6 @@
         android:layout_width="28dp"
         android:layout_height="28dp"
         android:background="@android:color/transparent"
+        android:contentDescription="@string/delete"
         android:src="@drawable/ic_delete" />
 </LinearLayout>

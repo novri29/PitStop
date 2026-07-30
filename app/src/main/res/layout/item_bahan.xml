@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
     android:background="@drawable/bg_card"
+    android:baselineAligned="false"
     android:orientation="horizontal"
     android:padding="14dp">
 
@@ -19,6 +21,7 @@
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
+            android:contentDescription="@string/background"
             android:src="@drawable/ic_stock_bahan"
             app:tint="@color/primary" />
     </LinearLayout>
@@ -69,10 +72,11 @@
             android:paddingTop="3dp"
             android:paddingEnd="10dp"
             android:paddingBottom="3dp"
-            android:text="Tersedia"
+            android:text="@string/tersedia"
             android:textColor="@color/green"
             android:textSize="10sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:ignore="SmallSp" />
 
         <ImageButton
             android:id="@+id/btnDelete"
@@ -80,6 +84,7 @@
             android:layout_height="30dp"
             android:layout_gravity="end"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/delete"
             android:src="@drawable/ic_delete" />
     </LinearLayout>
 

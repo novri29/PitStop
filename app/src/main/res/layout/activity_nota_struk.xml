@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/background"
     android:orientation="vertical">
 
@@ -20,13 +22,14 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/back"
             android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Nota Struk"
+            android:text="@string/nota_struk"
             android:textColor="@color/white"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -36,6 +39,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/share"
             android:src="@drawable/ic_share" />
 
         <ImageButton
@@ -43,6 +47,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/print"
             android:src="@drawable/ic_print" />
     </LinearLayout>
 
@@ -62,34 +67,38 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_stat_card"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="18dp"
+                tools:ignore="UselessParent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:paddingBottom="14dp">
+                    android:paddingBottom="14dp"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/ic_cafe_cup" />
+                        android:layout_width="350dp"
+                        android:layout_height="70dp"
+                        android:contentDescription="@string/logo"
+                        android:src="@drawable/logo"
+                        app:tint="@color/primary" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="PitStop"
-                        android:textColor="@color/primary"
-                        android:textSize="17sp"
-                        android:textStyle="bold" />
+<!--                    <TextView-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginTop="4dp"-->
+<!--                        android:text="PitStop"-->
+<!--                        android:textColor="@color/primary"-->
+<!--                        android:textSize="17sp"-->
+<!--                        android:textStyle="bold" />-->
 
                     <TextView
                         android:id="@+id/tvTipeTransaksi"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Cafe"
+                        android:text="@string/cafe"
                         android:textColor="@color/grey"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -152,7 +161,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Total Item"
+                        android:text="@string/total_item"
                         android:textColor="@color/grey"
                         android:textSize="12sp" />
 
@@ -174,7 +183,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Total"
+                        android:text="@string/total"
                         android:textColor="@color/black"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -199,7 +208,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Bayar (Cash)"
+                        android:text="@string/bayar_cash"
                         android:textColor="@color/grey"
                         android:textSize="12sp" />
 
@@ -222,7 +231,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Kembalian"
+                        android:text="@string/kembalian"
                         android:textColor="@color/grey"
                         android:textSize="12sp" />
 
@@ -240,7 +249,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="18dp"
                     android:gravity="center"
-                    android:text="Terima kasih!"
+                    android:text="@string/terima_kasih"
                     android:textColor="@color/black"
                     android:textStyle="bold" />
 
@@ -248,7 +257,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="Semoga harimu menyenangkan :)"
+                    android:text="@string/semoga_harimu_menyenangkan"
                     android:textColor="@color/grey"
                     android:textSize="11sp" />
 

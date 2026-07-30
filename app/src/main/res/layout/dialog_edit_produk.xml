@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:maxHeight="560dp">
@@ -15,7 +14,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
-            android:text="Edit Produk"
+            android:text="@string/edit_produk"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -33,11 +32,13 @@
                 android:id="@+id/imgPreview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:contentDescription="@string/background"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_cafe_cup" />
         </LinearLayout>
 
         <LinearLayout
+            style="?android:attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -45,23 +46,25 @@
 
             <Button
                 android:id="@+id/btnAmbilFoto"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="42dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button_accent"
-                android:text="📷 Kamera"
+                android:text="@string/kamera"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btnPilihGaleri"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="42dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button_primary"
-                android:text="🖼️ Galeri"
+                android:text="@string/galeri"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
@@ -72,8 +75,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
+            android:autofillHints=""
             android:background="@drawable/bg_edittext"
-            android:hint="Nama produk"
+            android:hint="@string/nama_produk"
             android:inputType="text"
             android:textColor="@color/black"
             android:textSize="15sp"
@@ -91,8 +95,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:autofillHints=""
             android:background="@drawable/bg_edittext"
-            android:hint="Harga jual"
+            android:hint="@string/harga_jual"
             android:inputType="numberDecimal" />
 
         <Button
@@ -100,7 +105,7 @@
             android:layout_width="match_parent"
             android:layout_height="46dp"
             android:background="@drawable/bg_button_primary"
-            android:text="Simpan Perubahan"
+            android:text="@string/simpan_perubahan"
             android:textColor="@color/white" />
     </LinearLayout>
 </ScrollView>
