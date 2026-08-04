@@ -123,28 +123,36 @@
 
                 <Button
                     android:id="@+id/btnAmbilFotoBaru"
-                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_marginEnd="6dp"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_button_accent"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:text="@string/kamera"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="8dp"
+                    app:strokeColor="@color/light_grey"
+                    app:strokeWidth="1dp" />
 
                 <Button
                     android:id="@+id/btnPilihGaleriBaru"
-                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_button_primary"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:text="@string/galeri"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="8dp"
+                    app:strokeColor="@color/light_grey"
+                    app:strokeWidth="1dp" />
             </LinearLayout>
 
             <EditText
