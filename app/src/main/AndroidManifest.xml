@@ -38,16 +38,22 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path" />
-        </provider> <!-- Disesuaikan ke .ui.login.LoginActivity -->
+        </provider>
+        <!-- Splash screen animasi logo, tampil pertama kali saat app dibuka -->
         <activity
-            android:name="com.pitstop.ui.login.LoginActivity"
-            android:exported="true">
+            android:name="com.pitstop.ui.splash.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Pitstop.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Activity Admin -->
+        </activity>
+        <!-- Disesuaikan ke .ui.login.LoginActivity -->
+        <activity
+            android:name="com.pitstop.ui.login.LoginActivity"
+            android:exported="false" /> <!-- Activity Admin -->
         <activity
             android:name="com.pitstop.ui.admin.AdminMainActivity"
             android:exported="false" />

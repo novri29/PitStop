@@ -32,6 +32,14 @@
         <item name="android:textColorSecondary">@color/grey</item>
     </style>
 
+    <!-- Tema khusus SplashActivity: full screen teal, tanpa status bar putih -->
+    <style name="Theme.Pitstop.Splash" parent="Theme.Pitstop">
+        <item name="android:windowBackground">@color/primary</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:navigationBarColor">@color/primary</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
     <style name="Theme.Pitsop.Toolbar" parent="Widget.AppCompat.Toolbar">
         <item name="titleTextColor">@color/white</item>
         <item name="android:background">@color/primary</item>
