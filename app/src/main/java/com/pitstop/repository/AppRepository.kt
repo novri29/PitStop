@@ -89,6 +89,26 @@ class AppRepository(context: Context) {
 
     suspend fun updateMenuKopi(menuKopi: MenuKopi) = menuKopiDao.updateMenu(menuKopi)
 
+    /**
+     * Update menu kopi sekaligus mengganti seluruh komposisi bahan yang dipakai.
+     * Dipakai saat admin mengubah kombinasi bahan dari halaman Kelola Produk (Minuman).
+     * Data pemakaian lama dihapus lalu diganti dengan data baru, dan hargaModal (HPP)
+     * dihitung ulang otomatis dari komposisi barunya.
+     */
+    suspend fun updateMenuKopiDenganResep(
+        menuKopi: MenuKopi,
+        pemakaian: List<Pair<Bahan, Double>>
+    ) {
+        val hargaModal = pemakaian.sumOf { (bahan, jumlah) -> jumlah * bahan.hargaPerSatuan }
+        menuKopiDao.updateMenu(menuKopi.copy(hargaModal = hargaModal))
+        menuKopiDao.deleteBahanUsageForMenu(menuKopi.id)
+        pemakaian.forEach { (bahan, jumlah) ->
+            menuKopiDao.insertBahanUsage(
+                MenuKopiBahan(menuKopiId = menuKopi.id, bahanId = bahan.id, jumlahDigunakan = jumlah)
+            )
+        }
+    }
+
     suspend fun hapusMenuKopi(menuKopi: MenuKopi) {
         menuKopiDao.deleteBahanUsageForMenu(menuKopi.id)
         menuKopiDao.deleteMenu(menuKopi)

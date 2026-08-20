@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:maxHeight="560dp">
+    android:maxHeight="680dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -99,6 +99,67 @@
             android:background="@drawable/bg_edittext"
             android:hint="@string/harga_jual"
             android:inputType="numberDecimal" />
+
+        <!-- ===== Kombinasi bahan yang digunakan (komposisi resep) ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:text="@string/kombinasi_bahan_yang_digunakan"
+            android:textColor="@color/primary"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerBahan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_edittext" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/etJumlahPakai"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:background="@drawable/bg_edittext"
+                android:hint="@string/jumlah_dipakai_gram_ml"
+                android:inputType="numberDecimal" />
+
+            <Button
+                android:id="@+id/btnTambahBahan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_button_accent"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="@string/tambah2"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPemakaian"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false" />
+
+        <TextView
+            android:id="@+id/tvEstimasiModal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/estimasi_harga_modal_hpp_rp0"
+            android:textColor="@color/green"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/btnSimpan"

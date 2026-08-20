@@ -32,6 +32,16 @@ class MenuKopiViewModel(private val repository: AppRepository) : ViewModel() {
         viewModelScope.launch { repository.updateMenuKopi(menu) }
     }
 
+    /** Update menu sekaligus mengganti kombinasi bahannya (dipakai di dialog Edit Produk). */
+    fun updateMenuDenganResep(menu: MenuKopi, pemakaian: List<Pair<Bahan, Double>>, onDone: () -> Unit) {
+        viewModelScope.launch {
+            repository.updateMenuKopiDenganResep(menu, pemakaian)
+            onDone()
+        }
+    }
+
+    suspend fun getBahanUsageForMenu(menuId: Int) = repository.getBahanUsageForMenu(menuId)
+
     fun hapusMenu(menu: MenuKopi) {
         viewModelScope.launch { repository.hapusMenuKopi(menu) }
     }

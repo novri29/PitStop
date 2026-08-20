@@ -13,13 +13,17 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.pitstop.adapter.PemakaianBahanAdapter
+import com.pitstop.adapter.PemakaianItem
 import com.pitstop.adapter.ProdukAdapter
 import com.pitstop.pitstop.databinding.ActivityProdukMinumanBinding
 import com.pitstop.pitstop.databinding.DialogEditProdukBinding
+import com.pitstop.save.entity.Bahan
 import com.pitstop.save.entity.KATEGORI_COFFEE
 import com.pitstop.save.entity.KATEGORI_NON_COFFEE
 import com.pitstop.save.entity.KATEGORI_SNACK
 import com.pitstop.save.entity.MenuKopi
+import com.pitstop.util.Formatter
 import com.pitstop.util.ImagePickerHelper
 import com.pitstop.util.ImageUtil
 import com.pitstop.util.ViewModelFactory
@@ -32,11 +36,14 @@ class ProdukMinumanActivity : AppCompatActivity() {
     private lateinit var adapter: ProdukAdapter
     private var semuaMenu: List<MenuKopi> = emptyList()
     private var ketersediaanMap: Map<Int, Boolean> = emptyMap()
+    private var daftarBahan: List<Bahan> = emptyList()
     private val kategoriOptions = listOf(KATEGORI_COFFEE, KATEGORI_NON_COFFEE, KATEGORI_SNACK)
 
     // Menyimpan path gambar yang baru dipilih untuk dialog edit yang sedang terbuka
     private var gambarPathSementara: String? = null
     private var dialogBindingAktif: DialogEditProdukBinding? = null
+    // Adapter komposisi bahan untuk dialog edit yang sedang terbuka
+    private var pemakaianAdapterAktif: PemakaianBahanAdapter? = null
 
     private lateinit var imagePicker: ImagePickerHelper
 
@@ -90,6 +97,10 @@ class ProdukMinumanActivity : AppCompatActivity() {
             }
         }
 
+        viewModel.bahanList.observe(this) { list ->
+            daftarBahan = list
+        }
+
         binding.etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -117,6 +128,49 @@ class ProdukMinumanActivity : AppCompatActivity() {
         val thumbnail = ImageUtil.loadThumbnail(menu.gambarPath, 300, 300)
         if (thumbnail != null) dialogBinding.imgPreview.setImageBitmap(thumbnail)
 
+        // ---------- Kombinasi bahan yang digunakan (komposisi resep) ----------
+        val namaBahan = daftarBahan.map { it.nama }
+        dialogBinding.spinnerBahan.adapter = ArrayAdapter(this, R.layout.simple_spinner_dropdown_item, namaBahan)
+
+        val pemakaianAdapter = PemakaianBahanAdapter(onDelete = { index ->
+            val current = pemakaianAdapterAktif?.getItems()?.toMutableList() ?: return@PemakaianBahanAdapter
+            current.removeAt(index)
+            pemakaianAdapterAktif?.setItems(current)
+            updateEstimasiModal(dialogBinding)
+        })
+        pemakaianAdapterAktif = pemakaianAdapter
+        dialogBinding.rvPemakaian.layoutManager = LinearLayoutManager(this)
+        dialogBinding.rvPemakaian.adapter = pemakaianAdapter
+
+        // Muat komposisi yang sudah tersimpan sebelumnya untuk produk ini
+        lifecycleScope.launch {
+            val usageList = viewModel.getBahanUsageForMenu(menu.id)
+            val items = usageList.mapNotNull { usage ->
+                daftarBahan.find { it.id == usage.bahanId }?.let { bahan -> PemakaianItem(bahan, usage.jumlahDigunakan) }
+            }
+            pemakaianAdapter.setItems(items)
+            updateEstimasiModal(dialogBinding)
+        }
+
+        dialogBinding.btnTambahBahan.setOnClickListener {
+            val posisi = dialogBinding.spinnerBahan.selectedItemPosition
+            if (posisi < 0 || daftarBahan.isEmpty()) {
+                Toast.makeText(this, "Belum ada data bahan, silakan input bahan dulu", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val jumlah = dialogBinding.etJumlahPakai.text.toString().toDoubleOrNull()
+            if (jumlah == null || jumlah <= 0) {
+                Toast.makeText(this, "Isi jumlah pemakaian dengan benar", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val bahan = daftarBahan[posisi]
+            val current = pemakaianAdapter.getItems().toMutableList()
+            current.add(PemakaianItem(bahan, jumlah))
+            pemakaianAdapter.setItems(current)
+            dialogBinding.etJumlahPakai.text.clear()
+            updateEstimasiModal(dialogBinding)
+        }
+
         val dialog = AlertDialog.Builder(this).setView(dialogBinding.root).create()
 
         dialogBinding.btnAmbilFoto.setOnClickListener { imagePicker.ambilFoto() }
@@ -125,6 +179,7 @@ class ProdukMinumanActivity : AppCompatActivity() {
         dialogBinding.btnSimpan.setOnClickListener {
             val namaBaru = dialogBinding.etNamaProduk.text.toString().trim()
             val hargaBaru = dialogBinding.etHargaJual.text.toString().toDoubleOrNull()
+            val pemakaian = pemakaianAdapter.getItems()
 
             if (namaBaru.isEmpty()) {
                 Toast.makeText(this, "Nama produk tidak boleh kosong", Toast.LENGTH_SHORT).show()
@@ -134,16 +189,34 @@ class ProdukMinumanActivity : AppCompatActivity() {
                 Toast.makeText(this, "Harga tidak valid", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            if (pemakaian.isEmpty()) {
+                Toast.makeText(this, "Tambahkan minimal 1 bahan untuk komposisinya", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val kategoriBaru = kategoriOptions[dialogBinding.spinnerKategori.selectedItemPosition]
-            viewModel.updateMenu(
-                menu.copy(nama = namaBaru, hargaJual = hargaBaru, kategori = kategoriBaru, gambarPath = gambarPathSementara)
-            )
-            Toast.makeText(this, "Produk '$namaBaru' diperbarui", Toast.LENGTH_SHORT).show()
+            val pasangan = pemakaian.map { it.bahan to it.jumlah }
+            viewModel.updateMenuDenganResep(
+                menu.copy(nama = namaBaru, hargaJual = hargaBaru, kategori = kategoriBaru, gambarPath = gambarPathSementara),
+                pasangan
+            ) {
+                runOnUiThread {
+                    Toast.makeText(this, "Produk '$namaBaru' diperbarui", Toast.LENGTH_SHORT).show()
+                }
+            }
             dialogBindingAktif = null
+            pemakaianAdapterAktif = null
             dialog.dismiss()
         }
-        dialog.setOnDismissListener { dialogBindingAktif = null }
+        dialog.setOnDismissListener {
+            dialogBindingAktif = null
+            pemakaianAdapterAktif = null
+        }
         dialog.show()
+    }
+
+    private fun updateEstimasiModal(dialogBinding: DialogEditProdukBinding) {
+        val total = (pemakaianAdapterAktif?.getItems() ?: emptyList()).sumOf { it.jumlah * it.bahan.hargaPerSatuan }
+        dialogBinding.tvEstimasiModal.text = "Estimasi Harga Modal (HPP): ${Formatter.rupiah(total)}"
     }
 
     private fun tampilkanMenuHapus(menu: MenuKopi) {
