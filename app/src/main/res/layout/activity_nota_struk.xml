@@ -85,14 +85,14 @@
                         android:src="@drawable/logo"
                         app:tint="@color/primary" />
 
-<!--                    <TextView-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:layout_marginTop="4dp"-->
-<!--                        android:text="PitStop"-->
-<!--                        android:textColor="@color/primary"-->
-<!--                        android:textSize="17sp"-->
-<!--                        android:textStyle="bold" />-->
+                    <!--                    <TextView-->
+                    <!--                        android:layout_width="wrap_content"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:layout_marginTop="4dp"-->
+                    <!--                        android:text="PitStop"-->
+                    <!--                        android:textColor="@color/primary"-->
+                    <!--                        android:textSize="17sp"-->
+                    <!--                        android:textStyle="bold" />-->
 
                     <TextView
                         android:id="@+id/tvTipeTransaksi"
@@ -129,9 +129,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:layout_marginBottom="12dp"
                     android:textColor="@color/grey"
                     android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/rowPlatNomor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="12dp"
+                    android:textColor="@color/grey"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
 
                 <View
                     android:layout_width="match_parent"

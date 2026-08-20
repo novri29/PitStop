@@ -7,6 +7,7 @@ import com.pitstop.save.dao.DetailLaporanRow
 import com.pitstop.save.dao.ProdukTerlarisRow
 import com.pitstop.save.entity.Bahan
 import com.pitstop.save.entity.Layanan
+import com.pitstop.save.entity.LayananBahan
 import com.pitstop.save.entity.METODE_CASH
 import com.pitstop.save.entity.MenuKopi
 import com.pitstop.save.entity.MenuKopiBahan
@@ -124,7 +125,52 @@ class AppRepository(context: Context) {
 
     fun getLayananLive(): LiveData<List<Layanan>> = stockSteamDao.getAllLayananLive()
     suspend fun getAllLayanan(): List<Layanan> = stockSteamDao.getAllLayanan()
-    suspend fun simpanLayanan(layanan: Layanan) = stockSteamDao.insertLayanan(layanan)
+
+    /**
+     * Simpan harga layanan berdasarkan ukuran (Motor Kecil/Sedang/Besar).
+     * Kalau baris untuk ukuran ini sudah ada, pakai id yang sama supaya harga di-UPDATE
+     * (menimpa baris lama), bukan malah nambah baris baru dengan harga baru.
+     */
+    suspend fun simpanLayanan(layanan: Layanan) {
+        val existing = stockSteamDao.getLayananByUkuran(layanan.ukuran)
+        val toSave = if (existing != null) layanan.copy(id = existing.id) else layanan
+        stockSteamDao.insertLayanan(toSave)
+    }
+
+    suspend fun getLayananById(id: Int): Layanan? = stockSteamDao.getLayananById(id)
+
+    suspend fun getBahanUsageForLayanan(layananId: Int): List<LayananBahan> =
+        stockSteamDao.getBahanUsageForLayanan(layananId)
+
+    /** Peta layananId -> teks ringkasan komposisi, contoh: "Sabun Motor 50ml, Semir Ban 20ml" */
+    suspend fun getKomposisiSteamMap(): Map<Int, String> {
+        val rows = stockSteamDao.getKomposisiSteamRaw()
+        return rows.groupBy { it.layananId }
+            .mapValues { (_, list) ->
+                list.joinToString(", ") { row ->
+                    val jumlahText = if (row.jumlah == row.jumlah.toInt().toDouble()) row.jumlah.toInt().toString() else row.jumlah.toString()
+                    "${row.namaBahan} $jumlahText${row.satuan}"
+                }
+            }
+    }
+
+    /** Ganti seluruh komposisi bahan untuk 1 layanan (hapus yang lama, simpan yang baru). */
+    suspend fun simpanKomposisiLayanan(layananId: Int, pemakaian: List<Pair<StockSteam, Double>>) {
+        stockSteamDao.deleteBahanUsageForLayanan(layananId)
+        pemakaian.forEach { (stockSteam, jumlah) ->
+            stockSteamDao.insertLayananBahan(
+                LayananBahan(layananId = layananId, stockSteamId = stockSteam.id, jumlahDigunakan = jumlah)
+            )
+        }
+    }
+
+    /** Dipanggil saat layanan steam terjual: mengurangi stock tiap bahan sesuai qty terjual */
+    suspend fun potongStockUntukLayanan(layananId: Int, qty: Int) {
+        val usageList = stockSteamDao.getBahanUsageForLayanan(layananId)
+        usageList.forEach { usage ->
+            stockSteamDao.kurangiStock(usage.stockSteamId, usage.jumlahDigunakan * qty)
+        }
+    }
 
     // ---------- Transaksi (Kasir) ----------
     /**
@@ -137,7 +183,8 @@ class AppRepository(context: Context) {
         catatan: String = "",
         metodePembayaran: String = METODE_CASH,
         jumlahDibayar: Double = 0.0,
-        kembalian: Double = 0.0
+        kembalian: Double = 0.0,
+        platNomor: String = ""
     ): Long {
         val total = items.sumOf { it.hargaSatuan * it.qty }
         val transaksiId = transaksiDao.insertTransaksi(
@@ -149,7 +196,8 @@ class AppRepository(context: Context) {
                 catatan = catatan,
                 metodePembayaran = metodePembayaran,
                 jumlahDibayar = jumlahDibayar,
-                kembalian = kembalian
+                kembalian = kembalian,
+                platNomor = platNomor
             )
         )
         items.forEach { item ->
@@ -164,6 +212,7 @@ class AppRepository(context: Context) {
                 )
             )
             item.menuKopiId?.let { potongStockUntukMenu(it, item.qty) }
+            item.layananId?.let { potongStockUntukLayanan(it, item.qty) }
         }
         return transaksiId
     }
@@ -336,5 +385,6 @@ data class TransaksiItemInput(
     val qty: Int,
     val hargaSatuan: Double,
     val menuKopiId: Int? = null,
+    val layananId: Int? = null,
     val isPromo: Boolean = false
 )

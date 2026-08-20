@@ -29,6 +29,9 @@
         <activity
             android:name="com.pitstop.ui.kasir.order.KeranjangActivity"
             android:exported="false" />
+        <activity
+            android:name="com.pitstop.ui.kasir.order.PilihLayananSteamActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -71,6 +74,9 @@
             android:exported="false" />
         <activity
             android:name="com.pitstop.ui.admin.StockSteamActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.pitstop.ui.admin.LayananSteamActivity"
             android:exported="false" /> <!-- Activity Kasir -->
         <activity
             android:name="com.pitstop.ui.kasir.KasirMainActivity"

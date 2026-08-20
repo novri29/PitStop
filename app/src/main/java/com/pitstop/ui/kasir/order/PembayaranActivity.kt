@@ -117,6 +117,7 @@ class PembayaranActivity : AppCompatActivity() {
                 qty = it.qty,
                 hargaSatuan = it.harga,
                 menuKopiId = it.menuKopiId,
+                layananId = it.layananId,
                 isPromo = it.isPromo
             )
         }
@@ -128,7 +129,8 @@ class PembayaranActivity : AppCompatActivity() {
             catatan = CartManager.catatan,
             metodePembayaran = metodeTerpilih,
             jumlahDibayar = jumlahDibayar,
-            kembalian = kembalian
+            kembalian = kembalian,
+            platNomor = CartManager.platNomor
         ) { transaksiId ->
             runOnUiThread {
                 val intent = Intent(this, NotaStrukActivity::class.java)

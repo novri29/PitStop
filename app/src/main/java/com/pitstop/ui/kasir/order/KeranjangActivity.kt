@@ -9,23 +9,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.CartAdapter
 import com.pitstop.pitstop.databinding.ActivityKeranjangBinding
-import com.pitstop.save.entity.TIPE_MOTOR
-import com.pitstop.ui.admin.StockSteamViewModel
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.util.CartManager
 import com.pitstop.util.Formatter
-import com.pitstop.util.ViewModelFactory
 
 class KeranjangActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityKeranjangBinding
     private lateinit var adapter: CartAdapter
-    private lateinit var steamViewModel: StockSteamViewModel
-    private var hargaMotor = 0.0
-    private var hargaMobil = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,21 +54,8 @@ class KeranjangActivity : AppCompatActivity() {
         binding.rvCart.layoutManager = LinearLayoutManager(this)
         binding.rvCart.adapter = adapter
 
-        steamViewModel = ViewModelProvider(this, ViewModelFactory(this))[StockSteamViewModel::class.java]
-        steamViewModel.layananList.observe(this) { list ->
-            list.find { it.jenis == com.pitstop.save.entity.JENIS_MOTOR }?.let { hargaMotor = it.harga }
-            list.find { it.jenis == com.pitstop.save.entity.JENIS_MOBIL }?.let { hargaMobil = it.harga }
-        }
-
         binding.btnTambahMotor.setOnClickListener {
-            if (hargaMotor <= 0.0) {
-                Toast.makeText(this, "Harga Cuci Motor belum diatur Admin", Toast.LENGTH_SHORT).show()
-            } else {
-                CartManager.tambahItem("Cuci Motor", hargaMotor, TIPE_MOTOR)
-                adapter.notifyDataSetChanged()
-                updateRingkasan()
-                Toast.makeText(this, "Cuci Motor ditambahkan", Toast.LENGTH_SHORT).show()
-            }
+            startActivity(Intent(this, PilihLayananSteamActivity::class.java))
         }
         binding.btnTambahCafe.setOnClickListener {
             startActivity(Intent(this, PilihProdukActivity::class.java))
@@ -116,5 +96,12 @@ class KeranjangActivity : AppCompatActivity() {
         binding.tvEmpty.visibility = if (CartManager.items.isEmpty()) View.VISIBLE else View.GONE
         binding.tvTotalItem.text = "Total Item: ${CartManager.totalItem()}"
         binding.tvTotal.text = "Total: ${Formatter.rupiah(CartManager.total())}"
+
+        if (CartManager.platNomor.isNotBlank()) {
+            binding.tvPlatNomorCart.visibility = View.VISIBLE
+            binding.tvPlatNomorCart.text = "Plat Nomor: ${CartManager.platNomor}"
+        } else {
+            binding.tvPlatNomorCart.visibility = View.GONE
+        }
     }
 }

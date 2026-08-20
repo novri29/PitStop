@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.ImageViewCompat
@@ -17,14 +16,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.FragmentDashboardKasirBinding
-import com.pitstop.save.entity.JENIS_MOBIL
-import com.pitstop.save.entity.JENIS_MOTOR
 import com.pitstop.save.entity.TIPE_CAFE
 import com.pitstop.save.entity.TIPE_MOTOR
 import com.pitstop.ui.admin.RingkasanViewModel
-import com.pitstop.ui.admin.StockSteamViewModel
 import com.pitstop.ui.component.BarChartEntry
-import com.pitstop.ui.kasir.order.KonfirmasiLayananDialog
+import com.pitstop.ui.kasir.order.PilihLayananSteamActivity
 import com.pitstop.ui.kasir.order.PilihProdukActivity
 import com.pitstop.util.Formatter
 import com.pitstop.util.ViewModelFactory
@@ -35,9 +31,7 @@ class DashboardKasirFragment : Fragment() {
     private var _binding: FragmentDashboardKasirBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: RingkasanViewModel
-    private lateinit var steamViewModel: StockSteamViewModel
 
-    private var hargaMotor = 0.0
     private var unitTerpilih = TIPE_CAFE
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -48,7 +42,6 @@ class DashboardKasirFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[RingkasanViewModel::class.java]
-        steamViewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[StockSteamViewModel::class.java]
 
         // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
@@ -75,10 +68,6 @@ class DashboardKasirFragment : Fragment() {
 
         binding.unitMotor.setOnClickListener { pilihUnit(TIPE_MOTOR) }
         binding.unitCafe.setOnClickListener { pilihUnit(TIPE_CAFE) }
-
-        steamViewModel.layananList.observe(viewLifecycleOwner) { list ->
-            list.find { it.jenis == JENIS_MOTOR }?.let { hargaMotor = it.harga }
-        }
 
         var jumlahHariIni = 0
         var omzetHariIni = 0.0
@@ -118,13 +107,7 @@ class DashboardKasirFragment : Fragment() {
     private fun mulaiPesanan() {
         when (unitTerpilih) {
             TIPE_CAFE -> startActivity(Intent(requireContext(), PilihProdukActivity::class.java))
-            TIPE_MOTOR -> {
-                if (hargaMotor <= 0.0) {
-                    Toast.makeText(requireContext(), "Harga Cuci Motor belum diatur Admin", Toast.LENGTH_SHORT).show()
-                    return
-                }
-                KonfirmasiLayananDialog.tampilkan(requireContext(), TIPE_MOTOR, "Cuci Motor", hargaMotor)
-            }
+            TIPE_MOTOR -> startActivity(Intent(requireContext(), PilihLayananSteamActivity::class.java))
         }
     }
 

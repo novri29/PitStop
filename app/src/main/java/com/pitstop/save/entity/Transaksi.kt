@@ -24,5 +24,6 @@ data class Transaksi(
     val catatan: String = "",
     val metodePembayaran: String = METODE_CASH,
     val jumlahDibayar: Double = 0.0,
-    val kembalian: Double = 0.0
+    val kembalian: Double = 0.0,
+    val platNomor: String = ""   // nomor plat kendaraan (khusus transaksi yang mengandung Cuci Motor)
 )

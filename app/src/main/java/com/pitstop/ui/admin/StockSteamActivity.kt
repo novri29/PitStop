@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.StockSteamAdapter
-import com.pitstop.save.entity.JENIS_MOBIL
 import com.pitstop.save.entity.JENIS_MOTOR
 import com.pitstop.pitstop.databinding.ActivityStockSteamBinding
 import com.pitstop.util.ViewModelFactory

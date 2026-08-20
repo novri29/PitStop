@@ -17,11 +17,12 @@ class TransaksiViewModel(private val repository: AppRepository) : ViewModel() {
         metodePembayaran: String = METODE_CASH,
         jumlahDibayar: Double = 0.0,
         kembalian: Double = 0.0,
+        platNomor: String = "",
         onDone: (Long) -> Unit
     ) {
         viewModelScope.launch {
             val id = repository.simpanTransaksi(
-                tipe, kasirUsername, items, catatan, metodePembayaran, jumlahDibayar, kembalian
+                tipe, kasirUsername, items, catatan, metodePembayaran, jumlahDibayar, kembalian, platNomor
             )
             onDone(id)
         }

@@ -66,23 +66,13 @@
                 android:textColor="@color/primary"
                 android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/etHargaMotor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:autofillHints=""
-                android:background="@drawable/bg_edittext"
-                android:hint="@string/harga_cuci_motor"
-                android:inputType="numberDecimal" />
-
             <Button
-                android:id="@+id/btnSimpanHarga"
+                android:id="@+id/btnLayananSteam"
                 android:layout_width="match_parent"
-                android:layout_height="46dp"
-                android:layout_marginTop="10dp"
+                android:layout_height="48dp"
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_button_accent"
-                android:text="@string/simpan_harga_layanan"
+                android:text="@string/kelola_layanan_steam"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 

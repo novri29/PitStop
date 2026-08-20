@@ -84,6 +84,13 @@ class NotaStrukActivity : AppCompatActivity() {
         binding.tvTanggal.text = "Tanggal: ${Formatter.tanggalWaktu(t.tanggal)}"
         binding.tvKasir.text = "Kasir: ${t.kasirUsername}"
 
+        if (t.platNomor.isNotBlank()) {
+            binding.rowPlatNomor.visibility = View.VISIBLE
+            binding.rowPlatNomor.text = "Plat Nomor: ${t.platNomor}"
+        } else {
+            binding.rowPlatNomor.visibility = View.GONE
+        }
+
         binding.rvItem.layoutManager = LinearLayoutManager(this)
         binding.rvItem.adapter = NotaAdapter(detailList)
 
@@ -111,6 +118,9 @@ class NotaStrukActivity : AppCompatActivity() {
         sb.append("No. TRX : TRX-${t.id.toString().padStart(6, '0')}\n")
         sb.append("Tgl     : ${Formatter.tanggalWaktu(t.tanggal)}\n")
         sb.append("Kasir   : ${t.kasirUsername}\n")
+        if (t.platNomor.isNotBlank()) {
+            sb.append("Plat No : ${t.platNomor}\n")
+        }
         sb.append("---------------------------------\n")
 
         detailList.forEach { d ->
@@ -160,6 +170,15 @@ class NotaStrukActivity : AppCompatActivity() {
             <tr>
                 <td style='padding: 2px 0;'>Kembalian</td>
                 <td style='text-align: right; padding: 2px 0;'>${Formatter.rupiah(t.kembalian)}</td>
+            </tr>
+            """.trimIndent()
+        } else ""
+
+        val rowPlatNomor = if (t.platNomor.isNotBlank()) {
+            """
+            <tr>
+                <td>Plat Nomor</td>
+                <td style="text-align: right;">${t.platNomor}</td>
             </tr>
             """.trimIndent()
         } else ""
@@ -248,6 +267,7 @@ class NotaStrukActivity : AppCompatActivity() {
                             <td>Kasir</td>
                             <td style="text-align: right;">${t.kasirUsername}</td>
                         </tr>
+                        $rowPlatNomor
                     </table>
                     
                     <div class="divider"></div>

@@ -102,6 +102,16 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <TextView
+            android:id="@+id/tvPlatNomorCart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@string/plat_nomor_kendaraan"
+            android:textColor="@color/primary"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <EditText
             android:id="@+id/etCatatan"
             android:layout_width="match_parent"

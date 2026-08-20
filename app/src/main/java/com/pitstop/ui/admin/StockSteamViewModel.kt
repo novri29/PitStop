@@ -3,8 +3,9 @@ package com.pitstop.ui.admin
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pitstop.save.entity.Layanan
 import com.pitstop.repository.AppRepository
+import com.pitstop.save.entity.JENIS_MOTOR
+import com.pitstop.save.entity.Layanan
 import com.pitstop.save.entity.StockSteam
 import kotlinx.coroutines.launch
 
@@ -13,7 +14,7 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
     val stockList: LiveData<List<StockSteam>> = repository.getStockSteamLive()
     val layananList: LiveData<List<Layanan>> = repository.getLayananLive()
 
-    fun tambahStock(nama: String, jenis: String, satuan: String, stock: Double) {
+    fun tambahStock(nama: String, jenis: String = JENIS_MOTOR, satuan: String, stock: Double) {
         viewModelScope.launch {
             repository.insertStockSteam(StockSteam(nama = nama, jenis = jenis, satuan = satuan, stock = stock))
         }
@@ -23,9 +24,22 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
         viewModelScope.launch { repository.deleteStockSteam(item) }
     }
 
-    fun simpanHargaLayanan(nama: String, jenis: String, harga: Double) {
+    /** Simpan/perbarui harga layanan untuk 1 ukuran motor (Kecil/Sedang/Besar). */
+    fun simpanHargaLayanan(nama: String, ukuran: String, harga: Double) {
         viewModelScope.launch {
-            repository.simpanLayanan(Layanan(nama = nama, jenis = jenis, harga = harga))
+            repository.simpanLayanan(Layanan(nama = nama, ukuran = ukuran, harga = harga))
         }
     }
+
+    /** Simpan komposisi bahan (dipakai untuk potong stock otomatis) untuk 1 layanan. */
+    fun simpanKomposisi(layananId: Int, pemakaian: List<Pair<StockSteam, Double>>, onDone: () -> Unit) {
+        viewModelScope.launch {
+            repository.simpanKomposisiLayanan(layananId, pemakaian)
+            onDone()
+        }
+    }
+
+    suspend fun getKomposisiMap(): Map<Int, String> = repository.getKomposisiSteamMap()
+
+    suspend fun getBahanUsageUntukLayanan(layananId: Int) = repository.getBahanUsageForLayanan(layananId)
 }

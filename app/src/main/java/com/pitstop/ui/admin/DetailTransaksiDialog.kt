@@ -22,7 +22,11 @@ object DetailTransaksiDialog {
         val binding = DialogDetailTransaksiBinding.inflate(LayoutInflater.from(context))
 
         binding.tvTipe.text = transaksi.tipe
-        binding.tvInfo.text = "${Formatter.tanggalWaktu(transaksi.tanggal)}  •  Kasir: ${transaksi.kasirUsername}"
+        binding.tvInfo.text = if (transaksi.platNomor.isNotBlank()) {
+            "${Formatter.tanggalWaktu(transaksi.tanggal)}  •  Kasir: ${transaksi.kasirUsername}  •  Plat: ${transaksi.platNomor}"
+        } else {
+            "${Formatter.tanggalWaktu(transaksi.tanggal)}  •  Kasir: ${transaksi.kasirUsername}"
+        }
 
         binding.rvItem.layoutManager = LinearLayoutManager(context)
         binding.rvItem.adapter = NotaAdapter(detail)
