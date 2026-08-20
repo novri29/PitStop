@@ -58,41 +58,7 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="@string/atur_harga_layanan_cuci_motor"
-                android:textColor="@color/primary"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnLayananSteam"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="24dp"
-                android:background="@drawable/bg_button_accent"
-                android:text="@string/kelola_layanan_steam"
-                android:textAllCaps="false"
-                android:textColor="@color/white" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="@string/kelola_stock_barang_steam"
-                android:textColor="@color/primary"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnStockSteam"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="24dp"
-                android:background="@drawable/bg_button_primary"
-                android:text="@string/buka_stock_steam"
-                android:textAllCaps="false"
-                android:textColor="@color/white" />
+            <!-- Kelola Layanan Steam & Buka Stock Steam sudah dipindahkan ke Dashboard Admin (tampil saat unit "Cuci Motor" dipilih) -->
 
             <!-- ===== UBAH AKUN ADMIN (hanya admin) ===== -->
             <TextView

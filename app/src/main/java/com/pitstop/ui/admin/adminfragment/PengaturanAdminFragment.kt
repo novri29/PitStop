@@ -9,8 +9,6 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.pitstop.ui.admin.LayananSteamActivity
-import com.pitstop.ui.admin.StockSteamActivity
 import com.pitstop.ui.login.LoginActivity
 import com.pitstop.util.SessionManager
 import com.pitstop.pitstop.databinding.FragmentPengaturanAdminBinding
@@ -39,13 +37,7 @@ class PengaturanAdminFragment : Fragment() {
 
         binding.tvUsername.text = session.getUsername()
 
-        binding.btnLayananSteam.setOnClickListener {
-            startActivity(Intent(requireContext(), LayananSteamActivity::class.java))
-        }
-
-        binding.btnStockSteam.setOnClickListener {
-            startActivity(Intent(requireContext(), StockSteamActivity::class.java))
-        }
+        // Kelola Layanan Steam & Buka Stock Steam sudah dipindahkan ke Dashboard Admin
 
         setupUbahAkun()
 

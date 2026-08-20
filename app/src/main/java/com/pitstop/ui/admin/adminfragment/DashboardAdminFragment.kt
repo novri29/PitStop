@@ -18,10 +18,12 @@ import com.pitstop.save.entity.TIPE_CAFE
 import com.pitstop.save.entity.TIPE_MOTOR
 import com.pitstop.ui.admin.AdminMainActivity
 import com.pitstop.ui.admin.KategoriActivity
+import com.pitstop.ui.admin.LayananSteamActivity
 import com.pitstop.ui.admin.ProdukMinumanActivity
 import com.pitstop.ui.admin.ResepMinumanActivity
 import com.pitstop.ui.admin.RingkasanViewModel
 import com.pitstop.ui.admin.StockBahanActivity
+import com.pitstop.ui.admin.StockSteamActivity
 import com.pitstop.ui.component.BarChartEntry
 import com.pitstop.util.Formatter
 import com.pitstop.util.TipePeriode
@@ -92,6 +94,10 @@ class DashboardAdminFragment : Fragment() {
         binding.menuKategori.setOnClickListener { startActivity(Intent(requireContext(), KategoriActivity::class.java)) }
         binding.menuLaporan.setOnClickListener { (activity as? AdminMainActivity)?.pindahKeTab(R.id.nav_laporan) }
         binding.menuPengaturan.setOnClickListener { (activity as? AdminMainActivity)?.pindahKeTab(R.id.nav_pengaturan) }
+
+        // ---------- Menu Admin (Cuci Motor): dipindahkan dari halaman Pengaturan ----------
+        binding.menuLayananSteam.setOnClickListener { startActivity(Intent(requireContext(), LayananSteamActivity::class.java)) }
+        binding.menuStockSteam.setOnClickListener { startActivity(Intent(requireContext(), StockSteamActivity::class.java)) }
     }
 
     private fun muatGrafikOmzet() {
@@ -141,6 +147,12 @@ class DashboardAdminFragment : Fragment() {
             TIPE_MOTOR -> selectChip(binding.unitMotor, binding.iconMotor, binding.labelMotor)
             TIPE_CAFE -> selectChip(binding.unitCafe, binding.iconCafe, binding.labelCafe)
         }
+
+        // Menu Admin di bawah grafik ikut berganti sesuai unit usaha yang dipilih:
+        // Cuci Motor -> Kelola Layanan Steam & Buka Stock Steam
+        // Cafe -> menu cafe seperti biasa (tidak berubah)
+        binding.layoutMenuMotor.visibility = if (tipe == TIPE_MOTOR) View.VISIBLE else View.GONE
+        binding.layoutMenuCafe.visibility = if (tipe == TIPE_CAFE) View.VISIBLE else View.GONE
     }
 
     private fun selectChip(container: View, icon: android.widget.ImageView, label: android.widget.TextView) {

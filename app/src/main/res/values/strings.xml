@@ -69,6 +69,7 @@
     <string name="galeri">🖼️ Galeri</string>
     <string name="nama_menu_contoh_kopi_susu">Nama menu (contoh: Kopi Susu)</string>
     <string name="pilih_bahan_dan_atur_jumlah_pemakaian">Pilih bahan dan atur jumlah pemakaian:</string>
+    <string name="kombinasi_bahan_yang_digunakan">Kombinasi bahan yang digunakan</string>
     <string name="jumlah_dipakai_gram_ml">Jumlah dipakai (gram/ml)</string>
     <string name="tambah2">+ Tambah</string>
     <string name="estimasi_harga_modal_hpp_rp0">Estimasi Harga Modal (HPP): Rp0</string>
@@ -118,6 +119,7 @@
     <string name="stok_bahan_habis">Stok Bahan Habis</string>
     <string name="tren_omzet_7_hari_terakhir">Tren Omzet 7 Hari Terakhir</string>
     <string name="menu_admin_cafe">Menu Admin (Cafe)</string>
+    <string name="menu_admin_cuci_motor">Menu Admin (Cuci Motor)</string>
     <string name="stock_bahan">Stock Bahan</string>
     <string name="resep_minuman">Resep Minuman</string>
     <string name="produk_minuman">Produk Minuman</string>

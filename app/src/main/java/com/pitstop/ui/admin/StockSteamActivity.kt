@@ -3,6 +3,8 @@ package com.pitstop.ui.admin
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.StockSteamAdapter
@@ -21,8 +23,20 @@ class StockSteamActivity : AppCompatActivity() {
         binding = ActivityStockSteamBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val originalHeight = resources.getDimensionPixelSize(
+                androidx.appcompat.R.dimen.abc_action_bar_default_height_material
+            )
+            view.layoutParams.height = originalHeight + statusBarInsets.top
+            view.requestLayout()
+            view.setPadding(view.paddingLeft, statusBarInsets.top, view.paddingRight, view.paddingBottom)
+            insets
+        }
+
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[StockSteamViewModel::class.java]
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { finish() }
 
         adapter = StockSteamAdapter(onDelete = { viewModel.hapusStock(it) })
         binding.rvStockSteam.layoutManager = LinearLayoutManager(this)
