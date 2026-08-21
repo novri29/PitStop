@@ -1,5 +1,6 @@
 package com.pitstop.util
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.print.PrintAttributes
 import android.print.PrintManager
@@ -25,12 +26,14 @@ object StrukPrintHelper {
             font-size: 13px;
             color: #111;
             margin: 0;
-            padding: 10px;
+            padding: 0;
             background-color: #fff;
+            width: 384px;
         }
         .receipt {
-            max-width: 280px;
-            margin: 0 auto 18px auto;
+            width: 384px;
+            max-width: 384px;
+            margin: 0;
         }
         .receipt.batch {
             page-break-after: always;
@@ -38,7 +41,7 @@ object StrukPrintHelper {
             padding-bottom: 14px;
         }
         .header { text-align: center; margin-bottom: 12px; }
-        .logo { max-width: 170px; max-height: 55px; margin: 0 auto 4px auto; display: block; }
+        .logo { max-width: 180px; max-height: 55px; margin: 0 auto 4px auto; display: block; }
         .subtitle { font-size: 11px; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.5px; }
         .divider { border-top: 1px dashed #000; margin: 8px 0; }
         .meta-table, .item-table, .total-table { width: 100%; border-collapse: collapse; }
@@ -69,6 +72,7 @@ object StrukPrintHelper {
      * Ambil logo (hitam-putih, gaya cap struk toko) sebagai data URI base64, dibaca langsung
      * dari drawable/logo_struk_hitam.png. Dipakai menggantikan tulisan "CLEAN & CUP" di kop struk.
      */
+    @SuppressLint("ResourceType")
     private fun logoDataUri(context: Context): String {
         val bytes = context.resources.openRawResource(R.drawable.logo_struk_hitam).use { it.readBytes() }
         val base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
@@ -172,7 +176,10 @@ object StrukPrintHelper {
                 <div class="divider"></div>
 
                 <div class="footer">
-                    Terima kasih atas kunjungan Anda!<br/>
+                    Terima kasih atas kunjungan Anda<br/>
+                        <span style="font-size: 9px;">
+                    JL. Turi Raya No.102 Tanjung Senang
+                        </span><br/>
                     ~ Pitstop ~
                 </div>
             </div>
@@ -225,14 +232,16 @@ object StrukPrintHelper {
 
     /** Mencetak HTML apa saja lewat Android Print Framework. */
     fun cetak(context: Context, html: String, judulDokumen: String) {
-        val webView = WebView(context)
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
-                val printAdapter = webView.createPrintDocumentAdapter(judulDokumen)
-                printManager.print(judulDokumen, printAdapter, PrintAttributes.Builder().build())
-            }
+
+        val activity = context as? android.app.Activity
+
+        if (activity == null) {
+            return
         }
-        webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+
+        BluetoothPrinterHelper.printHtml(
+            activity,
+            html
+        )
     }
 }

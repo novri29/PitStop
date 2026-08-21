@@ -40,8 +40,12 @@ interface TransaksiDao {
 
     // ---------- Ringkasan Hari Ini ----------
     // tipe = 'SEMUA' berarti tanpa filter unit usaha.
-    // Filter pakai LIKE supaya transaksi campuran (mis. "Cuci Motor + Cafe") tetap terhitung
-    // di masing-masing unit usaha yang tercakup di dalamnya.
+    // Transaksi campuran (mis. "Cuci Motor + Cafe", satu struk berisi item dari kedua unit usaha)
+    // TETAP dihitung sebagai satu transaksi di masing-masing unit usaha yang tercakup (COUNT di bawah
+    // sengaja pakai tipe header + LIKE untuk itu) -- tapi omzet/qty HARUS dipecah per item
+    // (transaksi_detail.layananId / menuKopiId), bukan ambil total header transaksi mentah-mentah.
+    // Kalau tidak, satu transaksi campuran akan menyumbang total penuhnya ke omzet Cuci Motor
+    // MAUPUN ke omzet Cafe sekaligus (dobel, bukan terpisah).
     // Transaksi berstatus Refund dikeluarkan dari semua perhitungan omzet/laporan di bawah ini.
     @Query("""
         SELECT COUNT(*) FROM transaksi
@@ -50,29 +54,34 @@ interface TransaksiDao {
     fun getJumlahTransaksiHariIniLive(awal: Long, akhir: Long, tipe: String): LiveData<Int>
 
     @Query("""
-        SELECT SUM(total) FROM transaksi
-        WHERE tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR tipe LIKE '%' || :tipe || '%') AND status != 'Refund'
+        SELECT SUM(d.subtotal) FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
+        AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
     """)
     fun getOmzetHariIniLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
-    SELECT SUM(d.subtotal) FROM transaksi_detail d
-    INNER JOIN transaksi t ON t.id = d.transaksiId
-    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 0 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
-""")
+        SELECT SUM(d.subtotal) FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 0 AND t.status != 'Refund'
+        AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
+    """)
     fun getOmzetNormalLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
-    SELECT SUM(d.subtotal) FROM transaksi_detail d
-    INNER JOIN transaksi t ON t.id = d.transaksiId
-    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 1 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
-""")
+        SELECT SUM(d.subtotal) FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 1 AND t.status != 'Refund'
+        AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
+    """)
     fun getOmzetPromoLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
         SELECT SUM(d.qty) FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
-        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
+        AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
     """)
     fun getTotalProdukTerjualHariIniLive(awal: Long, akhir: Long, tipe: String): LiveData<Int?>
 
@@ -117,11 +126,15 @@ interface TransaksiDao {
     suspend fun getOmzetBulananRaw(awal: Long, akhir: Long): List<OmzetHarianRow>
 
     // ---------- Produk Terlaris dalam rentang tanggal + filter unit usaha ----------
+    // Sama seperti omzet di atas: filter per item (layananId/menuKopiId), bukan tipe header
+    // transaksi, supaya produk Cafe tidak ikut nyasar ke daftar "Cuci Motor" (atau sebaliknya)
+    // saat berasal dari transaksi campuran.
     @Query("""
         SELECT d.namaItem as namaItem, SUM(d.qty) as totalQty, SUM(d.subtotal) as totalOmzet
         FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
-        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
+        AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
         GROUP BY d.namaItem
         ORDER BY totalQty DESC
         LIMIT :limit
@@ -135,7 +148,8 @@ interface TransaksiDao {
                d.subtotal as subtotal, d.isPromo as isPromo
         FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
-        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
+        AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
         ORDER BY t.tanggal DESC
     """)
     suspend fun getDetailLaporanPeriode(awal: Long, akhir: Long, tipe: String): List<DetailLaporanRow>
