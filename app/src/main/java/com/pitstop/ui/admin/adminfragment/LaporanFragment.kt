@@ -47,7 +47,7 @@ class LaporanFragment : Fragment() {
         adapter = LaporanAdapter(onClick = { transaksi ->
             viewLifecycleOwner.lifecycleScope.launch {
                 val detail = viewModel.getDetail(transaksi.id)
-                DetailTransaksiDialog.tampilkan(requireContext(), transaksi, detail)
+                DetailTransaksiDialog.tampilkan(requireContext(), transaksi, detail, viewLifecycleOwner.lifecycleScope, viewModel)
             }
         })
         binding.rvLaporan.layoutManager = LinearLayoutManager(requireContext())

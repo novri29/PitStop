@@ -25,46 +25,54 @@ interface TransaksiDao {
     @Query("SELECT * FROM transaksi WHERE tipe LIKE '%' || :tipe || '%' ORDER BY tanggal DESC")
     fun getByTipeLive(tipe: String): LiveData<List<Transaksi>>
 
+    @Query("""
+        UPDATE transaksi
+        SET status = :status, alasanRefund = :alasan, waktuRefund = :waktu, direfundOleh = :oleh
+        WHERE id = :id
+    """)
+    suspend fun setRefund(id: Int, status: String, alasan: String, waktu: Long, oleh: String)
+
     @Query("SELECT * FROM transaksi_detail WHERE transaksiId = :transaksiId")
     suspend fun getDetailForTransaksi(transaksiId: Int): List<TransaksiDetail>
 
-    @Query("SELECT SUM(total) FROM transaksi")
+    @Query("SELECT SUM(total) FROM transaksi WHERE status != 'Refund'")
     fun getTotalOmzetLive(): LiveData<Double?>
 
     // ---------- Ringkasan Hari Ini ----------
     // tipe = 'SEMUA' berarti tanpa filter unit usaha.
     // Filter pakai LIKE supaya transaksi campuran (mis. "Cuci Motor + Cafe") tetap terhitung
     // di masing-masing unit usaha yang tercakup di dalamnya.
+    // Transaksi berstatus Refund dikeluarkan dari semua perhitungan omzet/laporan di bawah ini.
     @Query("""
         SELECT COUNT(*) FROM transaksi
-        WHERE tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR tipe LIKE '%' || :tipe || '%')
+        WHERE tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR tipe LIKE '%' || :tipe || '%') AND status != 'Refund'
     """)
     fun getJumlahTransaksiHariIniLive(awal: Long, akhir: Long, tipe: String): LiveData<Int>
 
     @Query("""
         SELECT SUM(total) FROM transaksi
-        WHERE tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR tipe LIKE '%' || :tipe || '%')
+        WHERE tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR tipe LIKE '%' || :tipe || '%') AND status != 'Refund'
     """)
     fun getOmzetHariIniLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
     SELECT SUM(d.subtotal) FROM transaksi_detail d
     INNER JOIN transaksi t ON t.id = d.transaksiId
-    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 0 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 0 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
 """)
     fun getOmzetNormalLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
     SELECT SUM(d.subtotal) FROM transaksi_detail d
     INNER JOIN transaksi t ON t.id = d.transaksiId
-    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 1 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+    WHERE t.tanggal BETWEEN :awal AND :akhir AND d.isPromo = 1 AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
 """)
     fun getOmzetPromoLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
         SELECT SUM(d.qty) FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
-        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
     """)
     fun getTotalProdukTerjualHariIniLive(awal: Long, akhir: Long, tipe: String): LiveData<Int?>
 
@@ -91,7 +99,7 @@ interface TransaksiDao {
         SELECT strftime('%Y-%m-%d', tanggal / 1000, 'unixepoch', 'localtime') as tanggalStr,
                SUM(total) as totalOmzet
         FROM transaksi
-        WHERE tanggal BETWEEN :awal AND :akhir
+        WHERE tanggal BETWEEN :awal AND :akhir AND status != 'Refund'
         GROUP BY tanggalStr
         ORDER BY tanggalStr ASC
     """)
@@ -102,7 +110,7 @@ interface TransaksiDao {
         SELECT strftime('%Y-%m', tanggal / 1000, 'unixepoch', 'localtime') as tanggalStr,
                SUM(total) as totalOmzet
         FROM transaksi
-        WHERE tanggal BETWEEN :awal AND :akhir
+        WHERE tanggal BETWEEN :awal AND :akhir AND status != 'Refund'
         GROUP BY tanggalStr
         ORDER BY tanggalStr ASC
     """)
@@ -113,7 +121,7 @@ interface TransaksiDao {
         SELECT d.namaItem as namaItem, SUM(d.qty) as totalQty, SUM(d.subtotal) as totalOmzet
         FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
-        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
         GROUP BY d.namaItem
         ORDER BY totalQty DESC
         LIMIT :limit
@@ -127,7 +135,7 @@ interface TransaksiDao {
                d.subtotal as subtotal, d.isPromo as isPromo
         FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
-        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%')
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND (:tipe = 'SEMUA' OR t.tipe LIKE '%' || :tipe || '%') AND t.status != 'Refund'
         ORDER BY t.tanggal DESC
     """)
     suspend fun getDetailLaporanPeriode(awal: Long, akhir: Long, tipe: String): List<DetailLaporanRow>

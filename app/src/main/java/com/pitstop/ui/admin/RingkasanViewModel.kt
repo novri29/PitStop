@@ -103,6 +103,13 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
     suspend fun getSemuaTransaksi(): List<Transaksi> = repository.getAllTransaksi()
     suspend fun getDetail(transaksiId: Int) = repository.getDetailForTransaksi(transaksiId)
 
+    /**
+     * Proses refund transaksi (dipakai saat pelanggan tidak jadi melakukan pesanan, dsb).
+     * Mengembalikan true kalau berhasil, false kalau transaksi sudah pernah direfund sebelumnya.
+     */
+    suspend fun refundTransaksi(transaksiId: Int, alasan: String, direfundOleh: String): Boolean =
+        repository.refundTransaksi(transaksiId, alasan, direfundOleh)
+
     // ---------- Grafik & Produk Terlaris ----------
     suspend fun getOmzet7HariTerakhir(): List<Pair<String, Double>> = repository.getOmzetHarianTerakhir(7)
 

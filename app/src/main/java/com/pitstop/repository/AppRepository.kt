@@ -12,6 +12,7 @@ import com.pitstop.save.entity.METODE_CASH
 import com.pitstop.save.entity.MenuKopi
 import com.pitstop.save.entity.MenuKopiBahan
 import com.pitstop.save.entity.StockSteam
+import com.pitstop.save.entity.STATUS_REFUND
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.User
@@ -228,13 +229,44 @@ class AppRepository(context: Context) {
                     qty = item.qty,
                     hargaSatuan = item.hargaSatuan,
                     subtotal = item.hargaSatuan * item.qty,
-                    isPromo = item.isPromo
+                    isPromo = item.isPromo,
+                    menuKopiId = item.menuKopiId,
+                    layananId = item.layananId
                 )
             )
             item.menuKopiId?.let { potongStockUntukMenu(it, item.qty) }
             item.layananId?.let { potongStockUntukLayanan(it, item.qty) }
         }
         return transaksiId
+    }
+
+    /**
+     * Refund transaksi: dipakai kasir/admin saat pelanggan tidak jadi melakukan pesanan
+     * (atau alasan lain). Alasan/keterangan WAJIB diisi.
+     * - Transaksi ditandai berstatus Refund beserta alasan, waktu, dan siapa yang memproses.
+     * - Stock bahan (Cafe) & stock steam (Cuci Motor) yang terpakai pada transaksi ini
+     *   dikembalikan otomatis sesuai komposisi masing-masing item.
+     * - Transaksi yang sudah Refund otomatis tidak lagi dihitung di omzet/laporan.
+     * Return false kalau transaksi tidak ditemukan atau sudah pernah direfund sebelumnya.
+     */
+    suspend fun refundTransaksi(transaksiId: Int, alasan: String, direfundOleh: String): Boolean {
+        val transaksi = transaksiDao.getById(transaksiId) ?: return false
+        if (transaksi.status == STATUS_REFUND) return false
+
+        val detailList = transaksiDao.getDetailForTransaksi(transaksiId)
+        detailList.forEach { detail ->
+            detail.menuKopiId?.let { menuId ->
+                val usageList = menuKopiDao.getBahanUsageForMenu(menuId)
+                usageList.forEach { usage -> bahanDao.tambahStock(usage.bahanId, usage.jumlahDigunakan * detail.qty) }
+            }
+            detail.layananId?.let { layananId ->
+                val usageList = stockSteamDao.getBahanUsageForLayanan(layananId)
+                usageList.forEach { usage -> stockSteamDao.tambahStock(usage.stockSteamId, usage.jumlahDigunakan * detail.qty) }
+            }
+        }
+
+        transaksiDao.setRefund(transaksiId, STATUS_REFUND, alasan, System.currentTimeMillis(), direfundOleh)
+        return true
     }
 
     fun getAllTransaksiLive(): LiveData<List<Transaksi>> = transaksiDao.getAllLive()

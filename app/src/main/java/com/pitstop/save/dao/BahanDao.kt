@@ -26,4 +26,7 @@ interface BahanDao {
 
     @Query("UPDATE bahan SET stock = stock - :jumlah WHERE id = :id")
     suspend fun kurangiStock(id: Int, jumlah: Double)
+
+    @Query("UPDATE bahan SET stock = stock + :jumlah WHERE id = :id")
+    suspend fun tambahStock(id: Int, jumlah: Double)
 }

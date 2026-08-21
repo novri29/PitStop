@@ -180,5 +180,14 @@
     <string name="rata_rata_transaksi">Rata-rata / Transaksi</string>
     <string name="pesan_baru">+ PESAN BARU</string>
 
-
+    <!-- ===== Sistem Refund Transaksi ===== -->
+    <string name="refund_transaksi">Refund Transaksi</string>
+    <string name="status_selesai">Selesai</string>
+    <string name="status_refund">Refund</string>
+    <string name="alasan_refund">Alasan Refund</string>
+    <string name="keterangan_refund_hint">Contoh: Pelanggan tidak jadi melakukan pesanan</string>
+    <string name="keterangan_refund_label">Keterangan (wajib diisi)</string>
+    <string name="peringatan_refund">Transaksi ini akan ditandai sebagai Refund. Stock bahan/steam yang terpakai akan dikembalikan otomatis, dan transaksi tidak lagi dihitung sebagai omzet.</string>
+    <string name="proses_refund">Proses Refund</string>
+    <string name="batal">Batal</string>
 </resources>
