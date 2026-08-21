@@ -195,7 +195,7 @@
                     android:autofillHints=""
                     android:background="@drawable/bg_edittext"
                     android:hint="@string/jumlah_dibayar"
-                    android:inputType="numberDecimal"
+                    android:inputType="number"
                     android:textSize="16sp" />
 
                 <LinearLayout

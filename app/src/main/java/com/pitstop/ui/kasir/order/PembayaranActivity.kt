@@ -2,8 +2,7 @@ package com.pitstop.ui.kasir.order
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import com.pitstop.util.RupiahTextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -66,12 +65,8 @@ class PembayaranActivity : AppCompatActivity() {
         binding.rowQris.setOnClickListener { pilihMetode(METODE_QRIS) }
         binding.rowTransfer.setOnClickListener { pilihMetode(METODE_TRANSFER) }
 
-        binding.etJumlahDibayar.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                hitungKembalian()
-            }
-            override fun afterTextChanged(s: Editable?) {}
+        binding.etJumlahDibayar.addTextChangedListener(RupiahTextWatcher(binding.etJumlahDibayar) {
+            hitungKembalian()
         })
 
         binding.btnBayar.setOnClickListener { prosesPembayaran() }
@@ -89,7 +84,7 @@ class PembayaranActivity : AppCompatActivity() {
     }
 
     private fun hitungKembalian() {
-        val dibayar = binding.etJumlahDibayar.text.toString().toDoubleOrNull() ?: 0.0
+        val dibayar = RupiahTextWatcher.parse(binding.etJumlahDibayar.text.toString())
         val kembalian = dibayar - CartManager.total()
         binding.tvKembalian.text = Formatter.rupiah(if (kembalian > 0) kembalian else 0.0)
         binding.tvKembalian.setTextColor(
@@ -103,7 +98,7 @@ class PembayaranActivity : AppCompatActivity() {
         var kembalian = 0.0
 
         if (metodeTerpilih == METODE_CASH) {
-            jumlahDibayar = binding.etJumlahDibayar.text.toString().toDoubleOrNull() ?: 0.0
+            jumlahDibayar = RupiahTextWatcher.parse(binding.etJumlahDibayar.text.toString())
             if (jumlahDibayar < total) {
                 Toast.makeText(this, "Jumlah dibayar kurang dari total pembayaran", Toast.LENGTH_SHORT).show()
                 return
