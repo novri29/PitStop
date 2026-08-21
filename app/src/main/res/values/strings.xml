@@ -160,13 +160,12 @@
     <string name="masukkan_plat_nomor_contoh">Contoh: BE 1234 XY</string>
     <string name="pilih_ukuran_motor">Pilih Ukuran Motor</string>
     <string name="lanjut_tambah_ke_keranjang">Tambah ke Keranjang</string>
-    <string name="ubah_akun_admin_akun_anda">Ubah Akun Admin (Akun Anda)</string>
-    <string name="username_admin">Username Admin</string>
-    <string name="password_baru_kosongkan_jika_tidak_diubah">Password Baru (kosongkan jika tidak diubah)</string>
-    <string name="update_akun_admin">Update Akun Admin</string>
-    <string name="ubah_akun_kasir">Ubah Akun Kasir</string>
-    <string name="username_kasir">Username Kasir</string>
-    <string name="update_akun_kasir">Update Akun Kasir</string>
+    <string name="ganti_password">Ganti Password</string>
+    <string name="pilih_akun_yang_ingin_diubah">Pilih akun yang ingin diubah, lalu ganti username/password-nya:</string>
+    <string name="akun_saya_admin">Saya (Admin)</string>
+    <string name="akun_kasir">Kasir</string>
+    <string name="password_baru">Password baru</string>
+    <string name="kosongkan_jika_tidak_ingin_ganti_password">Kosongkan jika tidak ingin ganti password</string>
     <string name="laporan_penjualan">Laporan Penjualan</string>
     <string name="total_omzet_rp0">Total Omzet: Rp0</string>
     <string name="export_excel">Export Excel</string>
@@ -180,4 +179,6 @@
     <string name="total_pesanan">Total Pesanan</string>
     <string name="rata_rata_transaksi">Rata-rata / Transaksi</string>
     <string name="pesan_baru">+ PESAN BARU</string>
+
+
 </resources>

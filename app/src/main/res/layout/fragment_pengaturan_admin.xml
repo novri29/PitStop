@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -60,78 +61,160 @@
 
             <!-- Kelola Layanan Steam & Buka Stock Steam sudah dipindahkan ke Dashboard Admin (tampil saat unit "Cuci Motor" dipilih) -->
 
-            <!-- ===== UBAH AKUN ADMIN (hanya admin) ===== -->
+            <!-- ===== GANTI PASSWORD (Admin & Kasir dalam satu form yang sama) ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="@string/ubah_akun_admin_akun_anda"
+                android:layout_marginBottom="2dp"
+                android:text="@string/ganti_password"
                 android:textColor="@color/primary"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/etAdminUsername"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:autofillHints=""
-                android:background="@drawable/bg_edittext"
-                android:hint="@string/username_admin" />
-
-            <EditText
-                android:id="@+id/etAdminPasswordBaru"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_edittext"
-                android:hint="@string/password_baru_kosongkan_jika_tidak_diubah"
-                android:inputType="textPassword" />
-
-            <Button
-                android:id="@+id/btnUpdateAdmin"
-                android:layout_width="match_parent"
-                android:layout_height="46dp"
-                android:layout_marginBottom="24dp"
-                android:background="@drawable/bg_button_accent"
-                android:text="@string/update_akun_admin"
-                android:textAllCaps="false"
-                android:textColor="@color/white" />
-
-            <!-- ===== UBAH AKUN KASIR (hanya admin) ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="@string/ubah_akun_kasir"
-                android:textColor="@color/primary"
-                android:textStyle="bold" />
+                android:layout_marginBottom="12dp"
+                android:text="@string/pilih_akun_yang_ingin_diubah"
+                android:textColor="@color/grey"
+                android:textSize="12sp" />
 
-            <EditText
-                android:id="@+id/etKasirUsername"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_edittext"
-                android:hint="@string/username_kasir" />
+                android:layout_marginBottom="18dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/etKasirPasswordBaru"
+                <LinearLayout
+                    android:id="@+id/pilihAkunAdmin"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_pill_selected"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:id="@+id/iconAkunAdmin"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/akun_saya_admin"
+                        android:src="@drawable/person"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:id="@+id/labelAkunAdmin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="@string/akun_saya_admin"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/pilihAkunKasir"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_pill_outline"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:id="@+id/iconAkunKasir"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/akun_kasir"
+                        android:src="@drawable/cashier" />
+
+                    <TextView
+                        android:id="@+id/labelAkunKasir"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="@string/akun_kasir"
+                        android:textColor="@color/black"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_edittext"
-                android:hint="@string/password_baru_kosongkan_jika_tidak_diubah"
-                android:inputType="textPassword" />
-
-            <Button
-                android:id="@+id/btnUpdateKasir"
-                android:layout_width="match_parent"
-                android:layout_height="46dp"
                 android:layout_marginBottom="24dp"
-                android:background="@drawable/bg_button_primary"
-                android:text="@string/update_akun_kasir"
-                android:textAllCaps="false"
-                android:textColor="@color/white" />
+                android:background="@drawable/bg_stat_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:text="@string/username"
+                    android:textColor="@color/grey"
+                    android:textSize="11sp" />
+
+                <EditText
+                    android:id="@+id/etUsernameAkun"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:autofillHints=""
+                    android:background="@drawable/bg_edittext"
+                    android:hint="@string/username" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:text="@string/password_baru"
+                    android:textColor="@color/grey"
+                    android:textSize="11sp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    app:boxBackgroundMode="none"
+                    app:endIconMode="password_toggle"
+                    app:endIconTint="@color/grey"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPasswordAkun"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edittext"
+                        android:hint="@string/password_baru"
+                        android:inputType="textPassword"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="12dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:text="@string/kosongkan_jika_tidak_ingin_ganti_password"
+                    android:textColor="@color/grey"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btnSimpanAkun"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:background="@drawable/bg_button_accent"
+                    android:text="@string/simpan_perubahan"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white" />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnLogout"
