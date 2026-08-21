@@ -1,6 +1,7 @@
 package com.pitstop.ui.admin
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
@@ -11,6 +12,7 @@ import com.pitstop.save.entity.METODE_CASH
 import com.pitstop.save.entity.STATUS_REFUND
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.save.entity.TransaksiDetail
+import com.pitstop.ui.kasir.order.NotaStrukActivity
 import com.pitstop.util.Formatter
 import com.pitstop.util.SessionManager
 import com.pitstop.pitstop.R
@@ -77,6 +79,13 @@ object DetailTransaksiDialog {
 
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
         binding.btnTutup.setOnClickListener { dialog.dismiss() }
+
+        binding.btnLihatStruk.setOnClickListener {
+            val intent = Intent(context, NotaStrukActivity::class.java)
+            intent.putExtra(NotaStrukActivity.EXTRA_TRANSAKSI_ID, transaksi.id)
+            intent.putExtra(NotaStrukActivity.EXTRA_MODE_ARSIP, true)
+            context.startActivity(intent)
+        }
 
         binding.btnRefund.setOnClickListener {
             tampilkanKonfirmasiRefund(context, transaksi, scope, viewModel) {

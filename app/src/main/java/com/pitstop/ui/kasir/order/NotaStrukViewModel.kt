@@ -7,6 +7,6 @@ import com.pitstop.save.entity.TransaksiDetail
 
 class NotaStrukViewModel(private val repository: AppRepository) : ViewModel() {
 
-    suspend fun getTransaksi(id: Int): Transaksi? = repository.getAllTransaksi().find { it.id == id }
+    suspend fun getTransaksi(id: Int): Transaksi? = repository.getTransaksiById(id)
     suspend fun getDetail(id: Int): List<TransaksiDetail> = repository.getDetailForTransaksi(id)
 }

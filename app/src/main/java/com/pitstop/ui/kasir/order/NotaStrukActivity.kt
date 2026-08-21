@@ -18,6 +18,7 @@ import com.pitstop.adapter.NotaAdapter
 import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.ActivityNotaStrukBinding
 import com.pitstop.save.entity.METODE_CASH
+import com.pitstop.save.entity.STATUS_REFUND
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.ui.admin.AdminMainActivity
@@ -33,6 +34,7 @@ class NotaStrukActivity : AppCompatActivity() {
     private lateinit var viewModel: NotaStrukViewModel
     private var transaksi: Transaksi? = null
     private var detailList: List<TransaksiDetail> = emptyList()
+    private var modeArsip: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +64,14 @@ class NotaStrukActivity : AppCompatActivity() {
         }
 
         val transaksiId = intent.getIntExtra(EXTRA_TRANSAKSI_ID, -1)
+        modeArsip = intent.getBooleanExtra(EXTRA_MODE_ARSIP, false)
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[NotaStrukViewModel::class.java]
+
+        // Mode arsip (buka dari riwayat/laporan untuk lihat & cetak ulang):
+        // tombol "Tutup" cukup kembali ke layar sebelumnya, tidak perlu ke Dashboard.
+        if (modeArsip) {
+            binding.btnSelesai.text = getString(R.string.tutup)
+        }
 
         binding.btnBack.setOnClickListener { selesai() }
         binding.btnSelesai.setOnClickListener { selesai() }
@@ -91,6 +100,15 @@ class NotaStrukActivity : AppCompatActivity() {
             binding.rowPlatNomor.visibility = View.GONE
         }
 
+        // Kalau lagi cetak ulang struk yang transaksinya sudah di-refund, tandai jelas
+        // supaya tidak disalahartikan sebagai bukti pembayaran yang masih berlaku.
+        if (t.status == STATUS_REFUND) {
+            binding.bannerRefund.visibility = View.VISIBLE
+            binding.bannerRefund.text = "${getString(R.string.struk_transaksi_ini_sudah_direfund)}\nAlasan: ${t.alasanRefund}"
+        } else {
+            binding.bannerRefund.visibility = View.GONE
+        }
+
         binding.rvItem.layoutManager = LinearLayoutManager(this)
         binding.rvItem.adapter = NotaAdapter(detailList)
 
@@ -115,6 +133,11 @@ class NotaStrukActivity : AppCompatActivity() {
         sb.append("          CLEAN & CUP            \n")
         sb.append("       ${t.tipe.uppercase()}     \n")
         sb.append("=================================\n")
+        if (t.status == STATUS_REFUND) {
+            sb.append(">>> TRANSAKSI INI SUDAH DI-REFUND <<<\n")
+            sb.append("Alasan: ${t.alasanRefund}\n")
+            sb.append("---------------------------------\n")
+        }
         sb.append("No. TRX : TRX-${t.id.toString().padStart(6, '0')}\n")
         sb.append("Tgl     : ${Formatter.tanggalWaktu(t.tanggal)}\n")
         sb.append("Kasir   : ${t.kasirUsername}\n")
@@ -180,6 +203,15 @@ class NotaStrukActivity : AppCompatActivity() {
                 <td>Plat Nomor</td>
                 <td style="text-align: right;">${t.platNomor}</td>
             </tr>
+            """.trimIndent()
+        } else ""
+
+        val bannerRefundHtml = if (t.status == STATUS_REFUND) {
+            """
+            <div style="border: 1.5px dashed #d32f2f; color: #d32f2f; text-align: center; padding: 6px; margin-bottom: 10px; font-size: 11px; font-weight: bold;">
+                TRANSAKSI INI SUDAH DI-REFUND<br/>
+                <span style="font-weight: normal;">Alasan: ${t.alasanRefund}</span>
+            </div>
             """.trimIndent()
         } else ""
 
@@ -253,6 +285,8 @@ class NotaStrukActivity : AppCompatActivity() {
                     </div>
                     
                     <div class="divider"></div>
+
+                    $bannerRefundHtml
                     
                     <table class="meta-table">
                         <tr>
@@ -321,6 +355,12 @@ class NotaStrukActivity : AppCompatActivity() {
     }
 
     private fun selesai() {
+        // Mode arsip (dibuka dari riwayat/laporan untuk lihat & cetak ulang struk lama):
+        // cukup kembali ke layar sebelumnya, jangan pindah ke Dashboard.
+        if (modeArsip) {
+            finish()
+            return
+        }
         val session = SessionManager(this)
         val intent = if (session.getRole() == com.pitstop.save.entity.ROLE_ADMIN) {
             Intent(this, AdminMainActivity::class.java)
@@ -334,5 +374,6 @@ class NotaStrukActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_TRANSAKSI_ID = "extra_transaksi_id"
+        const val EXTRA_MODE_ARSIP = "extra_mode_arsip"
     }
 }

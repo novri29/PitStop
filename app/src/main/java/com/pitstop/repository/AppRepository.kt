@@ -272,6 +272,7 @@ class AppRepository(context: Context) {
     fun getAllTransaksiLive(): LiveData<List<Transaksi>> = transaksiDao.getAllLive()
     fun getTransaksiByTipeLive(tipe: String): LiveData<List<Transaksi>> = transaksiDao.getByTipeLive(tipe)
     suspend fun getAllTransaksi(): List<Transaksi> = transaksiDao.getAll()
+
     suspend fun getTransaksiById(id: Int): Transaksi? = transaksiDao.getById(id)
     suspend fun getDetailForTransaksi(transaksiId: Int) = transaksiDao.getDetailForTransaksi(transaksiId)
     fun getTotalOmzetLive(): LiveData<Double?> = transaksiDao.getTotalOmzetLive()

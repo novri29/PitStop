@@ -110,6 +110,20 @@
                     android:background="@color/light_grey" />
 
                 <TextView
+                    android:id="@+id/bannerRefund"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/bg_banner_red"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:textColor="@color/red"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:text="Transaksi ini sudah di-REFUND" />
+
+                <TextView
                     android:id="@+id/tvNoTransaksi"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

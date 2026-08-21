@@ -164,6 +164,16 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/btnLihatStruk"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button_accent"
+            android:text="@string/lihat_dan_cetak_struk"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+
+        <Button
             android:id="@+id/btnRefund"
             android:layout_width="match_parent"
             android:layout_height="46dp"

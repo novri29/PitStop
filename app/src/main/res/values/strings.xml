@@ -190,4 +190,7 @@
     <string name="peringatan_refund">Transaksi ini akan ditandai sebagai Refund. Stock bahan/steam yang terpakai akan dikembalikan otomatis, dan transaksi tidak lagi dihitung sebagai omzet.</string>
     <string name="proses_refund">Proses Refund</string>
     <string name="batal">Batal</string>
+    <string name="lihat_dan_cetak_struk">Lihat &amp; Cetak Struk</string>
+    <string name="mode_arsip_struk">Struk Arsip (Cetak Ulang)</string>
+    <string name="struk_transaksi_ini_sudah_direfund">Transaksi ini sudah di-REFUND</string>
 </resources>
