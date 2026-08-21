@@ -129,6 +129,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
@@ -141,6 +142,16 @@
                 android:textColor="@color/primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnCetakSemuaStruk"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_button_primary"
+                android:contentDescription="@string/cetak_semua_struk"
+                android:padding="9dp"
+                android:src="@drawable/ic_print" />
 
             <Button
                 android:id="@+id/btnExport"

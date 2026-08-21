@@ -20,6 +20,7 @@ import com.pitstop.pitstop.databinding.FragmentLaporanBinding
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.ui.admin.RingkasanViewModel
 import com.pitstop.ui.component.BarChartEntry
+import com.pitstop.util.StrukPrintHelper
 import com.pitstop.util.TipePeriode
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -94,6 +95,7 @@ class LaporanFragment : Fragment() {
 
         pilihPeriode(TipePeriode.HARIAN)
         binding.btnExport.setOnClickListener { exportExcel() }
+        binding.btnCetakSemuaStruk.setOnClickListener { cetakSemuaStruk() }
     }
 
     private fun tampilkanList(list: List<Transaksi>) {
@@ -194,6 +196,31 @@ class LaporanFragment : Fragment() {
 
             Toast.makeText(requireContext(), "Laporan tersimpan: ${csvFile.name}", Toast.LENGTH_LONG).show()
             ExcelExporter.shareFile(requireContext(), csvFile)
+        }
+    }
+
+    /**
+     * Cetak semua struk transaksi pada periode yang sedang aktif sekaligus (Harian/Bulanan/
+     * Tahunan/Semua - sama seperti data yang dipakai tombol Export Excel), untuk keperluan
+     * backup/arsip fisik. Tiap struk dicetak di halaman terpisah, didahului 1 halaman sampul.
+     */
+    private fun cetakSemuaStruk() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val data = if (modeSemua) viewModel.getSemuaTransaksi() else viewModel.getTransaksiPeriodeSuspend()
+            if (data.isEmpty()) {
+                Toast.makeText(requireContext(), getString(R.string.belum_ada_transaksi_untuk_periode_ini), Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            Toast.makeText(requireContext(), getString(R.string.menyiapkan_struk_untuk_dicetak), Toast.LENGTH_SHORT).show()
+
+            // Urutkan dari yang terlama supaya urutan cetak sesuai urutan kejadian (rapi buat arsip)
+            val urutTerlama = data.sortedBy { it.tanggal }
+            val items = urutTerlama.map { t -> t to viewModel.getDetail(t.id) }
+
+            val judulPeriode = if (modeSemua) "Semua Riwayat" else viewModel.getLabelPeriodeSaatIni()
+            val html = StrukPrintHelper.buildHtmlBatch(requireContext(), judulPeriode, items)
+            StrukPrintHelper.cetak(requireContext(), html, "Backup_Struk")
         }
     }
 

@@ -2,12 +2,7 @@ package com.pitstop.ui.kasir.order
 
 import android.content.Intent
 import android.os.Bundle
-import android.print.PrintAttributes
-import android.print.PrintManager
 import android.view.View
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -25,6 +20,7 @@ import com.pitstop.ui.admin.AdminMainActivity
 import com.pitstop.ui.kasir.KasirMainActivity
 import com.pitstop.util.Formatter
 import com.pitstop.util.SessionManager
+import com.pitstop.util.StrukPrintHelper
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -89,7 +85,7 @@ class NotaStrukActivity : AppCompatActivity() {
     private fun tampilkanData() {
         val t = transaksi ?: return
         binding.tvTipeTransaksi.text = t.tipe
-        binding.tvNoTransaksi.text = "No. Transaksi: TRX-${t.id.toString().padStart(6, '0')}"
+        binding.tvNoTransaksi.text = "No. Transaksi: PIT-${t.id.toString().padStart(6, '0')}"
         binding.tvTanggal.text = "Tanggal: ${Formatter.tanggalWaktu(t.tanggal)}"
         binding.tvKasir.text = "Kasir: ${t.kasirUsername}"
 
@@ -130,7 +126,7 @@ class NotaStrukActivity : AppCompatActivity() {
         val t = transaksi ?: return ""
         val sb = StringBuilder()
         sb.append("=================================\n")
-        sb.append("          CLEAN & CUP            \n")
+        sb.append("             PITSTOP             \n")
         sb.append("       ${t.tipe.uppercase()}     \n")
         sb.append("=================================\n")
         if (t.status == STATUS_REFUND) {
@@ -138,7 +134,7 @@ class NotaStrukActivity : AppCompatActivity() {
             sb.append("Alasan: ${t.alasanRefund}\n")
             sb.append("---------------------------------\n")
         }
-        sb.append("No. TRX : TRX-${t.id.toString().padStart(6, '0')}\n")
+        sb.append("No. PIT : PIT-${t.id.toString().padStart(6, '0')}\n")
         sb.append("Tgl     : ${Formatter.tanggalWaktu(t.tanggal)}\n")
         sb.append("Kasir   : ${t.kasirUsername}\n")
         if (t.platNomor.isNotBlank()) {
@@ -177,181 +173,14 @@ class NotaStrukActivity : AppCompatActivity() {
     /** HTML Struk Modern dengan Style CSS khusus printer thermal / cetak PDF */
     private fun buildHtmlStruk(): String {
         val t = transaksi ?: return ""
-        val itemsHtml = StringBuilder()
-
-        detailList.forEach { d ->
-            itemsHtml.append("""
-                <tr>
-                    <td style='padding: 3px 0;'>${d.namaItem} <span style='color: #666;'>x${d.qty}</span></td>
-                    <td style='text-align: right; vertical-align: top; padding: 3px 0;'>${Formatter.rupiah(d.subtotal)}</td>
-                </tr>
-            """.trimIndent())
-        }
-
-        val rowKembalian = if (t.metodePembayaran == METODE_CASH && t.kembalian > 0) {
-            """
-            <tr>
-                <td style='padding: 2px 0;'>Kembalian</td>
-                <td style='text-align: right; padding: 2px 0;'>${Formatter.rupiah(t.kembalian)}</td>
-            </tr>
-            """.trimIndent()
-        } else ""
-
-        val rowPlatNomor = if (t.platNomor.isNotBlank()) {
-            """
-            <tr>
-                <td>Plat Nomor</td>
-                <td style="text-align: right;">${t.platNomor}</td>
-            </tr>
-            """.trimIndent()
-        } else ""
-
-        val bannerRefundHtml = if (t.status == STATUS_REFUND) {
-            """
-            <div style="border: 1.5px dashed #d32f2f; color: #d32f2f; text-align: center; padding: 6px; margin-bottom: 10px; font-size: 11px; font-weight: bold;">
-                TRANSAKSI INI SUDAH DI-REFUND<br/>
-                <span style="font-weight: normal;">Alasan: ${t.alasanRefund}</span>
-            </div>
-            """.trimIndent()
-        } else ""
-
-        return """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <style>
-                    body {
-                        font-family: 'Courier New', Courier, monospace;
-                        font-size: 13px;
-                        color: #111;
-                        margin: 0;
-                        padding: 10px;
-                        background-color: #fff;
-                    }
-                    .receipt {
-                        max-width: 280px;
-                        margin: 0 auto;
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 12px;
-                    }
-                    .title {
-                        font-size: 18px;
-                        font-weight: bold;
-                        letter-spacing: 1px;
-                        margin: 0;
-                    }
-                    .subtitle {
-                        font-size: 11px;
-                        text-transform: uppercase;
-                        margin-top: 3px;
-                        letter-spacing: 0.5px;
-                    }
-                    .divider {
-                        border-top: 1px dashed #000;
-                        margin: 8px 0;
-                    }
-                    .meta-table, .item-table, .total-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-                    .meta-table td {
-                        font-size: 11px;
-                        padding: 1px 0;
-                    }
-                    .item-table td {
-                        font-size: 12px;
-                    }
-                    .total-table td {
-                        font-size: 12px;
-                    }
-                    .bold {
-                        font-weight: bold;
-                    }
-                    .footer {
-                        text-align: center;
-                        margin-top: 15px;
-                        font-size: 11px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="receipt">
-                    <div class="header">
-                        <div class="title">CLEAN & CUP</div>
-                        <div class="subtitle">${t.tipe}</div>
-                    </div>
-                    
-                    <div class="divider"></div>
-
-                    $bannerRefundHtml
-                    
-                    <table class="meta-table">
-                        <tr>
-                            <td>No. TRX</td>
-                            <td style="text-align: right;">TRX-${t.id.toString().padStart(6, '0')}</td>
-                        </tr>
-                        <tr>
-                            <td>Tanggal</td>
-                            <td style="text-align: right;">${Formatter.tanggalWaktu(t.tanggal)}</td>
-                        </tr>
-                        <tr>
-                            <td>Kasir</td>
-                            <td style="text-align: right;">${t.kasirUsername}</td>
-                        </tr>
-                        $rowPlatNomor
-                    </table>
-                    
-                    <div class="divider"></div>
-                    
-                    <table class="item-table">
-                        $itemsHtml
-                    </table>
-                    
-                    <div class="divider"></div>
-                    
-                    <table class="total-table">
-                        <tr class="bold">
-                            <td style="padding: 3px 0;">Total</td>
-                            <td style="text-align: right; padding: 3px 0;">${Formatter.rupiah(t.total)}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 2px 0;">Bayar (${t.metodePembayaran})</td>
-                            <td style="text-align: right; padding: 2px 0;">${Formatter.rupiah(t.jumlahDibayar)}</td>
-                        </tr>
-                        $rowKembalian
-                    </table>
-                    
-                    <div class="divider"></div>
-                    
-                    <div class="footer">
-                        Terima kasih atas kunjungan Anda!<br/>
-                        ~ Clean & Cup ~
-                    </div>
-                </div>
-            </body>
-            </html>
-        """.trimIndent()
+        return StrukPrintHelper.buildHtmlTunggal(this, t, detailList)
     }
 
     /** Mencetak struk melalui Android Print Framework */
     private fun cetakStruk() {
         val html = buildHtmlStruk()
-        val webView = WebView(this)
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                val printManager = getSystemService(PRINT_SERVICE) as PrintManager
-                val printAdapter = webView.createPrintDocumentAdapter("Nota_Struk")
-                printManager.print(
-                    "Nota Struk",
-                    printAdapter,
-                    PrintAttributes.Builder().build()
-                )
-            }
-        }
-        webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+        if (html.isEmpty()) return
+        StrukPrintHelper.cetak(this, html, "Nota_Struk")
     }
 
     private fun selesai() {

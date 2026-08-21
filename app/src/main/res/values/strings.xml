@@ -193,4 +193,7 @@
     <string name="lihat_dan_cetak_struk">Lihat &amp; Cetak Struk</string>
     <string name="mode_arsip_struk">Struk Arsip (Cetak Ulang)</string>
     <string name="struk_transaksi_ini_sudah_direfund">Transaksi ini sudah di-REFUND</string>
+    <string name="cetak_semua_struk">Cetak Semua Struk</string>
+    <string name="menyiapkan_struk_untuk_dicetak">Menyiapkan struk untuk dicetak…</string>
+    <string name="belum_ada_transaksi_untuk_periode_ini">Belum ada transaksi untuk periode ini</string>
 </resources>
