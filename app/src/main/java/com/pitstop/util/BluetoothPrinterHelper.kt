@@ -209,9 +209,11 @@ object BluetoothPrinterHelper {
                     0x40
                 )
             )
+            outputStream.flush()
 
-            // Print image
-            outputStream.write(
+            // Print image - dikirim per-chunk agar tidak membanjiri buffer printer
+            writeInChunks(
+                outputStream,
                 bitmapToEscPos(bitmap)
             )
 
@@ -225,6 +227,10 @@ object BluetoothPrinterHelper {
             )
 
             outputStream.flush()
+
+            // Beri jeda agar printer sempat mem-flush & mencetak semua data
+            // sebelum koneksi ditutup.
+            Thread.sleep(300)
 
             socket.close()
 
@@ -253,6 +259,27 @@ object BluetoothPrinterHelper {
                 outputStream?.close()
             } catch (_: Exception) {
             }
+        }
+    }
+
+    /**
+     * Kirim data besar ke printer per-potongan kecil (chunk) dengan jeda singkat.
+     * Mencegah buffer printer/Bluetooth stack overflow yang membuat sebagian data
+     * hilang saat dikirim sekaligus (penyebab umum: printer terdeteksi & konek,
+     * tapi kertas tidak keluar cetakan sama sekali atau hanya sebagian).
+     */
+    private fun writeInChunks(
+        outputStream: OutputStream,
+        data: ByteArray,
+        chunkSize: Int = 1024
+    ) {
+        var offset = 0
+        while (offset < data.size) {
+            val length = minOf(chunkSize, data.size - offset)
+            outputStream.write(data, offset, length)
+            outputStream.flush()
+            offset += length
+            Thread.sleep(10)
         }
     }
 
