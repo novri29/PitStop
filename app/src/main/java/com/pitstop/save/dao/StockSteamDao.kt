@@ -23,6 +23,15 @@ interface StockSteamDao {
     @Delete
     suspend fun delete(item: StockSteam)
 
+    @Query("DELETE FROM layanan_bahan WHERE stockSteamId = :stockSteamId")
+    suspend fun deleteBahanUsageForStock(stockSteamId: Int)
+
+    @Transaction
+    suspend fun deleteStockSteamWithUsage(item: StockSteam) {
+        deleteBahanUsageForStock(item.id)
+        delete(item)
+    }
+
     @Query("UPDATE stock_steam SET stock = stock - :jumlah WHERE id = :id")
     suspend fun kurangiStock(id: Int, jumlah: Double)
 
@@ -48,6 +57,17 @@ interface StockSteamDao {
     @Update
     suspend fun updateLayanan(layanan: Layanan)
 
+    @Query("""
+    UPDATE layanan
+    SET nama = :nama, harga = :harga
+    WHERE ukuran = :ukuran
+""")
+    suspend fun updateHargaByUkuran(
+        nama: String,
+        ukuran: String,
+        harga: Double
+    ): Int
+
     // ---------- Komposisi bahan per layanan (mirip menu_kopi_bahan di Cafe) ----------
     @Insert
     suspend fun insertLayananBahan(usage: LayananBahan)
@@ -63,6 +83,7 @@ interface StockSteamDao {
         FROM layanan_bahan lb INNER JOIN stock_steam s ON s.id = lb.stockSteamId
     """)
     suspend fun getKomposisiSteamRaw(): List<KomposisiSteamRow>
+
 }
 
 data class KomposisiSteamRow(

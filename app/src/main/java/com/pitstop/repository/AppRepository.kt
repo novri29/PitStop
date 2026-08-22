@@ -145,7 +145,7 @@ class AppRepository(context: Context) {
     suspend fun getAllStockSteam(): List<StockSteam> = stockSteamDao.getAll()
     suspend fun insertStockSteam(item: StockSteam) = stockSteamDao.insert(item)
     suspend fun updateStockSteam(item: StockSteam) = stockSteamDao.update(item)
-    suspend fun deleteStockSteam(item: StockSteam) = stockSteamDao.delete(item)
+    suspend fun deleteStockSteam(item: StockSteam) = stockSteamDao.deleteStockSteamWithUsage(item)
 
     fun getLayananLive(): LiveData<List<Layanan>> = stockSteamDao.getAllLayananLive()
     suspend fun getAllLayanan(): List<Layanan> = stockSteamDao.getAllLayanan()
@@ -156,9 +156,15 @@ class AppRepository(context: Context) {
      * (menimpa baris lama), bukan malah nambah baris baru dengan harga baru.
      */
     suspend fun simpanLayanan(layanan: Layanan) {
-        val existing = stockSteamDao.getLayananByUkuran(layanan.ukuran)
-        val toSave = if (existing != null) layanan.copy(id = existing.id) else layanan
-        stockSteamDao.insertLayanan(toSave)
+        val updated = stockSteamDao.updateHargaByUkuran(
+            nama = layanan.nama,
+            ukuran = layanan.ukuran,
+            harga = layanan.harga
+        )
+
+        if (updated == 0) {
+            stockSteamDao.insertLayanan(layanan)
+        }
     }
 
     suspend fun getLayananById(id: Int): Layanan? = stockSteamDao.getLayananById(id)
