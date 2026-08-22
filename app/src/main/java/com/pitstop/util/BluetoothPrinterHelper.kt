@@ -1,25 +1,20 @@
 package com.pitstop.util
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.View
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import java.io.IOException
+import java.io.OutputStream
 import java.util.UUID
 
 object BluetoothPrinterHelper {
@@ -28,20 +23,63 @@ object BluetoothPrinterHelper {
 
     private const val REQUEST_BLUETOOTH_CONNECT = 2001
 
-    // UUID standar Bluetooth Serial Port Profile (SPP)
+    /*
+     * UUID standar Bluetooth Serial Port Profile
+     * yang umum digunakan printer thermal Bluetooth.
+     */
     private val PRINTER_UUID: UUID =
         UUID.fromString(
             "00001101-0000-1000-8000-00805F9B34FB"
         )
 
-    // Printer thermal 58mm
-    // Umumnya 384 dots
-    private const val PRINTER_WIDTH = 384
+    /*
+     * Printer thermal 58mm umumnya:
+     *
+     * 32 karakter untuk font normal.
+     */
+    private const val PRINTER_WIDTH = 32
+
+    private var selectedPrinterName: String? = null
+
+    private var selectedPrinterMac: String? = null
 
 
-    // =========================================================
+    // ============================================================
+    // SET PRINTER
+    // ============================================================
+
+    fun setPrinter(
+        name: String,
+        macAddress: String
+    ) {
+
+        selectedPrinterName = name
+        selectedPrinterMac = macAddress
+
+        Log.d(TAG, "====================================")
+        Log.d(TAG, "PRINTER DIPILIH")
+        Log.d(TAG, "Nama: $name")
+        Log.d(TAG, "MAC: $macAddress")
+        Log.d(TAG, "====================================")
+    }
+
+
+    // ============================================================
+    // GET PRINTER
+    // ============================================================
+
+    fun getPrinterName(): String? {
+        return selectedPrinterName
+    }
+
+    fun getPrinterMac(): String? {
+        return selectedPrinterMac
+    }
+
+
+    // ============================================================
     // PRINT HTML
-    // =========================================================
+    // ============================================================
 
     fun printHtml(
         activity: Activity,
@@ -53,10 +91,87 @@ object BluetoothPrinterHelper {
         Log.d(TAG, "====================================")
 
 
-        // =====================================================
-        // CEK PERMISSION BLUETOOTH
-        // =====================================================
+        /*
+         * Kalau printer belum dipilih,
+         * tampilkan daftar printer.
+         */
+        if (selectedPrinterMac.isNullOrBlank()) {
 
+            Log.d(
+                TAG,
+                "Printer belum dipilih."
+            )
+
+            showPrinterDialog(
+                activity
+            )
+
+            return
+        }
+
+
+        /*
+         * HTML dari NotaStrukActivity
+         * diubah menjadi text biasa.
+         */
+        val text =
+            htmlToText(html)
+
+
+        Log.d(
+            TAG,
+            "HTML berhasil dikonversi menjadi TEXT."
+        )
+
+
+        /*
+         * Printing dilakukan di background thread
+         * agar UI tidak freeze.
+         */
+        Thread {
+
+            sendTextToPrinter(
+                activity,
+                selectedPrinterMac!!,
+                text
+            )
+
+        }.start()
+    }
+
+
+    // ============================================================
+    // PILIH PRINTER
+    // ============================================================
+
+    private fun showPrinterDialog(
+        activity: Activity
+    ) {
+
+        Log.d(TAG, "====================================")
+        Log.d(TAG, "MEMBUKA DAFTAR PRINTER")
+        Log.d(TAG, "====================================")
+
+
+        val adapter =
+            BluetoothAdapter.getDefaultAdapter()
+
+
+        if (adapter == null) {
+
+            showToast(
+                activity,
+                "Tablet tidak mendukung Bluetooth.",
+                Toast.LENGTH_LONG
+            )
+
+            return
+        }
+
+
+        /*
+         * Android 12+
+         */
         if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
             ActivityCompat.checkSelfPermission(
@@ -64,11 +179,6 @@ object BluetoothPrinterHelper {
                 Manifest.permission.BLUETOOTH_CONNECT
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-
-            Log.e(
-                TAG,
-                "BLUETOOTH_CONNECT belum diizinkan"
-            )
 
             ActivityCompat.requestPermissions(
                 activity,
@@ -78,30 +188,12 @@ object BluetoothPrinterHelper {
                 REQUEST_BLUETOOTH_CONNECT
             )
 
-            Toast.makeText(
+
+            showToast(
                 activity,
-                "Izinkan akses Bluetooth lalu tekan cetak lagi.",
+                "Izinkan akses Bluetooth lalu tekan Cetak lagi.",
                 Toast.LENGTH_LONG
-            ).show()
-
-            return
-        }
-
-
-        // =====================================================
-        // CEK BLUETOOTH
-        // =====================================================
-
-        val adapter =
-            BluetoothAdapter.getDefaultAdapter()
-
-        if (adapter == null) {
-
-            Toast.makeText(
-                activity,
-                "Perangkat tidak mendukung Bluetooth.",
-                Toast.LENGTH_LONG
-            ).show()
+            )
 
             return
         }
@@ -109,50 +201,36 @@ object BluetoothPrinterHelper {
 
         if (!adapter.isEnabled) {
 
-            Toast.makeText(
+            showToast(
                 activity,
                 "Bluetooth belum aktif.",
                 Toast.LENGTH_LONG
-            ).show()
+            )
 
             return
         }
 
 
-        // =====================================================
-        // AMBIL DEVICE YANG SUDAH DIPAIRING
-        // =====================================================
+        val devices: List<BluetoothDevice>
 
-        val devices =
-            try {
+        try {
 
+            devices =
                 adapter.bondedDevices.toList()
 
-            } catch (e: SecurityException) {
+        } catch (e: SecurityException) {
 
-                Log.e(
-                    TAG,
-                    "Tidak bisa membaca paired device.",
-                    e
-                )
+            Log.e(
+                TAG,
+                "Tidak bisa membaca paired device.",
+                e
+            )
 
-                Toast.makeText(
-                    activity,
-                    "Tidak memiliki izin Bluetooth.",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                return
-            }
-
-
-        if (devices.isEmpty()) {
-
-            Toast.makeText(
+            showToast(
                 activity,
-                "Belum ada printer Bluetooth yang dipairing.",
+                "Tidak memiliki izin Bluetooth.",
                 Toast.LENGTH_LONG
-            ).show()
+            )
 
             return
         }
@@ -164,798 +242,345 @@ object BluetoothPrinterHelper {
         )
 
 
-        // =====================================================
-        // BUAT LIST DEVICE
-        // =====================================================
+        if (devices.isEmpty()) {
+
+            showToast(
+                activity,
+                "Belum ada printer Bluetooth yang dipairing.",
+                Toast.LENGTH_LONG
+            )
+
+            return
+        }
+
 
         val names =
             devices.map { device ->
 
-                val deviceName =
-                    try {
+                try {
 
+                    val name =
                         device.name
                             ?: "Bluetooth Device"
 
-                    } catch (
-                        _: SecurityException
-                    ) {
+                    val address =
+                        device.address
 
-                        "Bluetooth Device"
-                    }
+                    "$name\n$address"
 
-                "$deviceName\n${device.address}"
+                } catch (
+                    e: SecurityException
+                ) {
+
+                    "Bluetooth Device"
+                }
 
             }.toTypedArray()
 
 
-        // =====================================================
-        // DIALOG PILIH PRINTER
-        // =====================================================
-
         AlertDialog.Builder(activity)
+            .setTitle("Pilih Printer Struk")
+            .setItems(names) { _, which ->
 
-            .setTitle(
-                "Pilih Printer Struk"
-            )
-
-            .setItems(
-                names
-            ) { _, which ->
-
-                val selectedDevice =
+                val device =
                     devices[which]
 
 
-                val deviceName =
-                    try {
+                try {
 
-                        selectedDevice.name
-                            ?: "Bluetooth Device"
+                    val name =
+                        device.name
+                            ?: "Bluetooth Printer"
 
-                    } catch (
-                        _: SecurityException
-                    ) {
-
-                        "Bluetooth Device"
-                    }
+                    val address =
+                        device.address
 
 
-                Log.d(
-                    TAG,
-                    "===================================="
-                )
-
-                Log.d(
-                    TAG,
-                    "PRINTER DIPILIH"
-                )
-
-                Log.d(
-                    TAG,
-                    "Nama: $deviceName"
-                )
-
-                Log.d(
-                    TAG,
-                    "MAC: ${selectedDevice.address}"
-                )
-
-                Log.d(
-                    TAG,
-                    "===================================="
-                )
+                    setPrinter(
+                        name,
+                        address
+                    )
 
 
-                Toast.makeText(
-                    activity,
-                    "Printer dipilih: $deviceName",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    /*
+                     * Setelah memilih printer,
+                     * langsung simpan printer.
+                     *
+                     * Tidak langsung mencetak.
+                     */
+                    showToast(
+                        activity,
+                        "Printer $name dipilih.",
+                        Toast.LENGTH_SHORT
+                    )
 
 
-                // =================================================
-                // RENDER HTML
-                // =================================================
+                } catch (
+                    e: SecurityException
+                ) {
 
-                renderHtmlToBitmap(
-                    activity = activity,
-                    html = html,
-                    device = selectedDevice
-                )
+                    Log.e(
+                        TAG,
+                        "Gagal mendapatkan informasi printer.",
+                        e
+                    )
+
+                    showToast(
+                        activity,
+                        "Izin Bluetooth belum diberikan.",
+                        Toast.LENGTH_LONG
+                    )
+                }
             }
-
             .setNegativeButton(
                 "Batal",
                 null
             )
-
             .show()
     }
 
 
-    // =========================================================
-    // TES CETAK TEKS POLOS (KHUSUS DEBUGGING)
-    // =========================================================
-    //
-    // Fungsi ini SENGAJA tidak menyentuh WebView atau bitmap
-    // sama sekali — cuma kirim teks ASCII biasa. Gunanya untuk
-    // memastikan printer ini memang bisa mencetak APAPUN lewat
-    // Bluetooth SPP + ESC/POS, sebelum lanjut curigai kode
-    // bitmap/ESC * / GS v0.
-    //
-    // Panggil BluetoothPrinterHelper.printTestText(activity)
-    // dari tombol mana saja (sementara, khusus buat tes).
-    //
-    // =========================================================
+    // ============================================================
+    // TEST PRINT
+    // ============================================================
 
-    @SuppressLint("MissingPermission")
-    fun printTestText(activity: Activity) {
+    fun testPrint(
+        activity: Activity
+    ) {
 
         if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            ActivityCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
+            selectedPrinterMac.isNullOrBlank()
         ) {
 
-            Toast.makeText(
-                activity,
-                "Izin Bluetooth belum diberikan.",
-                Toast.LENGTH_LONG
-            ).show()
+            showPrinterDialog(
+                activity
+            )
 
             return
         }
 
 
-        val adapter =
-            BluetoothAdapter.getDefaultAdapter()
+        val testText =
+            """
+PITSTOP
+Cafe
 
-        if (adapter == null || !adapter.isEnabled) {
+No. PIT : TEST-000001
+Tanggal : 22 Agu 2026
+Kasir : TEST
 
-            Toast.makeText(
+--------------------------------
+TEST PRINT
+--------------------------------
+
+Printer : ${selectedPrinterName ?: "RPP02N"}
+
+Bluetooth : OK
+Text Print : OK
+
+--------------------------------
+
+Terima kasih atas kunjungan Anda
+
+Jl. Turi Raya No.102
+Tanjung Senang
+
+~ Pitstop ~
+
+            """.trimIndent()
+
+
+        Thread {
+
+            sendTextToPrinter(
                 activity,
-                "Bluetooth tidak aktif.",
-                Toast.LENGTH_LONG
-            ).show()
+                selectedPrinterMac!!,
+                testText
+            )
 
-            return
-        }
-
-
-        val devices =
-            try {
-
-                adapter.bondedDevices.toList()
-
-            } catch (e: SecurityException) {
-
-                Toast.makeText(
-                    activity,
-                    "Tidak memiliki izin Bluetooth.",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                return
-            }
-
-
-        if (devices.isEmpty()) {
-
-            Toast.makeText(
-                activity,
-                "Belum ada printer Bluetooth yang dipairing.",
-                Toast.LENGTH_LONG
-            ).show()
-
-            return
-        }
-
-
-        val names =
-            devices.map { device ->
-
-                val deviceName =
-                    try {
-                        device.name ?: "Bluetooth Device"
-                    } catch (_: SecurityException) {
-                        "Bluetooth Device"
-                    }
-
-                "$deviceName\n${device.address}"
-
-            }.toTypedArray()
-
-
-        AlertDialog.Builder(activity)
-
-            .setTitle("Pilih Printer (Tes Teks)")
-
-            .setItems(names) { _, which ->
-
-                val device = devices[which]
-
-                Thread {
-
-                    try {
-
-                        val socket =
-                            try {
-
-                                device
-                                    .createRfcommSocketToServiceRecord(PRINTER_UUID)
-                                    .also { it.connect() }
-
-                            } catch (secureException: Exception) {
-
-                                device
-                                    .createInsecureRfcommSocketToServiceRecord(PRINTER_UUID)
-                                    .also { it.connect() }
-                            }
-
-
-                        val out =
-                            socket.outputStream
-
-
-                        // Reset printer
-                        out.write(byteArrayOf(0x1B, 0x40))
-                        out.flush()
-
-                        Thread.sleep(100)
-
-
-                        // Teks ASCII polos — TIDAK ada WebView,
-                        // TIDAK ada bitmap, TIDAK ada ESC*/GS v0
-                        val text =
-                            "TES CETAK - PITSTOP\n" +
-                                    "Kalau baris ini muncul,\n" +
-                                    "printer & kertas OK.\n" +
-                                    "Berarti masalahnya ada di\n" +
-                                    "bagian bitmap/gambar.\n\n\n"
-
-                        out.write(
-                            text.toByteArray(Charsets.US_ASCII)
-                        )
-                        out.flush()
-
-                        Thread.sleep(300)
-
-                        out.write(byteArrayOf(0x0A, 0x0A, 0x0A))
-                        out.flush()
-
-                        Thread.sleep(300)
-
-                        out.close()
-                        socket.close()
-
-
-                        activity.runOnUiThread {
-                            Toast.makeText(
-                                activity,
-                                "Tes teks terkirim.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-
-                    } catch (e: Exception) {
-
-                        activity.runOnUiThread {
-                            Toast.makeText(
-                                activity,
-                                "Gagal tes cetak:\n${e.javaClass.simpleName}\n${e.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-
-                }.start()
-            }
-
-            .setNegativeButton("Batal", null)
-
-            .show()
+        }.start()
     }
 
 
-    // =========================================================
-    // HTML → WEBVIEW → BITMAP
-    // =========================================================
+    // ============================================================
+    // SEND TEXT TO PRINTER
+    // ============================================================
 
-    private fun renderHtmlToBitmap(
+    private fun sendTextToPrinter(
         activity: Activity,
-        html: String,
-        device: BluetoothDevice
+        macAddress: String,
+        text: String
     ) {
 
-        Log.d(
-            TAG,
-            "renderHtmlToBitmap() DIMULAI"
-        )
+        var socket: BluetoothSocket? = null
 
-
-        val webView =
-            WebView(activity)
-
-
-        // =====================================================
-        // WEBVIEW SETTINGS
-        // =====================================================
-
-        webView.settings.apply {
-
-            javaScriptEnabled = true
-
-            loadWithOverviewMode = false
-
-            useWideViewPort = false
-
-            setSupportZoom(false)
-
-            builtInZoomControls = false
-
-            displayZoomControls = false
-
-            defaultFontSize = 14
-
-            defaultFixedFontSize = 14
-        }
-
-
-        webView.setBackgroundColor(
-            Color.WHITE
-        )
-
-
-        // =====================================================
-        // WEBVIEW CLIENT
-        // =====================================================
-
-        webView.webViewClient =
-            object : WebViewClient() {
-
-                override fun onPageFinished(
-                    view: WebView?,
-                    url: String?
-                ) {
-
-                    super.onPageFinished(
-                        view,
-                        url
-                    )
-
-
-                    Log.d(
-                        TAG,
-                        "WebView onPageFinished()"
-                    )
-
-
-                    if (view == null) {
-
-                        Log.e(
-                            TAG,
-                            "WebView = null"
-                        )
-
-                        return
-                    }
-
-
-                    Handler(
-                        Looper.getMainLooper()
-                    ).postDelayed({
-
-                        createBitmapFromWebView(
-                            activity = activity,
-                            webView = view,
-                            device = device
-                        )
-
-                    }, 700)
-                }
-            }
-
-
-        // =====================================================
-        // HTML UNTUK KERTAS 58MM
-        // =====================================================
-
-        val finalHtml = """
- 
-            <!DOCTYPE html>
- 
-            <html>
- 
-            <head>
- 
-                <meta
-                    name="viewport"
-                    content="width=384,
-                    initial-scale=1.0,
-                    maximum-scale=1.0,
-                    user-scalable=no"
-                >
- 
-                <style>
- 
-                    * {
-                        box-sizing: border-box;
-                    }
- 
-                    html {
-                        margin: 0;
-                        padding: 0;
-                        width: 384px;
-                        background: #ffffff;
-                    }
- 
-                    body {
-                        margin: 0;
-                        padding: 8px;
-                        width: 384px;
-                        background: #ffffff;
-                        color: #000000;
- 
-                        font-family:
-                            Arial,
-                            Helvetica,
-                            sans-serif;
- 
-                        font-size: 14px;
-                    }
- 
-                    img {
-                        max-width: 100%;
-                        height: auto;
-                    }
- 
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
- 
-                    td,
-                    th {
-                        color: #000000;
-                    }
- 
-                </style>
- 
-            </head>
- 
-            <body>
- 
-                $html
- 
-            </body>
- 
-            </html>
- 
-        """.trimIndent()
-
-
-        Log.d(
-            TAG,
-            "Memuat HTML ke WebView..."
-        )
-
-
-        webView.loadDataWithBaseURL(
-            null,
-            finalHtml,
-            "text/html",
-            "UTF-8",
-            null
-        )
-    }
-
-
-    // =========================================================
-    // WEBVIEW → BITMAP
-    // =========================================================
-
-    private fun createBitmapFromWebView(
-        activity: Activity,
-        webView: WebView,
-        device: BluetoothDevice
-    ) {
-
-        try {
-
-            Log.d(
-                TAG,
-                "Membuat bitmap..."
-            )
-
-
-            // =================================================
-            // UKUR WEBVIEW
-            // =================================================
-
-            val widthSpec =
-                View.MeasureSpec.makeMeasureSpec(
-                    PRINTER_WIDTH,
-                    View.MeasureSpec.EXACTLY
-                )
-
-
-            val heightSpec =
-                View.MeasureSpec.makeMeasureSpec(
-                    0,
-                    View.MeasureSpec.UNSPECIFIED
-                )
-
-
-            webView.measure(
-                widthSpec,
-                heightSpec
-            )
-
-
-            val width =
-                PRINTER_WIDTH
-
-
-            val height =
-                webView.measuredHeight
-
-
-            Log.d(
-                TAG,
-                "Bitmap size: ${width} x ${height}"
-            )
-
-
-            if (height <= 0) {
-
-                Log.e(
-                    TAG,
-                    "Tinggi bitmap = 0"
-                )
-
-                Toast.makeText(
-                    activity,
-                    "Gagal membuat gambar struk.",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                webView.destroy()
-
-                return
-            }
-
-
-            // =================================================
-            // LAYOUT WEBVIEW
-            // =================================================
-
-            webView.layout(
-                0,
-                0,
-                width,
-                height
-            )
-
-
-            // =================================================
-            // BUAT BITMAP
-            // =================================================
-
-            val bitmap =
-                Bitmap.createBitmap(
-                    width,
-                    height,
-                    Bitmap.Config.ARGB_8888
-                )
-
-
-            val canvas =
-                Canvas(bitmap)
-
-
-            canvas.drawColor(
-                Color.WHITE
-            )
-
-
-            webView.draw(
-                canvas
-            )
-
-
-            Log.d(
-                TAG,
-                "Bitmap berhasil dibuat."
-            )
-
-
-            Log.d(
-                TAG,
-                "Ukuran bitmap: ${bitmap.width} x ${bitmap.height}"
-            )
-
-
-            Toast.makeText(
-                activity,
-                "Menghubungkan ke printer...",
-                Toast.LENGTH_SHORT
-            ).show()
-
-
-            webView.destroy()
-
-
-            // =================================================
-            // KIRIM KE PRINTER
-            // =================================================
-
-            Thread {
-
-                sendBitmapToPrinter(
-                    activity = activity,
-                    device = device,
-                    bitmap = bitmap
-                )
-
-            }.start()
-
-
-        } catch (e: Exception) {
-
-            Log.e(
-                TAG,
-                "Gagal membuat bitmap.",
-                e
-            )
-
-
-            activity.runOnUiThread {
-
-                Toast.makeText(
-                    activity,
-                    "Gagal membuat gambar struk:\n${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
-
-
-    // =========================================================
-    // BLUETOOTH CONNECT + PRINT
-    // =========================================================
-
-    @SuppressLint("MissingPermission")
-    private fun sendBitmapToPrinter(
-        activity: Activity,
-        device: BluetoothDevice,
-        bitmap: Bitmap
-    ) {
-
-        Log.d(
-            TAG,
-            "===================================="
-        )
-
-        Log.d(
-            TAG,
-            "sendBitmapToPrinter() DIMULAI"
-        )
-
-        Log.d(
-            TAG,
-            "Printer: ${device.name}"
-        )
-
-        Log.d(
-            TAG,
-            "MAC: ${device.address}"
-        )
-
-
-        /*
-         * Socket dibuat non-null.
-         */
-        val socket: BluetoothSocket
+        var outputStream: OutputStream? = null
 
 
         try {
 
-            // =================================================
-            // HENTIKAN BLUETOOTH DISCOVERY
-            // =================================================
+            Log.d(TAG, "====================================")
+            Log.d(
+                TAG,
+                "sendTextToPrinter() DIMULAI"
+            )
+
+            Log.d(
+                TAG,
+                "Printer: ${selectedPrinterName ?: "Unknown"}"
+            )
+
+            Log.d(
+                TAG,
+                "MAC: $macAddress"
+            )
+
+            Log.d(TAG, "====================================")
+
 
             val adapter =
                 BluetoothAdapter.getDefaultAdapter()
 
 
-            try {
+            if (adapter == null) {
 
-                if (adapter.isDiscovering) {
+                showToast(
+                    activity,
+                    "Bluetooth tidak tersedia.",
+                    Toast.LENGTH_LONG
+                )
 
-                    adapter.cancelDiscovery()
-
-                    Log.d(
-                        TAG,
-                        "Bluetooth discovery dihentikan."
-                    )
-                }
-
-            } catch (
-                _: SecurityException
-            ) {
+                return
             }
 
 
-            // =================================================
+            /*
+             * Android 12+
+             */
+            if (
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                ActivityCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                showToast(
+                    activity,
+                    "Izin Bluetooth belum diberikan.",
+                    Toast.LENGTH_LONG
+                )
+
+                return
+            }
+
+
+            val device =
+                adapter.getRemoteDevice(
+                    macAddress
+                )
+
+
+            /*
+             * Hentikan Bluetooth discovery
+             * sebelum connect.
+             */
+            try {
+
+                adapter.cancelDiscovery()
+
+            } catch (e: Exception) {
+
+                Log.w(
+                    TAG,
+                    "Gagal cancel discovery.",
+                    e
+                )
+            }
+
+
+            // ====================================================
             // SECURE RFCOMM
-            // =================================================
+            // ====================================================
 
-            Log.d(
-                TAG,
-                "Mencoba SECURE RFCOMM..."
-            )
+            try {
+
+                Log.d(
+                    TAG,
+                    "Membuat SECURE RFCOMM..."
+                )
 
 
-            socket =
+                socket =
+                    device.createRfcommSocketToServiceRecord(
+                        PRINTER_UUID
+                    )
+
+
+                Log.d(
+                    TAG,
+                    "Mencoba connect..."
+                )
+
+
+                socket!!.connect()
+
+
+                Log.d(
+                    TAG,
+                    "Bluetooth BERHASIL TERHUBUNG."
+                )
+
+
+            } catch (e: Exception) {
+
+                Log.w(
+                    TAG,
+                    "Secure connection gagal.",
+                    e
+                )
+
+
                 try {
 
-                    device
-                        .createRfcommSocketToServiceRecord(
-                            PRINTER_UUID
-                        )
-                        .also {
+                    socket?.close()
 
-                            it.connect()
-                        }
-
-                } catch (
-                    secureException: Exception
-                ) {
-
-                    Log.e(
-                        TAG,
-                        "Secure RFCOMM gagal.",
-                        secureException
-                    )
-
-
-                    // =================================================
-                    // INSECURE RFCOMM
-                    // =================================================
-
-                    Log.d(
-                        TAG,
-                        "Mencoba INSECURE RFCOMM..."
-                    )
-
-
-                    device
-                        .createInsecureRfcommSocketToServiceRecord(
-                            PRINTER_UUID
-                        )
-                        .also {
-
-                            it.connect()
-                        }
+                } catch (_: Exception) {
                 }
 
 
-            Log.d(
-                TAG,
-                "Bluetooth BERHASIL TERHUBUNG."
-            )
+                // =================================================
+                // INSECURE RFCOMM
+                // =================================================
+
+                Log.d(
+                    TAG,
+                    "Mencoba INSECURE RFCOMM..."
+                )
 
 
-            // =================================================
+                socket =
+                    device.createInsecureRfcommSocketToServiceRecord(
+                        PRINTER_UUID
+                    )
+
+
+                socket!!.connect()
+
+
+                Log.d(
+                    TAG,
+                    "Bluetooth INSECURE BERHASIL TERHUBUNG."
+                )
+            }
+
+
+            // ====================================================
             // OUTPUT STREAM
-            // =================================================
+            // ====================================================
 
-            val outputStream =
-                socket.outputStream
+            outputStream =
+                socket!!.outputStream
 
 
             Log.d(
@@ -964,9 +589,9 @@ object BluetoothPrinterHelper {
             )
 
 
-            // =================================================
+            // ====================================================
             // RESET PRINTER
-            // =================================================
+            // ====================================================
 
             outputStream.write(
                 byteArrayOf(
@@ -977,38 +602,67 @@ object BluetoothPrinterHelper {
 
             outputStream.flush()
 
-
             Thread.sleep(150)
 
 
-            // =================================================
-            // BITMAP → ESC/POS
-            // =================================================
+            // ====================================================
+            // ALIGN LEFT
+            // ====================================================
 
-            Log.d(
-                TAG,
-                "Mengubah bitmap menjadi ESC/POS..."
+            outputStream.write(
+                byteArrayOf(
+                    0x1B,
+                    0x61,
+                    0x00
+                )
             )
 
 
-            val printData =
-                bitmapToEscPos(
-                    bitmap
+            // ====================================================
+            // BOLD OFF
+            // ====================================================
+
+            outputStream.write(
+                byteArrayOf(
+                    0x1B,
+                    0x45,
+                    0x00
+                )
+            )
+
+
+            // ====================================================
+            // FORMAT RECEIPT
+            // ====================================================
+
+            val formattedText =
+                formatReceipt58mm(
+                    text
+                )
+
+
+            // ====================================================
+            // ENCODING
+            // ====================================================
+
+            val textBytes =
+                formattedText.toByteArray(
+                    charset("windows-1252")
                 )
 
 
             Log.d(
                 TAG,
-                "Ukuran data print: ${printData.size} bytes"
+                "Mengirim TEXT: ${textBytes.size} bytes"
             )
 
 
-            // =================================================
-            // KIRIM DATA
-            // =================================================
+            // ====================================================
+            // SEND TEXT
+            // ====================================================
 
             outputStream.write(
-                printData
+                textBytes
             )
 
             outputStream.flush()
@@ -1016,16 +670,16 @@ object BluetoothPrinterHelper {
 
             Log.d(
                 TAG,
-                "DATA BITMAP BERHASIL DIKIRIM."
+                "TEXT BERHASIL DIKIRIM."
             )
 
 
             Thread.sleep(300)
 
 
-            // =================================================
+            // ====================================================
             // FEED PAPER
-            // =================================================
+            // ====================================================
 
             outputStream.write(
                 byteArrayOf(
@@ -1039,276 +693,993 @@ object BluetoothPrinterHelper {
             outputStream.flush()
 
 
-            Thread.sleep(500)
+            Thread.sleep(1000)
 
 
-            // =================================================
-            // CLOSE
-            // =================================================
-
-            outputStream.close()
-
-            socket.close()
-
-
+            Log.d(TAG, "====================================")
             Log.d(
                 TAG,
-                "Socket ditutup."
+                "PRINT TEXT SELESAI."
+            )
+            Log.d(TAG, "====================================")
+
+
+            showToast(
+                activity,
+                "Struk berhasil dikirim ke printer.",
+                Toast.LENGTH_SHORT
             )
 
 
-            // =================================================
-            // SUCCESS
-            // =================================================
+        } catch (e: SecurityException) {
 
-            activity.runOnUiThread {
+            Log.e(
+                TAG,
+                "SecurityException Bluetooth.",
+                e
+            )
 
-                Toast.makeText(
-                    activity,
-                    "Struk berhasil dikirim ke printer.",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+
+            showToast(
+                activity,
+                "Izin Bluetooth tidak tersedia.",
+                Toast.LENGTH_LONG
+            )
+
+
+        } catch (e: IOException) {
+
+            Log.e(
+                TAG,
+                "IOException saat print.",
+                e
+            )
+
+
+            showToast(
+                activity,
+                "Gagal mencetak: ${e.message}",
+                Toast.LENGTH_LONG
+            )
 
 
         } catch (e: Exception) {
 
             Log.e(
                 TAG,
-                "GAGAL MENCETAK.",
+                "ERROR saat print.",
                 e
             )
 
 
-            activity.runOnUiThread {
+            showToast(
+                activity,
+                "Gagal mencetak: ${e.message}",
+                Toast.LENGTH_LONG
+            )
+
+
+        } finally {
+
+            try {
+
+                outputStream?.flush()
+
+            } catch (_: Exception) {
+            }
+
+
+            try {
+
+                outputStream?.close()
+
+            } catch (_: Exception) {
+            }
+
+
+            try {
+
+                socket?.close()
+
+                Log.d(
+                    TAG,
+                    "Socket ditutup."
+                )
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    TAG,
+                    "Gagal menutup socket.",
+                    e
+                )
+            }
+        }
+    }
+
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+
+    private fun showToast(
+        activity: Activity,
+        message: String,
+        duration: Int
+    ) {
+
+        Handler(
+            Looper.getMainLooper()
+        ).post {
+
+            if (
+                !activity.isFinishing &&
+                !activity.isDestroyed
+            ) {
 
                 Toast.makeText(
                     activity,
-                    "Gagal mencetak:\n${e.javaClass.simpleName}\n${e.message}",
-                    Toast.LENGTH_LONG
+                    message,
+                    duration
                 ).show()
             }
         }
     }
 
 
-    // =========================================================
-    // BITMAP → ESC/POS
-    // =========================================================
-    //
-    // Menggunakan GS v 0 (raster bit image) — lihat penjelasan
-    // lengkap di dalam fungsi, tepat sebelum data dibentuk.
-    //
-    // =========================================================
+    // ============================================================
+    // FORMAT RECEIPT 58MM
+    // ============================================================
 
-    private fun bitmapToEscPos(
-        originalBitmap: Bitmap
-    ): ByteArray {
+    private fun formatReceipt58mm(
+        text: String
+    ): String {
 
-        Log.d(
-            TAG,
-            "bitmapToEscPos() DIMULAI"
-        )
+        val lines =
+            text
+                .replace(
+                    "\r\n",
+                    "\n"
+                )
+                .replace(
+                    "\r",
+                    "\n"
+                )
+                .split("\n")
+                .map {
+                    it.trim()
+                }
+                .filter {
+                    it.isNotEmpty()
+                }
 
 
-        // =====================================================
-        // PASTIKAN LEBAR 384 DOT
-        // =====================================================
+        val result =
+            StringBuilder()
 
-        val bitmap =
+
+        val width =
+            PRINTER_WIDTH
+
+
+        // ========================================================
+        // CENTER
+        // ========================================================
+
+        fun center(
+            value: String
+        ) {
+
+            val clean =
+                value.trim()
+
+
             if (
-                originalBitmap.width != PRINTER_WIDTH
+                clean.length >= width
             ) {
 
-                val ratio =
-                    PRINTER_WIDTH.toFloat() /
-                            originalBitmap.width.toFloat()
-
-
-                val newHeight =
-                    (
-                            originalBitmap.height *
-                                    ratio
-                            ).toInt()
-
-
-                Log.d(
-                    TAG,
-                    "Resize bitmap menjadi ${PRINTER_WIDTH} x $newHeight"
-                )
-
-
-                Bitmap.createScaledBitmap(
-                    originalBitmap,
-                    PRINTER_WIDTH,
-                    newHeight,
-                    true
+                result.append(
+                    clean.take(width)
                 )
 
             } else {
 
-                originalBitmap
+                val spaces =
+                    (width - clean.length) / 2
+
+                result.append(
+                    " ".repeat(
+                        maxOf(
+                            0,
+                            spaces
+                        )
+                    )
+                )
+
+                result.append(
+                    clean
+                )
             }
 
-
-        val width =
-            bitmap.width
-
-
-        val height =
-            bitmap.height
+            result.append(
+                "\r\n"
+            )
+        }
 
 
-        Log.d(
-            TAG,
-            "Bitmap final: ${width} x ${height}"
-        )
+        // ========================================================
+        // LEFT
+        // ========================================================
 
-
-        val output =
-            ArrayList<Byte>()
-
-
-        // =====================================================
-        // GANTI KE GS v 0 (raster bit image)
-        // =====================================================
-        //
-        // Sebelumnya pakai ESC * mode 33 (24-dot bit image).
-        // Setelah header lebar & bit-packing diperbaiki, ukuran
-        // data sudah benar (terbukti dari log: persis sama
-        // dengan hasil hitungan manual), tapi tetap tidak ada
-        // yang tercetak. Ini pola khas printer thermal generic/
-        // clone (termasuk banyak printer bertipe RPP0x) yang
-        // firmware-nya tidak mengimplementasikan ESC * dengan
-        // benar, meski printer mengaku "berhasil terhubung" dan
-        // menerima datanya tanpa error.
-        //
-        // GS v 0 jauh lebih universal didukung: seluruh gambar
-        // dikirim dalam SATU perintah (tidak perlu dipecah per
-        // 24 baris seperti ESC *), jadi juga menghilangkan
-        // potensi celah bug di pemisahan band.
-        //
-        // Format:
-        // GS v 0 m xL xH yL yH d1...dk
-        //
-        // - m       : mode normal = 0
-        // - xL, xH  : lebar gambar dalam BYTE (bukan dot!)
-        //             xBytes = ceil(width / 8)
-        // - yL, yH  : tinggi gambar dalam DOT (baris pixel)
-        // - data    : xBytes byte per baris, MSB = pixel
-        //             paling kiri, diulang untuk setiap baris
-        //             dari atas ke bawah
-        //
-        // =====================================================
-
-        val widthBytes =
-            (width + 7) / 8
-
-
-        // GS v 0
-        output.add(0x1D.toByte())
-        output.add(0x76.toByte())
-        output.add(0x30.toByte())
-
-        // mode normal
-        output.add(0x00.toByte())
-
-        // xL, xH -> lebar dalam BYTE
-        output.add((widthBytes and 0xFF).toByte())
-        output.add(((widthBytes shr 8) and 0xFF).toByte())
-
-        // yL, yH -> tinggi dalam DOT
-        output.add((height and 0xFF).toByte())
-        output.add(((height shr 8) and 0xFF).toByte())
-
-
-        // =====================================================
-        // DATA GAMBAR (per baris, dari atas ke bawah)
-        // =====================================================
-
-        for (
-        yRow in 0 until height
+        fun left(
+            value: String
         ) {
 
-            for (
-            xByte in 0 until widthBytes
+            val clean =
+                value.trim()
+
+
+            if (
+                clean.length <= width
             ) {
 
-                var value =
-                    0
+                result.append(
+                    clean
+                )
 
-                for (
-                bit in 0 until 8
+                result.append(
+                    "\r\n"
+                )
+
+            } else {
+
+                var remaining =
+                    clean
+
+
+                while (
+                    remaining.length > width
                 ) {
 
-                    val x =
-                        xByte * 8 + bit
+                    result.append(
+                        remaining.take(width)
+                    )
 
-                    if (
-                        x >= width
-                    ) {
+                    result.append(
+                        "\r\n"
+                    )
 
-                        continue
-                    }
-
-                    val pixel =
-                        bitmap.getPixel(
-                            x,
-                            yRow
-                        )
-
-                    val red =
-                        Color.red(
-                            pixel
-                        )
-
-                    val green =
-                        Color.green(
-                            pixel
-                        )
-
-                    val blue =
-                        Color.blue(
-                            pixel
-                        )
-
-                    val gray =
-                        (
-                                red * 0.299 +
-                                        green * 0.587 +
-                                        blue * 0.114
-                                ).toInt()
-
-                    if (
-                        gray < 180
-                    ) {
-
-                        value =
-                            value or
-                                    (
-                                            1 shl
-                                                    (7 - bit)
-                                            )
-                    }
+                    remaining =
+                        remaining.drop(width)
                 }
 
-                output.add(
-                    value.toByte()
-                )
+
+                if (
+                    remaining.isNotEmpty()
+                ) {
+
+                    result.append(
+                        remaining
+                    )
+
+                    result.append(
+                        "\r\n"
+                    )
+                }
             }
         }
 
 
-        val result =
-            output.toByteArray()
+        // ========================================================
+        // LABEL : VALUE
+        // ========================================================
+
+        fun labelValue(
+            label: String,
+            value: String
+        ) {
+
+            val cleanLabel =
+                label.trim()
+
+            val cleanValue =
+                value.trim()
 
 
-        Log.d(
-            TAG,
-            "ESC/POS (GS v 0) data selesai: ${result.size} bytes"
+            val line =
+                "$cleanLabel : $cleanValue"
+
+
+            left(line)
+        }
+
+
+        // ========================================================
+        // LEFT RIGHT
+        // ========================================================
+
+        fun leftRight(
+            leftText: String,
+            rightText: String
+        ) {
+
+            val left =
+                leftText.trim()
+
+            val right =
+                rightText.trim()
+
+
+            val spaces =
+                width -
+                        left.length -
+                        right.length
+
+
+            if (
+                spaces >= 1
+            ) {
+
+                result.append(
+                    left
+                )
+
+                result.append(
+                    " ".repeat(
+                        spaces
+                    )
+                )
+
+                result.append(
+                    right
+                )
+
+                result.append(
+                    "\r\n"
+                )
+
+                return
+            }
+
+
+            /*
+             * Jika nama produk terlalu panjang,
+             * harga tetap ditempatkan di kanan
+             * selama memungkinkan.
+             */
+
+            val available =
+                width -
+                        right.length -
+                        1
+
+
+            if (
+                available > 0
+            ) {
+
+                result.append(
+                    left.take(
+                        available
+                    )
+                )
+
+                result.append(" ")
+
+                result.append(
+                    right
+                )
+
+            } else {
+
+                result.append(
+                    right.take(width)
+                )
+            }
+
+
+            result.append(
+                "\r\n"
+            )
+        }
+
+
+        // ========================================================
+        // SEPARATOR
+        // ========================================================
+
+        fun separator() {
+
+            result.append(
+                "-".repeat(width)
+            )
+
+            result.append(
+                "\r\n"
+            )
+        }
+
+
+        // ========================================================
+        // PROCESS
+        // ========================================================
+
+        var i = 0
+
+
+        while (
+            i < lines.size
+        ) {
+
+            val line =
+                lines[i].trim()
+
+
+            // ====================================================
+            // CAFE
+            // ====================================================
+
+            if (
+                line.equals(
+                    "Cafe",
+                    ignoreCase = true
+                )
+            ) {
+
+                center(line)
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // NO. PIT
+            // ====================================================
+
+            if (
+                line.equals(
+                    "No. PIT",
+                    ignoreCase = true
+                )
+            ) {
+
+                if (
+                    i + 1 < lines.size
+                ) {
+
+                    labelValue(
+                        "No. PIT",
+                        lines[i + 1]
+                    )
+
+                    i += 2
+
+                    continue
+                }
+            }
+
+
+            // ====================================================
+            // TANGGAL
+            // ====================================================
+
+            if (
+                line.equals(
+                    "Tanggal",
+                    ignoreCase = true
+                )
+            ) {
+
+                if (
+                    i + 1 < lines.size
+                ) {
+
+                    labelValue(
+                        "Tanggal",
+                        lines[i + 1]
+                    )
+
+                    i += 2
+
+                    continue
+                }
+            }
+
+
+            // ====================================================
+            // KASIR
+            // ====================================================
+
+            if (
+                line.equals(
+                    "Kasir",
+                    ignoreCase = true
+                )
+            ) {
+
+                if (
+                    i + 1 < lines.size
+                ) {
+
+                    labelValue(
+                        "Kasir",
+                        lines[i + 1]
+                    )
+
+                    i += 2
+
+                    continue
+                }
+            }
+
+
+            // ====================================================
+            // SEPARATOR
+            // ====================================================
+
+            if (
+                line.isNotEmpty() &&
+                line.all {
+                    it == '-' ||
+                            it == '=' ||
+                            it == '_'
+                }
+            ) {
+
+                separator()
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // TOTAL
+            // ====================================================
+
+            if (
+                line.equals(
+                    "Total",
+                    ignoreCase = true
+                )
+            ) {
+
+                if (
+                    i + 1 < lines.size &&
+                    lines[i + 1].startsWith(
+                        "Rp",
+                        ignoreCase = true
+                    )
+                ) {
+
+                    leftRight(
+                        "Total",
+                        lines[i + 1]
+                    )
+
+                    i += 2
+
+                    continue
+                }
+
+
+                left(line)
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // BAYAR
+            // ====================================================
+
+            if (
+                line.startsWith(
+                    "Bayar",
+                    ignoreCase = true
+                )
+            ) {
+
+                if (
+                    i + 1 < lines.size &&
+                    lines[i + 1].startsWith(
+                        "Rp",
+                        ignoreCase = true
+                    )
+                ) {
+
+                    leftRight(
+                        line,
+                        lines[i + 1]
+                    )
+
+                    i += 2
+
+                    continue
+                }
+
+
+                left(line)
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // KEMBALIAN
+            // ====================================================
+
+            if (
+                line.startsWith(
+                    "Kembalian",
+                    ignoreCase = true
+                )
+            ) {
+
+                if (
+                    i + 1 < lines.size &&
+                    lines[i + 1].startsWith(
+                        "Rp",
+                        ignoreCase = true
+                    )
+                ) {
+
+                    leftRight(
+                        line,
+                        lines[i + 1]
+                    )
+
+                    i += 2
+
+                    continue
+                }
+
+
+                left(line)
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // PRODUK + HARGA
+            // ====================================================
+
+            if (
+                i + 1 < lines.size &&
+                lines[i + 1].startsWith(
+                    "Rp",
+                    ignoreCase = true
+                ) &&
+                !line.equals(
+                    "Total",
+                    ignoreCase = true
+                ) &&
+                !line.startsWith(
+                    "Bayar",
+                    ignoreCase = true
+                ) &&
+                !line.startsWith(
+                    "Kembalian",
+                    ignoreCase = true
+                )
+            ) {
+
+                leftRight(
+                    line,
+                    lines[i + 1]
+                )
+
+                i += 2
+
+                continue
+            }
+
+
+            // ====================================================
+            // TERIMA KASIH
+            // ====================================================
+
+            if (
+                line.contains(
+                    "Terima kasih",
+                    ignoreCase = true
+                )
+            ) {
+
+                result.append(
+                    "\r\n"
+                )
+
+                center(line)
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // ALAMAT
+            // ====================================================
+
+            if (
+                line.startsWith(
+                    "Jl.",
+                    ignoreCase = true
+                ) ||
+                line.startsWith(
+                    "Jl ",
+                    ignoreCase = true
+                )
+            ) {
+
+                center(line)
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // PITSTOP
+            // ====================================================
+
+            if (
+                line.contains(
+                    "~ Pitstop ~",
+                    ignoreCase = true
+                )
+            ) {
+
+                result.append(
+                    "\r\n"
+                )
+
+                center(line)
+
+                i++
+
+                continue
+            }
+
+
+            // ====================================================
+            // DEFAULT
+            // ====================================================
+
+            left(line)
+
+            i++
+        }
+
+
+        // ========================================================
+        // FEED
+        // ========================================================
+
+        result.append(
+            "\r\n"
+        )
+
+        result.append(
+            "\r\n"
         )
 
 
-        return result
+        return result.toString()
+    }
+
+
+    // ============================================================
+    // HTML -> TEXT
+    // ============================================================
+
+    private fun htmlToText(
+        html: String
+    ): String {
+
+        var result =
+            html
+
+
+        /*
+         * Hapus CSS.
+         * Ini penting supaya kode seperti:
+         *
+         * body {
+         *   font-size...
+         * }
+         *
+         * tidak ikut tercetak.
+         */
+
+        result =
+            result.replace(
+                Regex(
+                    "<style[^>]*>.*?</style>",
+                    setOf(
+                        RegexOption.IGNORE_CASE,
+                        RegexOption.DOT_MATCHES_ALL
+                    )
+                ),
+                ""
+            )
+
+
+        /*
+         * Hapus JavaScript.
+         */
+
+        result =
+            result.replace(
+                Regex(
+                    "<script[^>]*>.*?</script>",
+                    setOf(
+                        RegexOption.IGNORE_CASE,
+                        RegexOption.DOT_MATCHES_ALL
+                    )
+                ),
+                ""
+            )
+
+
+        /*
+         * BR -> ENTER
+         */
+
+        result =
+            result.replace(
+                Regex(
+                    "<br\\s*/?>",
+                    RegexOption.IGNORE_CASE
+                ),
+                "\n"
+            )
+
+
+        /*
+         * Tag penutup block -> ENTER
+         */
+
+        result =
+            result.replace(
+                Regex(
+                    "</(p|div|tr|h1|h2|h3|section)>",
+                    RegexOption.IGNORE_CASE
+                ),
+                "\n"
+            )
+
+
+        /*
+         * TD -> spasi
+         */
+
+        result =
+            result.replace(
+                Regex(
+                    "</td>",
+                    RegexOption.IGNORE_CASE
+                ),
+                " "
+            )
+
+
+        /*
+         * Hapus semua HTML tag.
+         */
+
+        result =
+            result.replace(
+                Regex(
+                    "<[^>]*>"
+                ),
+                ""
+            )
+
+
+        /*
+         * HTML entities.
+         */
+
+        result =
+            result.replace(
+                "&nbsp;",
+                " "
+            )
+
+        result =
+            result.replace(
+                "&amp;",
+                "&"
+            )
+
+        result =
+            result.replace(
+                "&lt;",
+                "<"
+            )
+
+        result =
+            result.replace(
+                "&gt;",
+                ">"
+            )
+
+        result =
+            result.replace(
+                "&quot;",
+                "\""
+            )
+
+        result =
+            result.replace(
+                "&#39;",
+                "'"
+            )
+
+
+        /*
+         * Normalisasi newline.
+         */
+
+        result =
+            result.replace(
+                "\r\n",
+                "\n"
+            )
+
+        result =
+            result.replace(
+                "\r",
+                "\n"
+            )
+
+
+        /*
+         * Hapus spasi/tab berlebihan.
+         */
+
+        result =
+            result.replace(
+                Regex("[ \\t]+"),
+                " "
+            )
+
+
+        /*
+         * Hapus spasi di awal baris.
+         */
+
+        result =
+            result.replace(
+                Regex("\n[ \\t]+"),
+                "\n"
+            )
+
+
+        /*
+         * Maksimal dua baris kosong.
+         */
+
+        result =
+            result.replace(
+                Regex("\n{3,}"),
+                "\n\n"
+            )
+
+
+        return result.trim()
     }
 }
