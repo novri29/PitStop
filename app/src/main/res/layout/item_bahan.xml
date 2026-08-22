@@ -79,6 +79,16 @@
             tools:ignore="SmallSp" />
 
         <ImageButton
+            android:id="@+id/btnEditStock"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="end"
+            android:layout_marginBottom="4dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Tambah stock"
+            android:src="@drawable/ic_edit" />
+
+        <ImageButton
             android:id="@+id/btnDelete"
             android:layout_width="30dp"
             android:layout_height="30dp"

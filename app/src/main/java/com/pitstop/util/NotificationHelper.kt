@@ -17,6 +17,7 @@ import com.pitstop.ui.admin.AdminMainActivity
 import org.json.JSONArray
 import org.json.JSONObject
 import com.pitstop.save.entity.TransaksiDetail
+import com.pitstop.save.entity.Bahan
 import com.pitstop.util.Formatter
 
 object NotificationHelper {
@@ -55,39 +56,6 @@ object NotificationHelper {
     }
 
     /**
-     * Notifikasi transaksi berhasil.
-     */
-    fun transaksiBerhasil(
-        context: Context,
-        transaksiId: Long,
-        tipe: String,
-        total: Double,
-        items: List<TransaksiDetail>
-    ) {
-        val judul = "Transaksi Berhasil"
-
-        val ringkasanItem = items.joinToString(", ") {
-            "${it.namaItem} x${it.qty}"
-        }
-
-        val isi = "$ringkasanItem • ${Formatter.rupiah(total)}"
-
-        simpanNotifikasi(
-            context = context,
-            judul = judul,
-            isi = isi,
-            jenis = "TRANSAKSI",
-            items = items
-        )
-
-        tampilkanNotifikasiSistem(
-            context = context,
-            judul = judul,
-            isi = isi
-        )
-    }
-
-    /**
      * Notifikasi refund.
      */
     fun transaksiRefund(
@@ -123,6 +91,143 @@ object NotificationHelper {
             judul = judul,
             isi = isiLengkap
         )
+    }
+
+    fun checkAndNotifyLowStock(
+        context: Context,
+        bahanList: List<Bahan>
+    ) {
+
+        val lowStock = bahanList.filter { bahan ->
+
+            bahan.initialStock > 0 &&
+                    bahan.stock > 0 &&
+                    bahan.stock <= bahan.initialStock * 0.30
+        }
+
+        if (lowStock.isEmpty()) {
+            return
+        }
+
+        val prefs = prefs(context)
+
+        val notified =
+            prefs.getStringSet(
+                "low_stock_notified",
+                emptySet()
+            )?.toMutableSet()
+                ?: mutableSetOf()
+
+        val itemBaruMenipis = lowStock.filter { bahan ->
+
+            val key =
+                "${bahan.id}_${bahan.initialStock}"
+
+            !notified.contains(key)
+        }
+
+        if (itemBaruMenipis.isEmpty()) {
+            return
+        }
+
+        itemBaruMenipis.forEach { bahan ->
+
+            notified.add(
+                "${bahan.id}_${bahan.initialStock}"
+            )
+        }
+
+        prefs.edit()
+            .putStringSet(
+                "low_stock_notified",
+                notified
+            )
+            .apply()
+
+        val daftarItem =
+            itemBaruMenipis.joinToString("\n") { bahan ->
+
+                val persen =
+                    ((bahan.stock / bahan.initialStock) * 100)
+                        .toInt()
+
+                "• ${bahan.nama}: " +
+                        "${bahan.stock.toInt()} ${bahan.satuan} " +
+                        "($persen%)"
+            }
+
+        simpanNotifikasiStock(
+            context = context,
+            isi = daftarItem
+        )
+
+        tampilkanNotifikasiSistem(
+            context = context,
+            judul = "Stock Bahan Menipis",
+            isi = daftarItem
+        )
+    }
+
+    private fun simpanNotifikasiStock(
+        context: Context,
+        isi: String
+    ) {
+
+        val oldJson =
+            prefs(context)
+                .getString(KEY_NOTIFICATIONS, "[]")
+                ?: "[]"
+
+        val oldArray = JSONArray(oldJson)
+
+        val newObject = JSONObject().apply {
+            put(
+                "judul",
+                "Stock Bahan Menipis"
+            )
+
+            put("isi", isi)
+
+            put(
+                "jenis",
+                "LOW_STOCK"
+            )
+
+            put(
+                "waktu",
+                System.currentTimeMillis()
+            )
+
+            put(
+                "dibaca",
+                false
+            )
+        }
+
+        val newArray = JSONArray()
+
+        newArray.put(newObject)
+
+        for (
+        i in 0 until minOf(oldArray.length(), 49)
+        ) {
+            val old = oldArray.getJSONObject(i)
+
+            // Jangan masukkan notifikasi transaksi berhasil lama
+            if (
+                old.optString("jenis") != "TRANSAKSI"
+            ) {
+                newArray.put(old)
+            }
+        }
+
+        prefs(context)
+            .edit()
+            .putString(
+                KEY_NOTIFICATIONS,
+                newArray.toString()
+            )
+            .apply()
     }
 
     private fun simpanNotifikasi(

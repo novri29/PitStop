@@ -47,6 +47,7 @@ class AppRepository(context: Context) {
     suspend fun insertBahan(bahan: Bahan) = bahanDao.insert(bahan)
     suspend fun updateBahan(bahan: Bahan) = bahanDao.update(bahan)
     suspend fun deleteBahan(bahan: Bahan) = bahanDao.delete(bahan)
+    suspend fun tambahStockBahan(id: Int, jumlah: Double) = bahanDao.tambahStock(id, jumlah)
 
     // ---------- Menu Kopi (Stock Cafe) ----------
     fun getMenuKopiLive(): LiveData<List<MenuKopi>> = menuKopiDao.getAllLive()
@@ -239,6 +240,12 @@ class AppRepository(context: Context) {
             item.menuKopiId?.let { potongStockUntukMenu(it, item.qty) }
             item.layananId?.let { potongStockUntukLayanan(it, item.qty) }
         }
+
+        NotificationHelper.checkAndNotifyLowStock(
+            context = appContext,
+            bahanList = bahanDao.getAll()
+        )
+
         val detailNotifikasi = items.map { item ->
             TransaksiDetail(
                 transaksiId = transaksiId.toInt(),
@@ -251,14 +258,6 @@ class AppRepository(context: Context) {
                 layananId = item.layananId
             )
         }
-
-        NotificationHelper.transaksiBerhasil(
-            context = appContext,
-            transaksiId = transaksiId,
-            tipe = tipe,
-            total = total,
-            items = detailNotifikasi
-        )
         return transaksiId
     }
 
@@ -357,6 +356,7 @@ class AppRepository(context: Context) {
 
     fun getTransaksiPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<List<Transaksi>> =
         transaksiDao.getTransaksiPeriodeLive(awal, akhir, tipe)
+
 
     suspend fun getTransaksiPeriode(awal: Long, akhir: Long, tipe: String = "SEMUA"): List<Transaksi> =
         transaksiDao.getTransaksiPeriode(awal, akhir, tipe)

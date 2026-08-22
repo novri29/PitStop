@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.pitstop.util.NotificationHelper
 import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -33,7 +34,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
-import com.pitstop.util.NotificationHelper
+
 
 class DashboardAdminFragment : Fragment() {
 
@@ -228,7 +229,17 @@ class DashboardAdminFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        if (_binding != null) {
+        if (_binding == null) return
+
+        updateNotificationBadge()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            NotificationHelper.checkAndNotifyLowStock(
+                requireContext(),
+                viewModel.getSemuaBahan()
+            )
+
+            // Update badge setelah pengecekan stock
             updateNotificationBadge()
         }
     }

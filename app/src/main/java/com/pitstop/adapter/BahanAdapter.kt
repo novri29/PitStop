@@ -11,7 +11,8 @@ import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.ItemBahanBinding
 
 class BahanAdapter(
-    private val onDelete: (Bahan) -> Unit
+    private val onDelete: (Bahan) -> Unit,
+    private val onTambahStock: (Bahan) -> Unit
 ) : ListAdapter<Bahan, BahanAdapter.VH>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -35,10 +36,14 @@ class BahanAdapter(
                     binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_red)
                     binding.tvBadge.setTextColor(binding.root.context.getColor(R.color.red))
                 }
-                bahan.stock < 200 -> {
+                bahan.stock <= bahan.initialStock * 0.30 -> {
                     binding.tvBadge.text = "Menipis"
-                    binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_orange)
-                    binding.tvBadge.setTextColor(binding.root.context.getColor(R.color.orange))
+                    binding.tvBadge.setBackgroundResource(
+                        R.drawable.bg_badge_orange
+                    )
+                    binding.tvBadge.setTextColor(
+                        binding.root.context.getColor(R.color.orange)
+                    )
                 }
                 else -> {
                     binding.tvBadge.text = "Tersedia"
@@ -47,6 +52,7 @@ class BahanAdapter(
                 }
             }
             binding.btnDelete.setOnClickListener { onDelete(bahan) }
+            binding.btnEditStock.setOnClickListener { onTambahStock(bahan) }
         }
     }
 

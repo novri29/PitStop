@@ -24,4 +24,13 @@ class BahanViewModel(private val repository: AppRepository) : ViewModel() {
     fun hapus(bahan: Bahan) {
         viewModelScope.launch { repository.deleteBahan(bahan) }
     }
+
+    fun tambahStock(
+        id: Int,
+        jumlah: Double
+    ) {
+        viewModelScope.launch {
+            repository.tambahStockBahan(id, jumlah)
+        }
+    }
 }

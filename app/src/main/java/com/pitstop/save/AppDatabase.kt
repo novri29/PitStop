@@ -31,6 +31,7 @@ import com.pitstop.save.entity.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.room.migration.Migration
 
 @Database(
     entities = [
@@ -44,7 +45,7 @@ import kotlinx.coroutines.launch
         Transaksi::class,
         TransaksiDetail::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -59,14 +60,36 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+
+            override fun migrate(
+                database: SupportSQLiteDatabase
+            ) {
+
+                database.execSQL(
+                    """
+            ALTER TABLE bahan
+            ADD COLUMN initialStock REAL NOT NULL DEFAULT 0
+            """.trimIndent()
+                )
+
+                database.execSQL(
+                    """
+            UPDATE bahan
+            SET initialStock = stock
+            """.trimIndent()
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "cafesteam.db"
-                ).addCallback(seedCallback(context))
-                    .fallbackToDestructiveMigration()
+                ).addMigrations(MIGRATION_7_8)
+                    .addCallback(seedCallback(context))
                     .build()
                 INSTANCE = instance
                 instance

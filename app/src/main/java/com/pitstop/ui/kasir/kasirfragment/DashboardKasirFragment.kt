@@ -174,7 +174,16 @@ class DashboardKasirFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        if (_binding != null) {
+        if (_binding == null) return
+
+        updateNotificationBadge()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            NotificationHelper.checkAndNotifyLowStock(
+                requireContext(),
+                viewModel.getSemuaBahan()
+            )
+
             updateNotificationBadge()
         }
     }

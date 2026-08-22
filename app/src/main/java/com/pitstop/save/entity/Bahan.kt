@@ -13,5 +13,6 @@ data class Bahan(
     val nama: String,
     val satuan: String,       // "gram" atau "ml"
     var stock: Double,        // sisa stock saat ini
-    val hargaPerSatuan: Double // harga modal per gram/ml
+    val hargaPerSatuan: Double, // harga modal per gram/ml
+    val initialStock: Double = stock // Stock awal / baseline untuk menentukan batas 30%
 )

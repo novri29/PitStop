@@ -14,6 +14,9 @@ import com.pitstop.adapter.BahanAdapter
 import com.pitstop.save.entity.Bahan
 import com.pitstop.pitstop.databinding.ActivityStockBahanBinding
 import com.pitstop.util.ViewModelFactory
+import android.text.InputType
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 
 class StockBahanActivity : AppCompatActivity() {
 
@@ -51,10 +54,21 @@ class StockBahanActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[BahanViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
 
-        adapter = BahanAdapter(onDelete = { bahan ->
-            viewModel.hapus(bahan)
-            Toast.makeText(this, "Bahan dihapus", Toast.LENGTH_SHORT).show()
-        })
+        adapter = BahanAdapter(
+            onDelete = { bahan ->
+                viewModel.hapus(bahan)
+
+                Toast.makeText(
+                    this,
+                    "Bahan dihapus",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+
+            onTambahStock = { bahan ->
+                tampilkanDialogTambahStock(bahan)
+            }
+        )
         binding.rvBahan.layoutManager = LinearLayoutManager(this)
         binding.rvBahan.adapter = adapter
 
@@ -106,5 +120,59 @@ class StockBahanActivity : AppCompatActivity() {
         binding.etHargaPerSatuan.text.clear()
         binding.formTambah.visibility = View.GONE
         Toast.makeText(this, "Bahan '$nama' tersimpan", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun tampilkanDialogTambahStock(
+        bahan: Bahan
+    ) {
+
+        val input = EditText(this).apply {
+            hint = "Jumlah yang ditambahkan"
+            inputType =
+                InputType.TYPE_CLASS_NUMBER or
+                        InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+
+        val container = android.widget.FrameLayout(this).apply {
+            setPadding(48, 0, 48, 0)
+            addView(input)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Tambah Stock")
+            .setMessage(
+                "Stock saat ini: ${bahan.stock} ${bahan.satuan}\n\n" +
+                        "Masukkan jumlah stock yang ingin ditambahkan."
+            )
+            .setView(container)
+            .setNegativeButton("Batal", null)
+            .setPositiveButton("Tambah") { _, _ ->
+
+                val jumlah =
+                    input.text.toString().toDoubleOrNull()
+
+                if (jumlah == null || jumlah <= 0) {
+
+                    Toast.makeText(
+                        this,
+                        "Jumlah stock tidak valid",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@setPositiveButton
+                }
+
+                viewModel.tambahStock(
+                    bahan.id,
+                    jumlah
+                )
+
+                Toast.makeText(
+                    this,
+                    "Stock ${bahan.nama} ditambahkan $jumlah ${bahan.satuan}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .show()
     }
 }
