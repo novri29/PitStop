@@ -29,12 +29,27 @@ import com.pitstop.util.Formatter
 import com.pitstop.util.TipePeriode
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
+import com.pitstop.util.NotificationHelper
 
 class DashboardAdminFragment : Fragment() {
 
     private var _binding: FragmentDashboardAdminBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: RingkasanViewModel
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+
+            if (granted) {
+                NotificationHelper.createChannel(requireContext())
+            }
+        }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDashboardAdminBinding.inflate(inflater, container, false)
@@ -45,7 +60,19 @@ class DashboardAdminFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this, ViewModelFactory(requireContext()))[RingkasanViewModel::class.java]
 
+        NotificationHelper.createChannel(requireContext())
 
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            requireContext().checkSelfPermission(
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            notificationPermissionLauncher.launch(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        }
 
         pilihUnit(TIPE_CAFE)
 
@@ -65,6 +92,18 @@ class DashboardAdminFragment : Fragment() {
         binding.btnPeriodeBerikutnya.setOnClickListener {
             viewModel.geserPeriode(1)
             muatGrafikOmzet()
+        }
+        binding.notificationContainer.setOnClickListener {
+
+            NotificationHelper.showNotifications(
+                requireContext()
+            )
+
+            NotificationHelper.markAllAsRead(
+                requireContext()
+            )
+
+            updateNotificationBadge()
         }
 
         viewModel.labelPeriode.observe(viewLifecycleOwner) { binding.tvLabelPeriode.text = it }
@@ -165,6 +204,33 @@ class DashboardAdminFragment : Fragment() {
         container.setBackgroundResource(R.drawable.bg_pill_outline)
         label.setTextColor(resources.getColor(R.color.black, null))
         ImageViewCompat.setImageTintList(icon, ColorStateList.valueOf(resources.getColor(R.color.black, null)))
+    }
+
+    private fun updateNotificationBadge() {
+
+        val count = NotificationHelper.getUnreadCount(
+            requireContext()
+        )
+
+        if (count > 0) {
+
+            binding.notificationBadge.visibility = View.VISIBLE
+
+            binding.notificationBadge.text =
+                if (count > 99) "99+" else count.toString()
+
+        } else {
+
+            binding.notificationBadge.visibility = View.GONE
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (_binding != null) {
+            updateNotificationBadge()
+        }
     }
 
     override fun onDestroyView() {

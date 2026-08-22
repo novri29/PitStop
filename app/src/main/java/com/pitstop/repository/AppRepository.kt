@@ -17,6 +17,7 @@ import com.pitstop.save.entity.Transaksi
 import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.User
 import java.util.Calendar
+import com.pitstop.util.NotificationHelper
 import kotlin.text.get
 import kotlin.text.insert
 import kotlin.text.toInt
@@ -29,7 +30,8 @@ import kotlin.toString
  */
 class AppRepository(context: Context) {
 
-    private val db = AppDatabase.getInstance(context)
+    private val appContext = context.applicationContext
+    private val db = AppDatabase.getInstance(appContext)
     private val userDao = db.userDao()
     private val bahanDao = db.bahanDao()
     private val menuKopiDao = db.menuKopiDao()
@@ -237,6 +239,26 @@ class AppRepository(context: Context) {
             item.menuKopiId?.let { potongStockUntukMenu(it, item.qty) }
             item.layananId?.let { potongStockUntukLayanan(it, item.qty) }
         }
+        val detailNotifikasi = items.map { item ->
+            TransaksiDetail(
+                transaksiId = transaksiId.toInt(),
+                namaItem = item.nama,
+                qty = item.qty,
+                hargaSatuan = item.hargaSatuan,
+                subtotal = item.hargaSatuan * item.qty,
+                isPromo = item.isPromo,
+                menuKopiId = item.menuKopiId,
+                layananId = item.layananId
+            )
+        }
+
+        NotificationHelper.transaksiBerhasil(
+            context = appContext,
+            transaksiId = transaksiId,
+            tipe = tipe,
+            total = total,
+            items = detailNotifikasi
+        )
         return transaksiId
     }
 
@@ -265,7 +287,21 @@ class AppRepository(context: Context) {
             }
         }
 
-        transaksiDao.setRefund(transaksiId, STATUS_REFUND, alasan, System.currentTimeMillis(), direfundOleh)
+        transaksiDao.setRefund(
+            transaksiId,
+            STATUS_REFUND,
+            alasan,
+            System.currentTimeMillis(),
+            direfundOleh
+        )
+
+        NotificationHelper.transaksiRefund(
+            context = appContext,
+            transaksiId = transaksiId,
+            total = transaksi.total,
+            alasan = alasan,
+            items = detailList
+        )
         return true
     }
 

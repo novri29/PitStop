@@ -25,6 +25,7 @@ import com.pitstop.ui.kasir.order.PilihProdukActivity
 import com.pitstop.util.Formatter
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
+import com.pitstop.util.NotificationHelper
 
 class DashboardKasirFragment : Fragment() {
 
@@ -88,6 +89,21 @@ class DashboardKasirFragment : Fragment() {
 
         binding.btnPesanBaru.setOnClickListener { mulaiPesanan() }
 
+        NotificationHelper.createChannel(requireContext())
+
+        binding.notificationContainer.setOnClickListener {
+
+            NotificationHelper.showNotifications(
+                requireContext()
+            )
+
+            NotificationHelper.markAllAsRead(
+                requireContext()
+            )
+
+            updateNotificationBadge()
+        }
+
         muatGrafikOmzet()
     }
 
@@ -134,6 +150,33 @@ class DashboardKasirFragment : Fragment() {
         container.setBackgroundResource(R.drawable.bg_pill_outline)
         label.setTextColor(resources.getColor(R.color.black, null))
         ImageViewCompat.setImageTintList(icon, ColorStateList.valueOf(resources.getColor(R.color.black, null)))
+    }
+
+    private fun updateNotificationBadge() {
+
+        val count = NotificationHelper.getUnreadCount(
+            requireContext()
+        )
+
+        if (count > 0) {
+
+            binding.notificationBadge.visibility = View.VISIBLE
+
+            binding.notificationBadge.text =
+                if (count > 99) "99+" else count.toString()
+
+        } else {
+
+            binding.notificationBadge.visibility = View.GONE
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (_binding != null) {
+            updateNotificationBadge()
+        }
     }
 
     override fun onDestroyView() {
