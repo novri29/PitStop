@@ -17,6 +17,7 @@ import com.pitstop.pitstop.databinding.ActivityLayananSteamBinding
 import com.pitstop.save.entity.DAFTAR_UKURAN_MOTOR
 import com.pitstop.save.entity.Layanan
 import com.pitstop.save.entity.StockSteam
+import com.pitstop.util.RupiahTextWatcher
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -54,6 +55,7 @@ class LayananSteamActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[StockSteamViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
+        binding.etHarga.addTextChangedListener(RupiahTextWatcher(binding.etHarga))
 
         pemakaianAdapter = PemakaianStockAdapter(onDelete = { index ->
             val current = pemakaianAdapter.getItems().toMutableList()
@@ -128,7 +130,7 @@ class LayananSteamActivity : AppCompatActivity() {
     }
 
     private fun simpanHarga() {
-        val harga = binding.etHarga.text.toString().toDoubleOrNull()
+        val harga = RupiahTextWatcher.parse(binding.etHarga.text.toString()).takeIf { binding.etHarga.text.isNotBlank() }
         if (harga == null) {
             Toast.makeText(this, "Isi harga layanan dengan benar", Toast.LENGTH_SHORT).show()
             return

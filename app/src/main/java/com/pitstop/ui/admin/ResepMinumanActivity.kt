@@ -26,6 +26,7 @@ import com.pitstop.save.entity.MenuKopi
 import com.pitstop.util.Formatter
 import com.pitstop.util.ImagePickerHelper
 import com.pitstop.util.ImageUtil
+import com.pitstop.util.RupiahTextWatcher
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -80,6 +81,9 @@ class ResepMinumanActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[MenuKopiViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
+
+        binding.etHargaJual.addTextChangedListener(RupiahTextWatcher(binding.etHargaJual))
+        binding.etHargaPromo.addTextChangedListener(RupiahTextWatcher(binding.etHargaPromo))
 
         binding.spinnerKategori.adapter = ArrayAdapter(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, kategoriOptions)
 
@@ -163,10 +167,11 @@ class ResepMinumanActivity : AppCompatActivity() {
     private fun simpanMenu() {
         val nama = binding.etNamaMenu.text.toString().trim()
         val kategori = kategoriOptions.getOrElse(binding.spinnerKategori.selectedItemPosition) { KATEGORI_COFFEE }
-        val hargaJual = binding.etHargaJual.text.toString().toDoubleOrNull()
-        val teksPromo = binding.etHargaPromo.text.toString().trim()
-        val hargaPromo = if (teksPromo.isEmpty()) null else teksPromo.toDoubleOrNull()
         val pemakaian = pemakaianAdapter.getItems()
+        val teksHargaJual = binding.etHargaJual.text.toString().trim()
+        val hargaJual = if (teksHargaJual.isEmpty()) null else RupiahTextWatcher.parse(teksHargaJual)
+        val teksPromo = binding.etHargaPromo.text.toString().trim()
+        val hargaPromo = if (teksPromo.isEmpty()) null else RupiahTextWatcher.parse(teksPromo)
 
         if (nama.isEmpty()) {
             Toast.makeText(this, "Nama menu wajib diisi", Toast.LENGTH_SHORT).show()

@@ -26,8 +26,10 @@ import com.pitstop.save.entity.MenuKopi
 import com.pitstop.util.Formatter
 import com.pitstop.util.ImagePickerHelper
 import com.pitstop.util.ImageUtil
+import com.pitstop.util.RupiahTextWatcher
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
+
 
 class ProdukMinumanActivity : AppCompatActivity() {
 
@@ -123,6 +125,7 @@ class ProdukMinumanActivity : AppCompatActivity() {
         dialogBinding.etNamaProduk.setText(menu.nama)
         dialogBinding.spinnerKategori.adapter = ArrayAdapter(this, R.layout.simple_spinner_dropdown_item, kategoriOptions)
         dialogBinding.spinnerKategori.setSelection(kategoriOptions.indexOf(menu.kategori).coerceAtLeast(0))
+        dialogBinding.etHargaJual.addTextChangedListener(RupiahTextWatcher(dialogBinding.etHargaJual))
         dialogBinding.etHargaJual.setText(menu.hargaJual.toInt().toString())
 
         val thumbnail = ImageUtil.loadThumbnail(menu.gambarPath, 300, 300)
@@ -178,7 +181,7 @@ class ProdukMinumanActivity : AppCompatActivity() {
 
         dialogBinding.btnSimpan.setOnClickListener {
             val namaBaru = dialogBinding.etNamaProduk.text.toString().trim()
-            val hargaBaru = dialogBinding.etHargaJual.text.toString().toDoubleOrNull()
+            val hargaBaru = RupiahTextWatcher.parse(dialogBinding.etHargaJual.text.toString()).takeIf { dialogBinding.etHargaJual.text.isNotBlank() }
             val pemakaian = pemakaianAdapter.getItems()
 
             if (namaBaru.isEmpty()) {

@@ -12,6 +12,7 @@ import com.pitstop.adapter.StockSteamAdapter
 import com.pitstop.save.entity.DAFTAR_SATUAN_STOCK_STEAM
 import com.pitstop.save.entity.JENIS_MOTOR
 import com.pitstop.pitstop.databinding.ActivityStockSteamBinding
+import com.pitstop.util.RupiahTextWatcher
 import com.pitstop.util.ViewModelFactory
 
 class StockSteamActivity : AppCompatActivity() {
@@ -44,6 +45,8 @@ class StockSteamActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[StockSteamViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
 
+        binding.etHargaModalStock.addTextChangedListener(RupiahTextWatcher(binding.etHargaModalStock))
+
         adapter = StockSteamAdapter(onDelete = { viewModel.hapusStock(it) })
         binding.rvStockSteam.layoutManager = LinearLayoutManager(this)
         binding.rvStockSteam.adapter = adapter
@@ -57,7 +60,7 @@ class StockSteamActivity : AppCompatActivity() {
         val nama = binding.etNamaStock.text.toString().trim()
         val posisiSatuan = binding.spinnerSatuanStock.selectedItemPosition
         val jumlah = binding.etJumlahStock.text.toString().toDoubleOrNull()
-        val hargaModal = binding.etHargaModalStock.text.toString().toDoubleOrNull() ?: 0.0
+        val hargaModal = RupiahTextWatcher.parse(binding.etHargaModalStock.text.toString())
 
         if (nama.isEmpty() || posisiSatuan < 0 || jumlah == null) {
             Toast.makeText(this, "Lengkapi semua data dengan benar", Toast.LENGTH_SHORT).show()
