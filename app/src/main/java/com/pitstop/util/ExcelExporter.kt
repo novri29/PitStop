@@ -35,6 +35,8 @@ object ExcelExporter {
         val file = File(dir, fileName)
 
         val totalOmzet = transaksiList.sumOf { it.total }
+        val totalModal = detailItem.sumOf { it.hargaModal * it.qty }
+        val totalLaba = totalOmzet - totalModal
         val totalTransaksi = transaksiList.size
         val rataRata = if (totalTransaksi > 0) totalOmzet / totalTransaksi else 0.0
         val maxQty = produkTerjual.maxOfOrNull { it.totalQty } ?: 0
@@ -50,13 +52,15 @@ object ExcelExporter {
             writer.append("=== RINGKASAN ===\n")
             writer.append("Total Transaksi,$totalTransaksi\n")
             writer.append("Total Omzet,$totalOmzet\n")
+            writer.append("Total Modal (HPP),$totalModal\n")
+            writer.append("Laba Bersih,$totalLaba\n")
             writer.append("Rata-rata per Transaksi,${"%.0f".format(rataRata)}\n")
             writer.append("\n")
 
             writer.append("=== PRODUK TERJUAL ===\n")
-            writer.append("No,Nama Produk,Qty Terjual,Total Omzet,Kontribusi (%),Grafik\n")
+            writer.append("No,Nama Produk,Qty Terjual,Total Omzet,Total Modal,Laba Bersih,Kontribusi (%),Grafik\n")
             if (produkTerjual.isEmpty()) {
-                writer.append(",${csv("Belum ada produk terjual")},,,,\n")
+                writer.append(",${csv("Belum ada produk terjual")},,,,,,\n")
             } else {
                 produkTerjual.forEachIndexed { index, row ->
                     val kontribusi = if (totalOmzet > 0) (row.totalOmzet / totalOmzet) * 100 else 0.0
@@ -68,6 +72,8 @@ object ExcelExporter {
                     writer.append("${csv(row.namaItem)},")
                     writer.append("${row.totalQty},")
                     writer.append("${row.totalOmzet},")
+                    writer.append("${row.totalModal},")
+                    writer.append("${row.totalOmzet - row.totalModal},")
                     writer.append("${"%.1f".format(kontribusi)}%,")
                     writer.append("${csv(bar)}\n")
                 }
@@ -75,11 +81,12 @@ object ExcelExporter {
             writer.append("\n")
 
             writer.append("=== DETAIL TRANSAKSI PER ITEM ===\n")
-            writer.append("No,Tanggal,Tipe Transaksi,Kasir,Item,Qty,Harga Satuan,Subtotal,Promo\n")
+            writer.append("No,Tanggal,Tipe Transaksi,Kasir,Item,Qty,Harga Satuan,Subtotal,Modal,Laba Bersih,Promo\n")
             if (detailItem.isEmpty()) {
-                writer.append(",${csv("Belum ada transaksi")},,,,,,,\n")
+                writer.append(",${csv("Belum ada transaksi")},,,,,,,,,\n")
             } else {
                 detailItem.forEachIndexed { index, row ->
+                    val modalBaris = row.hargaModal * row.qty
                     writer.append("${index + 1},")
                     writer.append("${csv(Formatter.tanggalWaktu(row.tanggal))},")
                     writer.append("${csv(row.tipe)},")
@@ -88,6 +95,8 @@ object ExcelExporter {
                     writer.append("${row.qty},")
                     writer.append("${row.hargaSatuan},")
                     writer.append("${row.subtotal},")
+                    writer.append("${modalBaris},")
+                    writer.append("${row.subtotal - modalBaris},")
                     writer.append("${if (row.isPromo) "Ya" else "Tidak"}\n")
                 }
             }
@@ -103,6 +112,8 @@ object ExcelExporter {
                 writer.append("${t.total}\n")
             }
             writer.append(",,,Total Omzet,$totalOmzet\n")
+            writer.append(",,,Total Modal (HPP),$totalModal\n")
+            writer.append(",,,Laba Bersih,$totalLaba\n")
         }
         return file
     }

@@ -184,7 +184,11 @@ class AppRepository(context: Context) {
             }
     }
 
-    /** Ganti seluruh komposisi bahan untuk 1 layanan (hapus yang lama, simpan yang baru). */
+    /**
+     * Ganti seluruh komposisi bahan untuk 1 layanan (hapus yang lama, simpan yang baru).
+     * hargaModal (HPP) layanan dihitung ulang otomatis dari komposisi barunya, mirip pola
+     * updateMenuKopiDenganResep di sisi Cafe.
+     */
     suspend fun simpanKomposisiLayanan(layananId: Int, pemakaian: List<Pair<StockSteam, Double>>) {
         stockSteamDao.deleteBahanUsageForLayanan(layananId)
         pemakaian.forEach { (stockSteam, jumlah) ->
@@ -192,6 +196,8 @@ class AppRepository(context: Context) {
                 LayananBahan(layananId = layananId, stockSteamId = stockSteam.id, jumlahDigunakan = jumlah)
             )
         }
+        val hargaModal = pemakaian.sumOf { (stockSteam, jumlah) -> jumlah * stockSteam.hargaPerSatuan }
+        stockSteamDao.updateHargaModalLayanan(layananId, hargaModal)
     }
 
     /** Dipanggil saat layanan steam terjual: mengurangi stock tiap bahan sesuai qty terjual */
@@ -231,6 +237,13 @@ class AppRepository(context: Context) {
             )
         )
         items.forEach { item ->
+            // Ambil harga modal PER UNIT saat ini & simpan snapshot-nya ke TransaksiDetail,
+            // supaya laba bersih periode lama tetap akurat walau harga modal berubah belakangan.
+            val hargaModalSaatIni = when {
+                item.menuKopiId != null -> menuKopiDao.getById(item.menuKopiId)?.hargaModal ?: 0.0
+                item.layananId != null -> stockSteamDao.getLayananById(item.layananId)?.hargaModal ?: 0.0
+                else -> 0.0
+            }
             transaksiDao.insertDetail(
                 TransaksiDetail(
                     transaksiId = transaksiId.toInt(),
@@ -240,7 +253,8 @@ class AppRepository(context: Context) {
                     subtotal = item.hargaSatuan * item.qty,
                     isPromo = item.isPromo,
                     menuKopiId = item.menuKopiId,
-                    layananId = item.layananId
+                    layananId = item.layananId,
+                    hargaModal = hargaModalSaatIni
                 )
             )
             item.menuKopiId?.let { potongStockUntukMenu(it, item.qty) }
@@ -252,18 +266,6 @@ class AppRepository(context: Context) {
             bahanList = bahanDao.getAll()
         )
 
-        val detailNotifikasi = items.map { item ->
-            TransaksiDetail(
-                transaksiId = transaksiId.toInt(),
-                namaItem = item.nama,
-                qty = item.qty,
-                hargaSatuan = item.hargaSatuan,
-                subtotal = item.hargaSatuan * item.qty,
-                isPromo = item.isPromo,
-                menuKopiId = item.menuKopiId,
-                layananId = item.layananId
-            )
-        }
         return transaksiId
     }
 
@@ -317,6 +319,7 @@ class AppRepository(context: Context) {
     suspend fun getTransaksiById(id: Int): Transaksi? = transaksiDao.getById(id)
     suspend fun getDetailForTransaksi(transaksiId: Int) = transaksiDao.getDetailForTransaksi(transaksiId)
     fun getTotalOmzetLive(): LiveData<Double?> = transaksiDao.getTotalOmzetLive()
+    fun getTotalLabaLive(): LiveData<Double?> = transaksiDao.getTotalLabaLive()
 
     // ---------- Ringkasan Hari Ini ----------
     private fun awalHariIni(): Long {
@@ -356,6 +359,9 @@ class AppRepository(context: Context) {
 
     fun getOmzetPromoPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Double?> =
         transaksiDao.getOmzetPromoLive(awal, akhir, tipe)
+
+    fun getLabaPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Double?> =
+        transaksiDao.getLabaPeriodeLive(awal, akhir, tipe)
 
     fun getTotalProdukTerjualPeriodeLive(awal: Long, akhir: Long, tipe: String = "SEMUA"): LiveData<Int?> =
         transaksiDao.getTotalProdukTerjualHariIniLive(awal, akhir, tipe)
@@ -448,6 +454,100 @@ class AppRepository(context: Context) {
         akhirCal.set(Calendar.SECOND, 59); akhirCal.set(Calendar.MILLISECOND, 999)
 
         val rows = transaksiDao.getOmzetBulananRaw(awalCal.timeInMillis, akhirCal.timeInMillis)
+        val peta = rows.associate { it.tanggalStr to it.totalOmzet }
+        val formatKey = java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.US)
+        val labelBulan = arrayOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des")
+
+        val hasil = mutableListOf<Pair<String, Double>>()
+        val kursor = awalCal.clone() as Calendar
+        repeat(12) { i ->
+            val key = formatKey.format(kursor.time)
+            hasil.add(labelBulan[i] to (peta[key] ?: 0.0))
+            kursor.add(Calendar.MONTH, 1)
+        }
+        return hasil
+    }
+
+    // ---------- Grafik: Laba bersih N hari terakhir (mode Harian) ----------
+    suspend fun getLabaHarianTerakhir(jumlahHari: Int = 7): List<Pair<String, Double>> {
+        val kalenderAkhir = Calendar.getInstance()
+        val akhir = akhirHariIni()
+        val kalenderAwal = kalenderAkhir.clone() as Calendar
+        kalenderAwal.add(Calendar.DAY_OF_MONTH, -(jumlahHari - 1))
+        kalenderAwal.set(Calendar.HOUR_OF_DAY, 0); kalenderAwal.set(Calendar.MINUTE, 0)
+        kalenderAwal.set(Calendar.SECOND, 0); kalenderAwal.set(Calendar.MILLISECOND, 0)
+        val awal = kalenderAwal.timeInMillis
+
+        val rows = transaksiDao.getLabaHarianRaw(awal, akhir)
+        val peta = rows.associate { it.tanggalStr to it.totalOmzet }
+
+        val formatKey = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val formatLabel = java.text.SimpleDateFormat("dd/MM", java.util.Locale("in", "ID"))
+
+        val hasil = mutableListOf<Pair<String, Double>>()
+        val kursor = kalenderAwal.clone() as Calendar
+        repeat(jumlahHari) {
+            val key = formatKey.format(kursor.time)
+            val label = formatLabel.format(kursor.time)
+            hasil.add(label to (peta[key] ?: 0.0))
+            kursor.add(Calendar.DAY_OF_MONTH, 1)
+        }
+        return hasil
+    }
+
+    /** Laba bersih per hari (dengan tanggal awal & akhir bebas), dipakai untuk agregat mingguan bulan berjalan. */
+    suspend fun getLabaHarianAntara(awal: Long, akhir: Long): List<Pair<Int, Double>> {
+        val rows = transaksiDao.getLabaHarianRaw(awal, akhir)
+        val peta = rows.associate { it.tanggalStr to it.totalOmzet }
+        val formatKey = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+
+        val hasil = mutableListOf<Pair<Int, Double>>()
+        val kursor = Calendar.getInstance().apply { timeInMillis = awal }
+        val batasAkhir = Calendar.getInstance().apply { timeInMillis = akhir }
+        while (!kursor.after(batasAkhir)) {
+            val key = formatKey.format(kursor.time)
+            hasil.add(kursor.get(Calendar.DAY_OF_MONTH) to (peta[key] ?: 0.0))
+            kursor.add(Calendar.DAY_OF_MONTH, 1)
+        }
+        return hasil
+    }
+
+    /** Laba bersih per Minggu ke-1..ke-5 dalam satu bulan (mode Bulanan). */
+    suspend fun getLabaMingguanDalamBulan(kalenderBulan: Calendar): List<Pair<String, Double>> {
+        val awalCal = kalenderBulan.clone() as Calendar
+        awalCal.set(Calendar.DAY_OF_MONTH, 1)
+        awalCal.set(Calendar.HOUR_OF_DAY, 0); awalCal.set(Calendar.MINUTE, 0)
+        awalCal.set(Calendar.SECOND, 0); awalCal.set(Calendar.MILLISECOND, 0)
+
+        val akhirCal = kalenderBulan.clone() as Calendar
+        akhirCal.set(Calendar.DAY_OF_MONTH, akhirCal.getActualMaximum(Calendar.DAY_OF_MONTH))
+        akhirCal.set(Calendar.HOUR_OF_DAY, 23); akhirCal.set(Calendar.MINUTE, 59)
+        akhirCal.set(Calendar.SECOND, 59); akhirCal.set(Calendar.MILLISECOND, 999)
+
+        val harian = getLabaHarianAntara(awalCal.timeInMillis, akhirCal.timeInMillis)
+        val perMinggu = DoubleArray(5)
+        harian.forEach { (tanggal, laba) ->
+            val indexMinggu = ((tanggal - 1) / 7).coerceAtMost(4)
+            perMinggu[indexMinggu] += laba
+        }
+        val jumlahMingguDipakai = ((akhirCal.getActualMaximum(Calendar.DAY_OF_MONTH) - 1) / 7) + 1
+        return (0 until jumlahMingguDipakai).map { i -> "M${i + 1}" to perMinggu[i] }
+    }
+
+    /** Laba bersih per bulan (Jan-Des) dalam satu tahun (mode Tahunan). */
+    suspend fun getLabaBulananDalamTahun(kalenderTahun: Calendar): List<Pair<String, Double>> {
+        val awalCal = kalenderTahun.clone() as Calendar
+        awalCal.set(Calendar.DAY_OF_YEAR, 1)
+        awalCal.set(Calendar.HOUR_OF_DAY, 0); awalCal.set(Calendar.MINUTE, 0)
+        awalCal.set(Calendar.SECOND, 0); awalCal.set(Calendar.MILLISECOND, 0)
+
+        val akhirCal = kalenderTahun.clone() as Calendar
+        akhirCal.set(Calendar.MONTH, Calendar.DECEMBER)
+        akhirCal.set(Calendar.DAY_OF_MONTH, 31)
+        akhirCal.set(Calendar.HOUR_OF_DAY, 23); akhirCal.set(Calendar.MINUTE, 59)
+        akhirCal.set(Calendar.SECOND, 59); akhirCal.set(Calendar.MILLISECOND, 999)
+
+        val rows = transaksiDao.getLabaBulananRaw(awalCal.timeInMillis, akhirCal.timeInMillis)
         val peta = rows.associate { it.tanggalStr to it.totalOmzet }
         val formatKey = java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.US)
         val labelBulan = arrayOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des")

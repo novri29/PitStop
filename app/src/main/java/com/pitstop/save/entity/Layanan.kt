@@ -23,5 +23,6 @@ data class Layanan(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val nama: String,    // contoh: "Cuci Motor Kecil"
     val ukuran: String,  // Motor Kecil / Motor Sedang / Motor Besar
-    val harga: Double
+    val harga: Double,
+    val hargaModal: Double = 0.0 // dihitung otomatis dari total pemakaian StockSteam (mirip MenuKopi.hargaModal)
 )

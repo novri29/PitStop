@@ -67,16 +67,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <EditText
-                    android:id="@+id/etSatuanStock"
+                <Spinner
+                    android:id="@+id/spinnerSatuanStock"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:autofillHints=""
-                    android:background="@drawable/bg_edittext"
-                    android:hint="@string/satuan_ml_botol"
-                    android:inputType="text" />
+                    android:background="@drawable/bg_edittext" />
 
                 <EditText
                     android:id="@+id/etJumlahStock"
@@ -88,6 +85,16 @@
                     android:hint="@string/jumlah_stock"
                     android:inputType="numberDecimal" />
             </LinearLayout>
+
+            <EditText
+                android:id="@+id/etHargaModalStock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:autofillHints=""
+                android:background="@drawable/bg_edittext"
+                android:hint="@string/harga_modal_per_satuan"
+                android:inputType="numberDecimal" />
 
             <Button
                 android:id="@+id/btnSimpanStock"

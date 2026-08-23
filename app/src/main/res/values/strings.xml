@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PitStop</string>
+    <string name="app_name">PitStop2</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="kategori_produk">Kategori Produk</string>
@@ -90,6 +90,7 @@
     <string name="input_stock_barang_shampo_dll">Input Stock Barang (Shampo, dll)</string>
     <string name="nama_barang_contoh_shampo_motor">Nama barang (contoh: Shampo Motor)</string>
     <string name="satuan_ml_botol">Satuan (ml/botol)</string>
+    <string name="harga_modal_per_satuan">Harga modal per satuan (Rp)</string>
     <string name="jumlah_stock">Jumlah stock</string>
     <string name="simpan_stock">Simpan Stock</string>
     <string name="daftar_stock_steam">Daftar Stock Steam</string>
@@ -168,6 +169,8 @@
     <string name="kosongkan_jika_tidak_ingin_ganti_password">Kosongkan jika tidak ingin ganti password</string>
     <string name="laporan_penjualan">Laporan Penjualan</string>
     <string name="total_omzet_rp0">Total Omzet: Rp0</string>
+    <string name="laba_bersih_rp0">Laba Bersih: Rp0</string>
+    <string name="tren_laba_bersih_7_hari_terakhir">Tren Laba Bersih 7 Hari Terakhir</string>
     <string name="export_excel">Export Excel</string>
     <string name="_0_transaksi">0 transaksi</string>
     <string name="produk_terlaris_periode_ini">Produk Terlaris (periode ini)</string>

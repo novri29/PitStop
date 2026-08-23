@@ -31,6 +31,7 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
     val produkTerjualHariIni = tipeTerpilih.switchMap { repository.getTotalProdukTerjualHariIniLive(it) }
     val stokBahanHabis = repository.getStokBahanHabisLive()
     val totalOmzetKeseluruhan = repository.getTotalOmzetLive()
+    val totalLabaKeseluruhan = repository.getTotalLabaLive()
 
     fun pilihUnit(tipe: String) {
         tipeTerpilih.value = tipe
@@ -70,6 +71,7 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
     val omzetPromoPeriode = filterGabungan.switchMap { f -> repository.getOmzetPromoPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
     val produkTerjualPeriode = filterGabungan.switchMap { f -> repository.getTotalProdukTerjualPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
     val transaksiPeriode = filterGabungan.switchMap { f -> repository.getTransaksiPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
+    val labaPeriode = filterGabungan.switchMap { f -> repository.getLabaPeriodeLive(f.awal, f.akhir, f.tipeUnit) }
 
     fun pilihPeriode(tipe: TipePeriode) {
         tipePeriode.value = tipe
@@ -112,6 +114,7 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
 
     // ---------- Grafik & Produk Terlaris ----------
     suspend fun getOmzet7HariTerakhir(): List<Pair<String, Double>> = repository.getOmzetHarianTerakhir(7)
+    suspend fun getLaba7HariTerakhir(): List<Pair<String, Double>> = repository.getLabaHarianTerakhir(7)
 
     /**
      * Grafik yang otomatis menyesuaikan mode periode yang sedang aktif:
@@ -126,6 +129,17 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
             TipePeriode.HARIAN -> repository.getOmzetHarianTerakhir(7)
             TipePeriode.BULANAN -> repository.getOmzetMingguanDalamBulan(kalender)
             TipePeriode.TAHUNAN -> repository.getOmzetBulananDalamTahun(kalender)
+        }
+    }
+
+    /** Sama seperti getGrafikSesuaiPeriode(), tapi untuk grafik Laba Bersih (Omzet - Modal). */
+    suspend fun getGrafikLabaSesuaiPeriode(): List<Pair<String, Double>> {
+        val tipe = tipePeriode.value ?: TipePeriode.HARIAN
+        val kalender = kalenderAcuan.value ?: Calendar.getInstance()
+        return when (tipe) {
+            TipePeriode.HARIAN -> repository.getLabaHarianTerakhir(7)
+            TipePeriode.BULANAN -> repository.getLabaMingguanDalamBulan(kalender)
+            TipePeriode.TAHUNAN -> repository.getLabaBulananDalamTahun(kalender)
         }
     }
 

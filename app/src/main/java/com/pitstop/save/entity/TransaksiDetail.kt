@@ -19,5 +19,6 @@ data class TransaksiDetail(
     val subtotal: Double,
     val isPromo: Boolean = false,
     val menuKopiId: Int? = null,   // referensi produk cafe (dipakai untuk kembalikan stock saat refund)
-    val layananId: Int? = null     // referensi layanan steam (dipakai untuk kembalikan stock saat refund)
+    val layananId: Int? = null,    // referensi layanan steam (dipakai untuk kembalikan stock saat refund)
+    val hargaModal: Double = 0.0   // snapshot harga modal PER UNIT saat transaksi terjadi (supaya laba historis tetap akurat walau modal berubah belakangan)
 )

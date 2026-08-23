@@ -14,9 +14,11 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
     val stockList: LiveData<List<StockSteam>> = repository.getStockSteamLive()
     val layananList: LiveData<List<Layanan>> = repository.getLayananLive()
 
-    fun tambahStock(nama: String, jenis: String = JENIS_MOTOR, satuan: String, stock: Double) {
+    fun tambahStock(nama: String, jenis: String = JENIS_MOTOR, satuan: String, stock: Double, hargaPerSatuan: Double = 0.0) {
         viewModelScope.launch {
-            repository.insertStockSteam(StockSteam(nama = nama, jenis = jenis, satuan = satuan, stock = stock))
+            repository.insertStockSteam(
+                StockSteam(nama = nama, jenis = jenis, satuan = satuan, stock = stock, hargaPerSatuan = hargaPerSatuan)
+            )
         }
     }
 

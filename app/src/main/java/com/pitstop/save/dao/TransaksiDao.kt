@@ -38,6 +38,13 @@ interface TransaksiDao {
     @Query("SELECT SUM(total) FROM transaksi WHERE status != 'Refund'")
     fun getTotalOmzetLive(): LiveData<Double?>
 
+    @Query("""
+        SELECT SUM(d.subtotal - d.hargaModal * d.qty) FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.status != 'Refund'
+    """)
+    fun getTotalLabaLive(): LiveData<Double?>
+
     // ---------- Ringkasan Hari Ini ----------
     // tipe = 'SEMUA' berarti tanpa filter unit usaha.
     // Transaksi campuran (mis. "Cuci Motor + Cafe", satu struk berisi item dari kedua unit usaha)
@@ -76,6 +83,19 @@ interface TransaksiDao {
         AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
     """)
     fun getOmzetPromoLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
+
+    // ---------- Laba Bersih (Omzet - Modal) per Periode ----------
+    // Modal dihitung dari snapshot d.hargaModal (harga modal PER UNIT saat item terjual),
+    // BUKAN dari harga modal saat ini, supaya laba periode lama tetap akurat walau harga
+    // modal bahan/layanan berubah belakangan. Sama seperti query omzet, filter unit usaha
+    // dilakukan per item (layananId/menuKopiId) supaya transaksi campuran tidak dobel-hitung.
+    @Query("""
+        SELECT SUM(d.subtotal - d.hargaModal * d.qty) FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
+        AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
+    """)
+    fun getLabaPeriodeLive(awal: Long, akhir: Long, tipe: String): LiveData<Double?>
 
     @Query("""
         SELECT SUM(d.qty) FROM transaksi_detail d
@@ -125,12 +145,37 @@ interface TransaksiDao {
     """)
     suspend fun getOmzetBulananRaw(awal: Long, akhir: Long): List<OmzetHarianRow>
 
+    // ---------- Grafik: Laba bersih harian dalam rentang tanggal (untuk mode Harian/Bulanan) ----------
+    @Query("""
+        SELECT strftime('%Y-%m-%d', t.tanggal / 1000, 'unixepoch', 'localtime') as tanggalStr,
+               SUM(d.subtotal - d.hargaModal * d.qty) as totalOmzet
+        FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
+        GROUP BY tanggalStr
+        ORDER BY tanggalStr ASC
+    """)
+    suspend fun getLabaHarianRaw(awal: Long, akhir: Long): List<OmzetHarianRow>
+
+    // ---------- Grafik: Laba bersih bulanan dalam rentang tanggal (untuk mode Tahunan) ----------
+    @Query("""
+        SELECT strftime('%Y-%m', t.tanggal / 1000, 'unixepoch', 'localtime') as tanggalStr,
+               SUM(d.subtotal - d.hargaModal * d.qty) as totalOmzet
+        FROM transaksi_detail d
+        INNER JOIN transaksi t ON t.id = d.transaksiId
+        WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
+        GROUP BY tanggalStr
+        ORDER BY tanggalStr ASC
+    """)
+    suspend fun getLabaBulananRaw(awal: Long, akhir: Long): List<OmzetHarianRow>
+
     // ---------- Produk Terlaris dalam rentang tanggal + filter unit usaha ----------
     // Sama seperti omzet di atas: filter per item (layananId/menuKopiId), bukan tipe header
     // transaksi, supaya produk Cafe tidak ikut nyasar ke daftar "Cuci Motor" (atau sebaliknya)
     // saat berasal dari transaksi campuran.
     @Query("""
-        SELECT d.namaItem as namaItem, SUM(d.qty) as totalQty, SUM(d.subtotal) as totalOmzet
+        SELECT d.namaItem as namaItem, SUM(d.qty) as totalQty, SUM(d.subtotal) as totalOmzet,
+               SUM(d.hargaModal * d.qty) as totalModal
         FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
         WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
@@ -145,7 +190,7 @@ interface TransaksiDao {
     @Query("""
         SELECT t.tanggal as tanggal, t.tipe as tipe, t.kasirUsername as kasirUsername,
                d.namaItem as namaItem, d.qty as qty, d.hargaSatuan as hargaSatuan,
-               d.subtotal as subtotal, d.isPromo as isPromo
+               d.subtotal as subtotal, d.isPromo as isPromo, d.hargaModal as hargaModal
         FROM transaksi_detail d
         INNER JOIN transaksi t ON t.id = d.transaksiId
         WHERE t.tanggal BETWEEN :awal AND :akhir AND t.status != 'Refund'
@@ -163,7 +208,8 @@ data class OmzetHarianRow(
 data class ProdukTerlarisRow(
     val namaItem: String,
     val totalQty: Int,
-    val totalOmzet: Double
+    val totalOmzet: Double,
+    val totalModal: Double = 0.0
 )
 
 data class DetailLaporanRow(
@@ -174,5 +220,6 @@ data class DetailLaporanRow(
     val qty: Int,
     val hargaSatuan: Double,
     val subtotal: Double,
-    val isPromo: Boolean
+    val isPromo: Boolean,
+    val hargaModal: Double = 0.0
 )

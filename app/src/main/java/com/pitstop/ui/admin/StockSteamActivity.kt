@@ -1,6 +1,7 @@
 package com.pitstop.ui.admin
 
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -8,6 +9,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.StockSteamAdapter
+import com.pitstop.save.entity.DAFTAR_SATUAN_STOCK_STEAM
 import com.pitstop.save.entity.JENIS_MOTOR
 import com.pitstop.pitstop.databinding.ActivityStockSteamBinding
 import com.pitstop.util.ViewModelFactory
@@ -35,6 +37,10 @@ class StockSteamActivity : AppCompatActivity() {
             insets
         }
 
+        binding.spinnerSatuanStock.adapter = ArrayAdapter(
+            this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, DAFTAR_SATUAN_STOCK_STEAM
+        )
+
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[StockSteamViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
 
@@ -49,17 +55,19 @@ class StockSteamActivity : AppCompatActivity() {
 
     private fun simpanStock() {
         val nama = binding.etNamaStock.text.toString().trim()
-        val satuan = binding.etSatuanStock.text.toString().trim()
+        val posisiSatuan = binding.spinnerSatuanStock.selectedItemPosition
         val jumlah = binding.etJumlahStock.text.toString().toDoubleOrNull()
+        val hargaModal = binding.etHargaModalStock.text.toString().toDoubleOrNull() ?: 0.0
 
-        if (nama.isEmpty() || satuan.isEmpty() || jumlah == null) {
+        if (nama.isEmpty() || posisiSatuan < 0 || jumlah == null) {
             Toast.makeText(this, "Lengkapi semua data dengan benar", Toast.LENGTH_SHORT).show()
             return
         }
-        viewModel.tambahStock(nama, JENIS_MOTOR, satuan, jumlah)
+        val satuan = DAFTAR_SATUAN_STOCK_STEAM[posisiSatuan]
+        viewModel.tambahStock(nama, JENIS_MOTOR, satuan, jumlah, hargaModal)
         binding.etNamaStock.text.clear()
-        binding.etSatuanStock.text.clear()
         binding.etJumlahStock.text.clear()
+        binding.etHargaModalStock.text.clear()
         Toast.makeText(this, "Stock '$nama' tersimpan", Toast.LENGTH_SHORT).show()
     }
 }

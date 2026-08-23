@@ -13,6 +13,9 @@ interface MenuKopiDao {
     @Query("SELECT * FROM menu_kopi ORDER BY nama ASC")
     suspend fun getAll(): List<MenuKopi>
 
+    @Query("SELECT * FROM menu_kopi WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Int): MenuKopi?
+
     @Insert
     suspend fun insertMenu(menuKopi: MenuKopi): Long
 

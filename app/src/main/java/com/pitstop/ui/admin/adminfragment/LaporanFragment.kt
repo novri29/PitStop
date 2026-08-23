@@ -81,6 +81,9 @@ class LaporanFragment : Fragment() {
         viewModel.omzetPeriode.observe(viewLifecycleOwner) {
             if (!modeSemua) binding.tvTotalOmzet.text = "Total Omzet: ${Formatter.rupiah(it ?: 0.0)}"
         }
+        viewModel.labaPeriode.observe(viewLifecycleOwner) {
+            if (!modeSemua) binding.tvTotalLaba.text = "Laba Bersih: ${Formatter.rupiah(it ?: 0.0)}"
+        }
         viewModel.jumlahTransaksiPeriode.observe(viewLifecycleOwner) {
             if (!modeSemua) binding.tvJumlahTransaksi.text = "$it transaksi"
         }
@@ -91,6 +94,9 @@ class LaporanFragment : Fragment() {
         }
         viewModel.totalOmzetKeseluruhan.observe(viewLifecycleOwner) {
             if (modeSemua) binding.tvTotalOmzet.text = "Total Omzet: ${Formatter.rupiah(it ?: 0.0)}"
+        }
+        viewModel.totalLabaKeseluruhan.observe(viewLifecycleOwner) {
+            if (modeSemua) binding.tvTotalLaba.text = "Laba Bersih: ${Formatter.rupiah(it ?: 0.0)}"
         }
 
         pilihPeriode(TipePeriode.HARIAN)
@@ -132,6 +138,7 @@ class LaporanFragment : Fragment() {
         binding.rowNavigasiPeriode.visibility = View.GONE
         binding.tvLabelProdukTerlaris.text = "Produk Terlaris (Semua)"
         binding.tvLabelGrafik.text = "Tren Omzet 7 Hari Terakhir"
+        binding.tvLabelGrafikLaba.text = "Tren Laba Bersih 7 Hari Terakhir"
 
         resetToggle(binding.btnHarian); resetToggle(binding.btnBulanan)
         resetToggle(binding.btnTahunan); resetToggle(binding.btnSemua)
@@ -146,6 +153,10 @@ class LaporanFragment : Fragment() {
             val data = viewModel.getOmzet7HariTerakhir()
             val entries = data.map { (label, omzet) -> BarChartEntry(label, omzet.toFloat()) }
             binding.chartOmzet.setData(entries, formatRupiah = true)
+
+            val dataLaba = viewModel.getLaba7HariTerakhir()
+            val entriesLaba = dataLaba.map { (label, laba) -> BarChartEntry(label, laba.toFloat()) }
+            binding.chartLaba.setData(entriesLaba, formatRupiah = true)
         }
     }
 
@@ -153,6 +164,7 @@ class LaporanFragment : Fragment() {
     private fun muatGrafikDanProdukTerlaris() {
         if (modeSemua) return
         binding.tvLabelGrafik.text = viewModel.getLabelGrafik()
+        binding.tvLabelGrafikLaba.text = viewModel.getLabelGrafik().replace("Omzet", "Laba Bersih")
         viewLifecycleOwner.lifecycleScope.launch {
             val produk = viewModel.getProdukTerlarisPeriode()
             produkTerlarisAdapter.submitList(produk)
@@ -161,6 +173,10 @@ class LaporanFragment : Fragment() {
             val data = viewModel.getGrafikSesuaiPeriode()
             val entries = data.map { (label, omzet) -> BarChartEntry(label, omzet.toFloat()) }
             binding.chartOmzet.setData(entries, formatRupiah = true)
+
+            val dataLaba = viewModel.getGrafikLabaSesuaiPeriode()
+            val entriesLaba = dataLaba.map { (label, laba) -> BarChartEntry(label, laba.toFloat()) }
+            binding.chartLaba.setData(entriesLaba, formatRupiah = true)
         }
     }
 

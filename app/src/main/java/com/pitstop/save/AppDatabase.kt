@@ -45,7 +45,7 @@ import androidx.room.migration.Migration
         Transaksi::class,
         TransaksiDetail::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -82,13 +82,37 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migrasi untuk fitur Laba Bersih (Omzet - Modal):
+         * - transaksi_detail.hargaModal: snapshot harga modal PER UNIT saat item terjual
+         *   (supaya laba periode lama tetap akurat walau harga modal berubah belakangan)
+         * - layanan.hargaModal: modal per layanan Cuci Motor, dihitung otomatis dari komposisi
+         *   StockSteam yang dipakai (mirip pola MenuKopi.hargaModal di sisi Cafe)
+         * - stock_steam.hargaPerSatuan: harga modal per satuan barang steam (mirip Bahan.hargaPerSatuan)
+         * Data transaksi LAMA (sebelum migrasi ini) otomatis dapat hargaModal = 0 (laba dianggap
+         * penuh = omzet untuk transaksi lama, karena histori modal saat itu tidak tercatat).
+         */
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE transaksi_detail ADD COLUMN hargaModal REAL NOT NULL DEFAULT 0"
+                )
+                database.execSQL(
+                    "ALTER TABLE layanan ADD COLUMN hargaModal REAL NOT NULL DEFAULT 0"
+                )
+                database.execSQL(
+                    "ALTER TABLE stock_steam ADD COLUMN hargaPerSatuan REAL NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "cafesteam.db"
-                ).addMigrations(MIGRATION_7_8)
+                ).addMigrations(MIGRATION_7_8, MIGRATION_8_9)
                     .addCallback(seedCallback(context))
                     .build()
                 INSTANCE = instance

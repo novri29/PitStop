@@ -68,6 +68,9 @@ interface StockSteamDao {
         harga: Double
     ): Int
 
+    @Query("UPDATE layanan SET hargaModal = :hargaModal WHERE id = :id")
+    suspend fun updateHargaModalLayanan(id: Int, hargaModal: Double)
+
     // ---------- Komposisi bahan per layanan (mirip menu_kopi_bahan di Cafe) ----------
     @Insert
     suspend fun insertLayananBahan(usage: LayananBahan)
