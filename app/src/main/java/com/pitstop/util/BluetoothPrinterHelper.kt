@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
@@ -15,11 +16,18 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import com.pitstop.pitstop.R
 import java.io.IOException
 import java.io.OutputStream
 import java.util.UUID
@@ -44,6 +52,28 @@ object BluetoothPrinterHelper {
      * Ini dipakai untuk mode gambar (logo & layout sesuai desain HTML/CSS).
      */
     private const val PRINTER_WIDTH_DOTS = 384
+
+    /*
+     * Preview dirender lebih besar dari ukuran fisik printer (384px) supaya enak dilihat di
+     * layar HP -- 384px asli kelihatan kecil terutama di layar density tinggi. Karena HTML
+     * struk sudah punya <meta name="viewport" content="width=384">, WebView otomatis
+     * scale-up konten dengan tajam (bukan di-zoom paksa / blur) mengikuti lebar View ini.
+     * Saat "Cetak Sekarang" ditekan, bitmap preview yang lebih besar ini di-downscale balik
+     * ke PRINTER_WIDTH_DOTS sebelum dikirim ke printer, supaya ukuran fisik hasil cetak
+     * tetap sama persis seperti sebelumnya.
+     */
+    private const val PREVIEW_SCALE = 2.5f
+
+    /**
+     * Hitung lebar preview yang aman untuk device manapun: idealnya PRINTER_WIDTH_DOTS x
+     * PREVIEW_SCALE, tapi dibatasi maksimal 90% lebar layar supaya tidak overflow di HP
+     * dengan resolusi/densitas kecil, dan minimal PRINTER_WIDTH_DOTS itu sendiri.
+     */
+    private fun previewWidthDotsUntuk(activity: Activity): Int {
+        val target = (PRINTER_WIDTH_DOTS * PREVIEW_SCALE).toInt()
+        val maksimalDiLayar = (activity.resources.displayMetrics.widthPixels * 0.9f).toInt()
+        return target.coerceAtMost(maksimalDiLayar).coerceAtLeast(PRINTER_WIDTH_DOTS)
+    }
 
     private var selectedPrinterName: String? = null
 
@@ -107,7 +137,7 @@ object BluetoothPrinterHelper {
 
 
     // ============================================================
-    // PRINT HTML (mode gambar, supaya logo & layout sesuai desain)
+    // PRINT HTML (render -> tampilkan preview dulu -> baru cetak setelah dikonfirmasi user)
     // ============================================================
 
     fun printHtml(
@@ -130,7 +160,7 @@ object BluetoothPrinterHelper {
             return
         }
 
-        renderHtmlToBitmapAndPrint(activity, html, selectedPrinterMac!!)
+        showPreviewThenPrint(activity, html, selectedPrinterMac!!)
     }
 
 
@@ -205,59 +235,166 @@ object BluetoothPrinterHelper {
 
 
     // ============================================================
-    // RENDER HTML -> BITMAP -> KIRIM SEBAGAI GAMBAR (logo & layout ikut tercetak)
+    // RENDER HTML -> BITMAP -> TAMPILKAN PREVIEW -> KIRIM SETELAH DIKONFIRMASI
     // ============================================================
 
-    private fun renderHtmlToBitmapAndPrint(
+    /**
+     * Render HTML struk ke [Bitmap] lalu tampilkan dialog preview sebelum benar-benar
+     * dikirim ke printer. Tombol "Cetak Sekarang" baru aktif setelah render benar-benar
+     * selesai (dideteksi lewat [WebView.postVisualStateCallback], BUKAN delay tebakan seperti
+     * sebelumnya), dan bitmap yang ditampilkan di preview adalah PERSIS bitmap yang dikirim
+     * ke printer -- jadi WYSIWYG: apa yang tampil di preview = apa yang keluar di kertas.
+     *
+     * WebView-nya sengaja ditempel ke dalam hierarchy dialog ini (bukan dibuat lepas tanpa
+     * parent seperti implementasi sebelumnya), karena postVisualStateCallback() hanya bisa
+     * diandalkan kalau WebView benar-benar bagian dari window yang aktif.
+     */
+    private fun showPreviewThenPrint(
         activity: Activity,
         html: String,
         macAddress: String
     ) {
+        val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_preview_struk, null)
+        val progressPreview = dialogView.findViewById<ProgressBar>(R.id.progressPreview)
+        val tvStatusPreview = dialogView.findViewById<TextView>(R.id.tvStatusPreview)
+        val containerWebViewPreview = dialogView.findViewById<FrameLayout>(R.id.containerWebViewPreview)
+        val btnBatal = dialogView.findViewById<Button>(R.id.btnBatalPreview)
+        val btnCetak = dialogView.findViewById<Button>(R.id.btnCetakPreview)
+
         val webView = WebView(activity)
         webView.settings.javaScriptEnabled = true
         webView.settings.loadWithOverviewMode = false
-        webView.settings.useWideViewPort = false
+        // FIX BUG "teks/kolom kanan kepotong": harus true supaya WebView memakai lebar
+        // yang kita tentukan lewat <meta name="viewport" content="width=384"> di HTML
+        // sebagai acuan CSS viewport, BUKAN lebar View dalam satuan dp (yang nilainya beda-beda
+        // tergantung density layar device, itulah penyebab kolom kanan struk kepotong).
+        webView.settings.useWideViewPort = true
+        // Kunci skala render ke 100% supaya tidak ada scaling tambahan dari density layar --
+        // 384 CSS px di HTML harus persis sama dengan 384 pixel fisik yang kita capture.
+        webView.setInitialScale(100)
+        webView.setBackgroundColor(Color.WHITE)
+
+        // FIX BUG "hasil preview putih kosong": paksa WebView pakai software rendering.
+        // WebView modern (berbasis Chromium) merender via hardware compositor terpisah, dan
+        // canvas.draw() ke Bitmap biasa (software canvas) bisa gagal menangkap isinya kalau
+        // WebView masih pakai hardware layer -- hasilnya blank putih. Dengan LAYER_TYPE_SOFTWARE,
+        // WebView dipaksa gambar ke software canvas, jadi captured Bitmap-nya benar isinya.
+        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+
+        // Ditempel LANGSUNG ke area yang benar-benar tampil di layar (bukan container
+        // tersembunyi 0x0 seperti sebelumnya) -- WebView bisa menganggap dirinya "tidak
+        // terlihat" kalau parent-nya berukuran nol, dan ikut tidak merender apa pun.
+        val webViewWidth = previewWidthDotsUntuk(activity)
+
+        containerWebViewPreview.addView(
+            webView,
+            FrameLayout.LayoutParams(webViewWidth, ViewGroup.LayoutParams.WRAP_CONTENT)
+        )
+
+        val dialog = Dialog(activity)
+        dialog.setContentView(dialogView)
+        dialog.setCancelable(true)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        // Kalau dialog ditutup (Batal / ditekan di luar) sebelum render selesai,
+        // hentikan WebView supaya tidak terus bekerja & membocorkan resource di background.
+        dialog.setOnDismissListener {
+            webView.stopLoading()
+            webView.destroy()
+        }
+
+        var bitmapSiapCetak: Bitmap? = null
+
+        btnBatal.setOnClickListener { dialog.dismiss() }
+        btnCetak.setOnClickListener {
+            val bmpPreview = bitmapSiapCetak
+            if (bmpPreview != null) {
+                dialog.dismiss()
+                // Bitmap preview ukurannya diperbesar biar enak dilihat. Downscale dulu ke
+                // PRINTER_WIDTH_DOTS (ukuran fisik printer sesungguhnya) sebelum dikirim,
+                // supaya hasil cetak fisiknya tetap pas di kertas 58mm.
+                val tinggiCetak = (bmpPreview.height.toFloat() * PRINTER_WIDTH_DOTS / bmpPreview.width).toInt()
+                val bmpUntukCetak = Bitmap.createScaledBitmap(bmpPreview, PRINTER_WIDTH_DOTS, tinggiCetak, true)
+                Thread { sendBitmapToPrinter(activity, macAddress, bmpUntukCetak) }.start()
+            }
+        }
+
+        dialog.show()
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                webView.postDelayed({
-                    val widthSpec = View.MeasureSpec.makeMeasureSpec(
-                        PRINTER_WIDTH_DOTS,
-                        View.MeasureSpec.EXACTLY
-                    )
-                    val heightSpec = View.MeasureSpec.makeMeasureSpec(
-                        0,
-                        View.MeasureSpec.UNSPECIFIED
-                    )
-
-                    webView.measure(widthSpec, heightSpec)
-
-                    val width = PRINTER_WIDTH_DOTS
-                    val height = webView.measuredHeight
-
-                    if (height <= 0) {
-                        showToast(activity, "Gagal membuat gambar struk.", Toast.LENGTH_LONG)
-                        return@postDelayed
+                // Menunggu VISUAL STATE benar-benar siap digambar -- ini deteksi render
+                // selesai yang SEBENARNYA, menggantikan delay tebakan 500ms yang lama.
+                // onPageFinished() sendiri TIDAK menjamin layout & paint sudah selesai,
+                // itulah sumber bug "hasil cetak kadang tidak sesuai desain" sebelumnya.
+                webView.postVisualStateCallback(0L, object : WebView.VisualStateCallback() {
+                    override fun onComplete(requestId: Long) {
+                        if (!dialog.isShowing) return // dialog sudah ditutup user, tidak perlu lanjut
+                        renderWebViewKeBitmapDanTampilkan(
+                            webView = webView,
+                            previewWidth = webViewWidth,
+                            progressPreview = progressPreview,
+                            tvStatusPreview = tvStatusPreview,
+                            btnCetak = btnCetak,
+                            onBitmapSiap = { bitmap -> bitmapSiapCetak = bitmap }
+                        )
                     }
-
-                    webView.layout(0, 0, width, height)
-
-                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                    val canvas = Canvas(bitmap)
-                    canvas.drawColor(Color.WHITE)
-                    webView.draw(canvas)
-
-                    Thread {
-                        sendBitmapToPrinter(activity, macAddress, bitmap)
-                    }.start()
-
-                }, 500)
+                })
             }
         }
 
         webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+    }
+
+    /**
+     * Ukur & gambar isi WebView (yang sudah dipastikan selesai render lewat
+     * postVisualStateCallback) menjadi [Bitmap] berukuran preview (lebih besar dari ukuran
+     * fisik printer, supaya enak dilihat). WebView tetap ditampilkan hidup di layar sebagai
+     * preview-nya sendiri, ukurannya di-set ulang di sini supaya proporsinya sama persis
+     * dengan bitmap yang ditangkap. Bitmap preview ini di-downscale ke ukuran fisik printer
+     * (PRINTER_WIDTH_DOTS) baru saat benar-benar dikirim ke printer -- lihat callback
+     * onBitmapSiap() di showPreviewThenPrint().
+     */
+    private fun renderWebViewKeBitmapDanTampilkan(
+        webView: WebView,
+        previewWidth: Int,
+        progressPreview: ProgressBar,
+        tvStatusPreview: TextView,
+        btnCetak: Button,
+        onBitmapSiap: (Bitmap) -> Unit
+    ) {
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(previewWidth, View.MeasureSpec.EXACTLY)
+        val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        webView.measure(widthSpec, heightSpec)
+
+        val width = previewWidth
+        val height = webView.measuredHeight
+
+        if (height <= 0) {
+            progressPreview.visibility = View.GONE
+            tvStatusPreview.text = "Gagal membuat preview struk."
+            return
+        }
+
+        webView.layout(0, 0, width, height)
+        // Samakan ukuran tampil WebView di layar dengan ukuran hasil measure, supaya tidak
+        // terpotong/kosong di bagian bawah saat di-scroll.
+        webView.layoutParams = FrameLayout.LayoutParams(width, height)
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+        webView.draw(canvas)
+
+        progressPreview.visibility = View.GONE
+        tvStatusPreview.visibility = View.GONE
+        btnCetak.isEnabled = true
+
+        onBitmapSiap(bitmap)
     }
 
 

@@ -30,7 +30,6 @@ import com.pitstop.util.RupiahTextWatcher
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
-
 class ProdukMinumanActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProdukMinumanBinding

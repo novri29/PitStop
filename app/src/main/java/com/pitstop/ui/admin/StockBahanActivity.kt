@@ -54,6 +54,7 @@ class StockBahanActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[BahanViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
+
         binding.etHargaPerSatuan.addTextChangedListener(RupiahTextWatcher(binding.etHargaPerSatuan))
 
         adapter = BahanAdapter(
@@ -111,7 +112,7 @@ class StockBahanActivity : AppCompatActivity() {
         val stock = binding.etStock.text.toString().toDoubleOrNull()
         val harga = RupiahTextWatcher.parse(binding.etHargaPerSatuan.text.toString()).takeIf { binding.etHargaPerSatuan.text.isNotBlank() }
 
-            if (nama.isEmpty() || stock == null || harga == null) {
+        if (nama.isEmpty() || stock == null || harga == null) {
             Toast.makeText(this, "Lengkapi semua data dengan benar", Toast.LENGTH_SHORT).show()
             return
         }

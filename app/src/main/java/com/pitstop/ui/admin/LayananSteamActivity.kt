@@ -55,6 +55,7 @@ class LayananSteamActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this, ViewModelFactory(this))[StockSteamViewModel::class.java]
         binding.btnBack.setOnClickListener { finish() }
+
         binding.etHarga.addTextChangedListener(RupiahTextWatcher(binding.etHarga))
 
         pemakaianAdapter = PemakaianStockAdapter(onDelete = { index ->

@@ -24,17 +24,20 @@ object StrukPrintHelper {
     private const val CSS = """
         body {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
+            font-size: 14px;
             color: #111;
             margin: 0;
             padding: 0;
             background-color: #fff;
             width: 384px;
+            box-sizing: border-box;
         }
         .receipt {
             width: 384px;
             max-width: 384px;
             margin: 0;
+            padding: 16px 24px;
+            box-sizing: border-box;
         }
         .receipt.batch {
             page-break-after: always;
@@ -192,7 +195,11 @@ object StrukPrintHelper {
         return """
             <!DOCTYPE html>
             <html>
-            <head><meta charset="utf-8"><style>$CSS</style></head>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=384, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <style>$CSS</style>
+            </head>
             <body>${buildReceiptBody(context, t, detailList, isBatch = false)}</body>
             </html>
         """.trimIndent()
@@ -225,7 +232,11 @@ object StrukPrintHelper {
         return """
             <!DOCTYPE html>
             <html>
-            <head><meta charset="utf-8"><style>$CSS</style></head>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=384, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <style>$CSS</style>
+            </head>
             <body>$body</body>
             </html>
         """.trimIndent()
