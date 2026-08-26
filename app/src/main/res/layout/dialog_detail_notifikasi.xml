@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card"
+    android:maxHeight="560dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="22dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imgIconDetail"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/bg_icon_bubble_red"
+                android:contentDescription="@string/notifikasi"
+                android:padding="10dp"
+                android:src="@drawable/ic_warning"
+                app:tint="@color/red" />
+
+            <TextView
+                android:id="@+id/tvJudulDetail"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="Transaksi Di-Refund" />
+
+            <ImageButton
+                android:id="@+id/btnTutupDetail"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_surface_alt_pill"
+                android:contentDescription="@string/tutup"
+                android:padding="7dp"
+                android:src="@drawable/ic_close"
+                app:tint="@color/text_secondary" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvWaktuDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/soft_grey"
+            android:textSize="11sp"
+            tools:text="25 Agu 2026, 18:43" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="16dp"
+            android:background="@color/border" />
+
+        <!-- ===== Daftar item transaksi (khusus notifikasi refund) ===== -->
+        <LinearLayout
+            android:id="@+id/sectionItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="@string/item_yang_direfund"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/containerItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_surface_alt_pill"
+                android:orientation="vertical"
+                android:padding="14dp" />
+        </LinearLayout>
+
+        <!-- ===== Alasan refund ===== -->
+        <LinearLayout
+            android:id="@+id/sectionAlasan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/bg_badge_red"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="@string/alasan_refund_label"
+                android:textColor="@color/red"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAlasanDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/red"
+                android:textSize="13sp"
+                tools:text="Pelanggan tidak jadi" />
+        </LinearLayout>
+
+        <!-- ===== Isi umum (dipakai untuk notifikasi selain refund, mis. stok menipis) ===== -->
+        <TextView
+            android:id="@+id/tvIsiUmum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_surface_alt_pill"
+            android:padding="14dp"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:text="• Kopi Bubuk: 200g (12%)" />
+
+    </LinearLayout>
+</ScrollView>

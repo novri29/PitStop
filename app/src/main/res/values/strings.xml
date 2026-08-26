@@ -102,7 +102,7 @@
     <string name="simpan_perubahan">Simpan Perubahan</string>
     <string name="bar_menu">bar menu</string>
     <string name="dashboard_admin">Dashboard Admin</string>
-    <string name="notifikasi">notifikasi</string>
+    <string name="notifikasi">Notifikasi</string>
     <string name="pilih_unit_usaha">Pilih Unit Usaha</string>
     <string name="ringkasan">Ringkasan</string>
     <string name="harian">Harian</string>
@@ -199,4 +199,9 @@
     <string name="cetak_semua_struk">Cetak Semua Struk</string>
     <string name="menyiapkan_struk_untuk_dicetak">Menyiapkan struk untuk dicetak…</string>
     <string name="belum_ada_transaksi_untuk_periode_ini">Belum ada transaksi untuk periode ini</string>
+
+    <string name="tandai_semua_sudah_dibaca">Tandai semua sudah dibaca</string>
+    <string name="belum_ada_notifikasi">Belum ada notifikasi</string>
+    <string name="item_yang_direfund">Item yang di-refund</string>
+    <string name="alasan_refund_label">Alasan Refund</string>
 </resources>

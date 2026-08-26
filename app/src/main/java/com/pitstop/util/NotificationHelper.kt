@@ -12,13 +12,41 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.pitstop.R
 import com.pitstop.ui.admin.AdminMainActivity
+import com.pitstop.adapter.NotifikasiAdapter
+import com.pitstop.pitstop.databinding.DialogNotifikasiBinding
+import com.pitstop.pitstop.databinding.DialogDetailNotifikasiBinding
 import org.json.JSONArray
 import org.json.JSONObject
 import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.Bahan
 import com.pitstop.util.Formatter
+
+/**
+ * Ringkasan satu item transaksi di dalam notifikasi refund.
+ */
+data class ItemRingkasNotif(
+    val nama: String,
+    val qty: Int,
+    val subtotal: Double
+)
+
+/**
+ * Model notifikasi yang sudah diparsing dari JSON, dipakai oleh NotifikasiAdapter
+ * dan dialog detail.
+ */
+data class NotifikasiItem(
+    val waktu: Long,
+    val judul: String,
+    val isi: String,
+    val isiLengkap: String,
+    val jenis: String,
+    val dibaca: Boolean,
+    val items: List<ItemRingkasNotif> = emptyList(),
+    val alasan: String = ""
+)
 
 object NotificationHelper {
 
@@ -387,9 +415,10 @@ object NotificationHelper {
     }
 
     /**
-     * Menampilkan daftar notifikasi saat lonceng ditekan.
+     * Tandai SATU notifikasi (berdasarkan waktu/id-nya) sebagai sudah dibaca.
+     * Dipanggil saat pengguna mengetuk salah satu notifikasi di daftar.
      */
-    fun showNotifications(context: Context) {
+    fun markAsRead(context: Context, waktu: Long) {
 
         val json = prefs(context)
             .getString(KEY_NOTIFICATIONS, "[]")
@@ -397,87 +426,207 @@ object NotificationHelper {
 
         val array = JSONArray(json)
 
-        if (array.length() == 0) {
-
-            AlertDialog.Builder(context)
-                .setTitle("Notifikasi")
-                .setMessage("Belum ada notifikasi.")
-                .setPositiveButton("Tutup", null)
-                .show()
-
-            return
+        for (i in 0 until array.length()) {
+            val item = array.getJSONObject(i)
+            if (item.optLong("waktu") == waktu) {
+                item.put("dibaca", true)
+                break
+            }
         }
 
-        val daftarNotifikasi = ArrayList<String>()
+        prefs(context)
+            .edit()
+            .putString(KEY_NOTIFICATIONS, array.toString())
+            .apply()
+    }
+
+    /**
+     * Ambil seluruh notifikasi yang tersimpan, sudah diparsing ke model NotifikasiItem,
+     * terbaru di paling atas.
+     */
+    fun getNotifications(context: Context): List<NotifikasiItem> {
+
+        val json = prefs(context)
+            .getString(KEY_NOTIFICATIONS, "[]")
+            ?: "[]"
+
+        val array = JSONArray(json)
+        val result = ArrayList<NotifikasiItem>()
 
         for (i in 0 until array.length()) {
 
             val item = array.getJSONObject(i)
-
-            val judul = item.optString("judul")
-            val isi = item.optString("isi")
             val jenis = item.optString("jenis")
+            val alasan = item.optString("alasan")
 
-            val builder = StringBuilder()
+            // Ringkasan untuk kartu (hanya baris pertama, tanpa alasan berulang).
+            val isiMentah = item.optString("isi")
+            val baris = isiMentah.split("\n").filter { it.isNotBlank() }
 
-            if (jenis == "REFUND") {
-                builder.append("↩ $judul\n")
-            } else {
-                builder.append("✓ $judul\n")
+            val ringkasan = when {
+                jenis == "LOW_STOCK" && baris.size > 1 ->
+                    "${baris.size} bahan stoknya menipis, ketuk untuk lihat detail"
+                jenis == "LOW_STOCK" && baris.size == 1 ->
+                    baris.first().removePrefix("• ").trim()
+                else ->
+                    isiMentah.substringBefore("\n").trim()
             }
 
-            builder.append("$isi\n")
-
             val itemsJson = item.optJSONArray("items")
+            val daftarItem = ArrayList<ItemRingkasNotif>()
 
-            if (itemsJson != null && itemsJson.length() > 0) {
-
-                builder.append("\nItem:\n")
-
+            if (itemsJson != null) {
                 for (j in 0 until itemsJson.length()) {
-
                     val detail = itemsJson.getJSONObject(j)
-
-                    val namaItem =
-                        detail.optString("namaItem")
-
-                    val qty =
-                        detail.optInt("qty")
-
-                    val subtotal =
-                        detail.optDouble("subtotal")
-
-                    builder.append(
-                        "• $namaItem x$qty — ${Formatter.rupiah(subtotal)}\n"
+                    daftarItem.add(
+                        ItemRingkasNotif(
+                            nama = detail.optString("namaItem"),
+                            qty = detail.optInt("qty"),
+                            subtotal = detail.optDouble("subtotal")
+                        )
                     )
                 }
             }
 
-            if (jenis == "REFUND") {
-
-                val alasan =
-                    item.optString("alasan")
-
-                if (alasan.isNotBlank()) {
-                    builder.append("\nAlasan: $alasan")
-                }
-            }
-
-            daftarNotifikasi.add(
-                builder.toString().trim()
+            result.add(
+                NotifikasiItem(
+                    waktu = item.optLong("waktu"),
+                    judul = item.optString("judul"),
+                    isi = ringkasan,
+                    isiLengkap = isiMentah,
+                    jenis = jenis,
+                    dibaca = item.optBoolean("dibaca"),
+                    items = daftarItem,
+                    alasan = alasan
+                )
             )
         }
 
-        AlertDialog.Builder(context)
-            .setTitle("Notifikasi")
-            .setItems(
-                daftarNotifikasi.toTypedArray(),
-                null
-            )
-            .setPositiveButton("Tandai sudah dibaca") { _, _ ->
-                markAllAsRead(context)
+        return result
+    }
+
+    /**
+     * Menampilkan daftar notifikasi saat lonceng ditekan.
+     * Tiap notifikasi tampil sebagai kartu sendiri: yang belum dibaca berlatar
+     * terang dengan titik penanda, begitu diketuk langsung berubah abu-abu
+     * (sudah dibaca) DAN membuka dialog detail berisi rincian item + alasan —
+     * persis seperti pola notifikasi di aplikasi modern.
+     */
+    fun showNotifications(context: Context) {
+
+        val notifications = getNotifications(context).toMutableList()
+
+        val binding = DialogNotifikasiBinding.inflate(
+            android.view.LayoutInflater.from(context)
+        )
+
+        val dialog = AlertDialog.Builder(context)
+            .setView(binding.root)
+            .create()
+
+        dialog.window?.setBackgroundDrawable(
+            android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+        )
+
+        if (notifications.isEmpty()) {
+            binding.rvNotifikasi.visibility = android.view.View.GONE
+            binding.btnTandaiSemua.visibility = android.view.View.GONE
+            binding.tvEmpty.visibility = android.view.View.VISIBLE
+        } else {
+            val adapter = NotifikasiAdapter(notifications) { item ->
+                markAsRead(context, item.waktu)
+                showDetailNotifikasi(context, item)
             }
-            .setNegativeButton("Tutup", null)
-            .show()
+            binding.rvNotifikasi.layoutManager = LinearLayoutManager(context)
+            binding.rvNotifikasi.adapter = adapter
+
+            binding.btnTandaiSemua.setOnClickListener {
+                markAllAsRead(context)
+                adapter.markAllRead()
+            }
+        }
+
+        binding.btnTutup.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    /**
+     * Dialog rincian satu notifikasi: daftar item yang di-refund + alasannya
+     * (untuk jenis REFUND), atau isi lengkap apa adanya (untuk jenis lain
+     * seperti stok menipis).
+     */
+    private fun showDetailNotifikasi(context: Context, item: NotifikasiItem) {
+
+        val binding = DialogDetailNotifikasiBinding.inflate(
+            android.view.LayoutInflater.from(context)
+        )
+
+        val detailDialog = AlertDialog.Builder(context)
+            .setView(binding.root)
+            .create()
+
+        detailDialog.window?.setBackgroundDrawable(
+            android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+        )
+
+        binding.tvJudulDetail.text = item.judul
+        binding.tvWaktuDetail.text = Formatter.tanggalWaktu(item.waktu)
+
+        when (item.jenis) {
+            "REFUND" -> {
+                binding.imgIconDetail.setImageResource(R.drawable.ic_warning)
+                binding.imgIconDetail.background = context.getDrawable(R.drawable.bg_icon_bubble_red)
+                binding.imgIconDetail.setColorFilter(context.getColor(R.color.red))
+
+                binding.sectionItem.visibility = android.view.View.VISIBLE
+                binding.containerItem.removeAllViews()
+
+                item.items.forEach { detail ->
+                    val row = android.widget.TextView(context).apply {
+                        text = "${detail.nama} x${detail.qty} — ${Formatter.rupiah(detail.subtotal)}"
+                        setTextColor(context.getColor(R.color.text_primary))
+                        textSize = 13f
+                        setPadding(0, 6, 0, 6)
+                    }
+                    binding.containerItem.addView(row)
+                }
+
+                if (item.alasan.isNotBlank()) {
+                    binding.sectionAlasan.visibility = android.view.View.VISIBLE
+                    binding.tvAlasanDetail.text = item.alasan
+                } else {
+                    binding.sectionAlasan.visibility = android.view.View.GONE
+                }
+
+                binding.tvIsiUmum.visibility = android.view.View.GONE
+            }
+            "LOW_STOCK" -> {
+                binding.imgIconDetail.setImageResource(R.drawable.ic_stock_bahan)
+                binding.imgIconDetail.background = context.getDrawable(R.drawable.bg_icon_bubble_orange)
+                binding.imgIconDetail.setColorFilter(context.getColor(R.color.orange))
+
+                binding.sectionItem.visibility = android.view.View.GONE
+                binding.sectionAlasan.visibility = android.view.View.GONE
+
+                binding.tvIsiUmum.visibility = android.view.View.VISIBLE
+                binding.tvIsiUmum.text = item.isiLengkap
+            }
+            else -> {
+                binding.imgIconDetail.setImageResource(R.drawable.ic_check_circle)
+                binding.imgIconDetail.background = context.getDrawable(R.drawable.bg_icon_bubble_green)
+                binding.imgIconDetail.setColorFilter(context.getColor(R.color.green))
+
+                binding.sectionItem.visibility = android.view.View.GONE
+                binding.sectionAlasan.visibility = android.view.View.GONE
+
+                binding.tvIsiUmum.visibility = android.view.View.VISIBLE
+                binding.tvIsiUmum.text = item.isiLengkap
+            }
+        }
+
+        binding.btnTutupDetail.setOnClickListener { detailDialog.dismiss() }
+
+        detailDialog.show()
     }
 }

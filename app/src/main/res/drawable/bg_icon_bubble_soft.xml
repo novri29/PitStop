@@ -1,0 +1,4 @@
+<!--  Bubble ikon lembut untuk kartu statistik, warna diatur via app:tint pada ImageView  -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/primary_soft"/>
+</shape>
