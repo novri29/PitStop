@@ -144,14 +144,14 @@
                 android:textStyle="bold" />
 
             <ImageButton
-                android:id="@+id/btnCetakSemuaStruk"
+                android:id="@+id/btnUnduhSemuaStruk"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_button_primary"
-                android:contentDescription="@string/cetak_semua_struk"
+                android:contentDescription="@string/unduh_semua_struk_pdf"
                 android:padding="9dp"
-                android:src="@drawable/ic_print" />
+                android:src="@drawable/ic_download" />
 
             <Button
                 android:id="@+id/btnExport"

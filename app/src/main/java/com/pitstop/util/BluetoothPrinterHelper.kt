@@ -10,7 +10,6 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Build
 import android.os.Handler
@@ -66,14 +65,10 @@ object BluetoothPrinterHelper {
     private const val PREVIEW_SCALE = 2.5f
 
     /*
-     * Kadang postVisualStateCallback() sudah bilang "selesai render", tapi capture
-     * webView.draw(canvas) berikutnya masih menangkap frame kosong/putih polos --
-     * race condition antara compositor thread WebView dan main thread (lihat detail
-     * di captureWebViewDenganRetry). Untuk itu capture dicoba beberapa kali sebelum
-     * benar-benar menyerah, bukan langsung menampilkan hasil kosong sebagai "berhasil".
+     * Logic capture WebView -> Bitmap (termasuk retry & deteksi "render belum selesai")
+     * dipindah ke WebViewRenderHelper supaya bisa dipakai bersama oleh StrukPdfExporter
+     * (fitur "Download PDF"), lihat komentar di sana untuk detail alasannya.
      */
-    private const val MAKS_PERCOBAAN_CAPTURE = 3
-    private const val JEDA_RETRY_CAPTURE_MS = 200L
 
     /**
      * Hitung lebar preview yang aman untuk device manapun: idealnya PRINTER_WIDTH_DOTS x
@@ -389,6 +384,7 @@ object BluetoothPrinterHelper {
         webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
     }
 
+    /** Wrapper [WebViewRenderHelper.capturePageDenganRetry] khusus preview struk satuan -- juga mengurus progress bar & status text di dialog. */
     private fun captureWebViewDenganRetry(
         webView: WebView,
         previewWidth: Int,
@@ -398,98 +394,21 @@ object BluetoothPrinterHelper {
         percobaanKe: Int,
         onBitmapSiap: (Bitmap) -> Unit
     ) {
-        val widthSpec = View.MeasureSpec.makeMeasureSpec(previewWidth, View.MeasureSpec.EXACTLY)
-        val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        webView.measure(widthSpec, heightSpec)
-
-        val width = previewWidth
-        val height = webView.measuredHeight
-
-        if (height <= 0) {
-            if (percobaanKe < MAKS_PERCOBAAN_CAPTURE) {
-                Log.w(TAG, "Preview struk: tinggi WebView masih 0, coba lagi ($percobaanKe/$MAKS_PERCOBAAN_CAPTURE)...")
-                jadwalkanRetryCapture(webView, previewWidth, progressPreview, tvStatusPreview, btnCetak, percobaanKe, onBitmapSiap)
-                return
+        WebViewRenderHelper.capturePageDenganRetry(webView, previewWidth, percobaanKe) { bitmap ->
+            if (bitmap == null) {
+                progressPreview.visibility = View.GONE
+                tvStatusPreview.visibility = View.VISIBLE
+                tvStatusPreview.text = "Gagal membuat preview struk, coba lagi."
+                btnCetak.isEnabled = false
+                return@capturePageDenganRetry
             }
+
             progressPreview.visibility = View.GONE
-            tvStatusPreview.visibility = View.VISIBLE
-            tvStatusPreview.text = "Gagal membuat preview struk, coba lagi."
-            return
+            tvStatusPreview.visibility = View.GONE
+            btnCetak.isEnabled = true
+
+            onBitmapSiap(bitmap)
         }
-
-        webView.layout(0, 0, width, height)
-        webView.layoutParams = FrameLayout.LayoutParams(width, height)
-        webView.invalidate()
-
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE)
-        webView.draw(canvas)
-
-        if (bitmapPolosPutih(bitmap)) {
-            if (percobaanKe < MAKS_PERCOBAAN_CAPTURE) {
-                Log.w(TAG, "Preview struk hasil capture kosong, coba lagi ($percobaanKe/$MAKS_PERCOBAAN_CAPTURE)...")
-                jadwalkanRetryCapture(webView, previewWidth, progressPreview, tvStatusPreview, btnCetak, percobaanKe, onBitmapSiap)
-                return
-            }
-
-            Log.e(TAG, "Preview struk tetap kosong setelah $MAKS_PERCOBAAN_CAPTURE percobaan.")
-            progressPreview.visibility = View.GONE
-            tvStatusPreview.visibility = View.VISIBLE
-            tvStatusPreview.text = "Gagal membuat preview struk, coba lagi."
-            btnCetak.isEnabled = false
-            return
-        }
-
-        progressPreview.visibility = View.GONE
-        tvStatusPreview.visibility = View.GONE
-        btnCetak.isEnabled = true
-
-        onBitmapSiap(bitmap)
-    }
-
-    private fun jadwalkanRetryCapture(
-        webView: WebView,
-        previewWidth: Int,
-        progressPreview: ProgressBar,
-        tvStatusPreview: TextView,
-        btnCetak: Button,
-        percobaanKe: Int,
-        onBitmapSiap: (Bitmap) -> Unit
-    ) {
-        Handler(Looper.getMainLooper()).postDelayed({
-            captureWebViewDenganRetry(
-                webView = webView,
-                previewWidth = previewWidth,
-                progressPreview = progressPreview,
-                tvStatusPreview = tvStatusPreview,
-                btnCetak = btnCetak,
-                percobaanKe = percobaanKe + 1,
-                onBitmapSiap = onBitmapSiap
-            )
-        }, JEDA_RETRY_CAPTURE_MS)
-    }
-
-    private fun bitmapPolosPutih(bitmap: Bitmap): Boolean {
-        val langkahX = maxOf(1, bitmap.width / 40)
-        val langkahY = maxOf(1, bitmap.height / 80)
-
-        var x = 0
-        while (x < bitmap.width) {
-            var y = 0
-            while (y < bitmap.height) {
-                val pixel = bitmap.getPixel(x, y)
-                val r = Color.red(pixel)
-                val g = Color.green(pixel)
-                val b = Color.blue(pixel)
-                if (r < 250 || g < 250 || b < 250) {
-                    return false
-                }
-                y += langkahY
-            }
-            x += langkahX
-        }
-        return true
     }
 
     fun testPrint(activity: Activity) {

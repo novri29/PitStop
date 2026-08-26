@@ -20,6 +20,7 @@ import com.pitstop.pitstop.databinding.FragmentLaporanBinding
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.ui.admin.RingkasanViewModel
 import com.pitstop.ui.component.BarChartEntry
+import com.pitstop.util.StrukPdfExporter
 import com.pitstop.util.StrukPrintHelper
 import com.pitstop.util.TipePeriode
 import com.pitstop.util.ViewModelFactory
@@ -101,7 +102,7 @@ class LaporanFragment : Fragment() {
 
         pilihPeriode(TipePeriode.HARIAN)
         binding.btnExport.setOnClickListener { exportExcel() }
-        binding.btnCetakSemuaStruk.setOnClickListener { cetakSemuaStruk() }
+        binding.btnUnduhSemuaStruk.setOnClickListener { unduhSemuaStrukPdf() }
     }
 
     private fun tampilkanList(list: List<Transaksi>) {
@@ -216,11 +217,12 @@ class LaporanFragment : Fragment() {
     }
 
     /**
-     * Cetak semua struk transaksi pada periode yang sedang aktif sekaligus (Harian/Bulanan/
-     * Tahunan/Semua - sama seperti data yang dipakai tombol Export Excel), untuk keperluan
-     * backup/arsip fisik. Tiap struk dicetak di halaman terpisah, didahului 1 halaman sampul.
+     * Download semua struk transaksi pada periode yang sedang aktif sekaligus (Harian/Bulanan/
+     * Tahunan/Semua - sama seperti data yang dipakai tombol Export Excel) jadi 1 file PDF,
+     * untuk keperluan backup/arsip. Dulunya langsung cetak ke printer Bluetooth, diganti jadi
+     * PDF supaya tidak perlu printer fisik buat lihat/menyimpan backup struk.
      */
-    private fun cetakSemuaStruk() {
+    private fun unduhSemuaStrukPdf() {
         viewLifecycleOwner.lifecycleScope.launch {
             val data = if (modeSemua) viewModel.getSemuaTransaksi() else viewModel.getTransaksiPeriodeSuspend()
             if (data.isEmpty()) {
@@ -228,15 +230,14 @@ class LaporanFragment : Fragment() {
                 return@launch
             }
 
-            Toast.makeText(requireContext(), getString(R.string.menyiapkan_struk_untuk_dicetak), Toast.LENGTH_SHORT).show()
-
-            // Urutkan dari yang terlama supaya urutan cetak sesuai urutan kejadian (rapi buat arsip)
+            // Urutkan dari yang terlama supaya urutan struk sesuai urutan kejadian (rapi buat arsip)
             val urutTerlama = data.sortedBy { it.tanggal }
             val items = urutTerlama.map { t -> t to viewModel.getDetail(t.id) }
 
             val judulPeriode = if (modeSemua) "Semua Riwayat" else viewModel.getLabelPeriodeSaatIni()
-            val html = StrukPrintHelper.buildHtmlBatch(requireContext(), judulPeriode, items)
-            StrukPrintHelper.cetak(requireContext(), html, "Backup_Struk")
+            val batch = StrukPrintHelper.buildHtmlBatch(requireContext(), judulPeriode, items)
+            val namaFile = "Backup_Struk_${System.currentTimeMillis()}.pdf"
+            StrukPdfExporter.unduhPdfBatch(requireActivity(), namaFile, listOf(batch.htmlSampul) + batch.htmlPerStruk)
         }
     }
 

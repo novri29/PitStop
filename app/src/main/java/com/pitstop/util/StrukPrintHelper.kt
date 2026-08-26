@@ -254,8 +254,8 @@ object StrukPrintHelper {
         """.trimIndent()
     }
 
-    /** HTML lengkap untuk 1 struk (dipakai NotaStrukActivity: lihat & cetak 1 transaksi). */
-    fun buildHtmlTunggal(context: Context, t: Transaksi, detailList: List<TransaksiDetail>): String {
+    /** Bungkus 1 potongan body HTML jadi dokumen HTML lengkap siap-render (dipakai struk satuan maupun tiap halaman batch). */
+    private fun wrapHtml(bodyContent: String): String {
         return """
             <!DOCTYPE html>
             <html>
@@ -264,17 +264,34 @@ object StrukPrintHelper {
                 <meta name="viewport" content="width=384, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
                 <style>$CSS</style>
             </head>
-            <body>${buildReceiptBody(context, t, detailList, isBatch = false)}</body>
+            <body>$bodyContent</body>
             </html>
         """.trimIndent()
     }
 
+    /** HTML lengkap untuk 1 struk (dipakai NotaStrukActivity: lihat & cetak 1 transaksi). */
+    fun buildHtmlTunggal(context: Context, t: Transaksi, detailList: List<TransaksiDetail>): String {
+        return wrapHtml(buildReceiptBody(context, t, detailList, isBatch = false))
+    }
+
+    /** Hasil pembangunan struk batch: 1 halaman sampul ringkasan + 1 halaman HTML terpisah per struk. */
+    data class StrukBatch(val htmlSampul: String, val htmlPerStruk: List<String>)
+
     /**
-     * HTML gabungan berisi banyak struk sekaligus (dipakai fitur "Cetak Semua Struk" di Laporan
-     * untuk backup 1 minggu/1 bulan/seluruhnya). Tiap struk dicetak di halaman terpisah,
-     * didahului 1 halaman sampul ringkasan.
+     * Bangun struk batch (dipakai fitur "Download Semua Struk (PDF)" di Laporan untuk backup
+     * 1 minggu/1 bulan/seluruhnya, lihat [StrukPdfExporter]) sebagai HALAMAN-HALAMAN TERPISAH,
+     * bukan 1 HTML raksasa gabungan.
+     *
+     * FIX BUG "preview/PDF batch struk putih kosong kalau transaksinya banyak": versi lama
+     * menggabungkan SEMUA struk jadi satu <body> lalu dirender & di-screenshot sebagai SATU
+     * WebView + SATU Bitmap raksasa. Untuk transaksi yang banyak, tinggi totalnya bisa puluhan
+     * ribu pixel -- melebihi batas render Chromium (dan batas praktis Canvas/Bitmap software),
+     * jadi hasil capture-nya putih kosong walau area-nya tetap bisa discroll (tinggi View-nya
+     * sudah benar, cuma isinya nggak sempat/nggak bisa dirender). Dengan tiap struk jadi
+     * dokumen HTML terpisah (dirender satu-per-satu, lihat WebViewRenderHelper), tinggi WebView
+     * per render selalu sekecil 1 struk saja -- aman berapa pun banyaknya transaksi.
      */
-    fun buildHtmlBatch(context: Context, judulPeriode: String, items: List<Pair<Transaksi, List<TransaksiDetail>>>): String {
+    fun buildHtmlBatch(context: Context, judulPeriode: String, items: List<Pair<Transaksi, List<TransaksiDetail>>>): StrukBatch {
         val cover = """
             <div class="batch-cover">
                 ${logoHeaderHtml(context)}
@@ -287,26 +304,11 @@ object StrukPrintHelper {
             </div>
         """.trimIndent()
 
-        val body = StringBuilder(cover)
-        items.forEachIndexed { index, (t, detail) ->
-            val isLast = index == items.lastIndex
-            body.append(buildReceiptBody(context, t, detail, isBatch = !isLast))
-        }
-
-        return """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=384, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                <style>$CSS</style>
-            </head>
-            <body>$body</body>
-            </html>
-        """.trimIndent()
+        val htmlPerStruk = items.map { (t, detail) -> wrapHtml(buildReceiptBody(context, t, detail, isBatch = false)) }
+        return StrukBatch(wrapHtml(cover), htmlPerStruk)
     }
 
-    /** Mencetak HTML apa saja lewat Android Print Framework. */
+    /** Mencetak 1 struk (dipakai NotaStrukActivity). */
     fun cetak(context: Context, html: String, judulDokumen: String) {
 
         val activity = context as? android.app.Activity
@@ -320,4 +322,5 @@ object StrukPrintHelper {
             html
         )
     }
+
 }
