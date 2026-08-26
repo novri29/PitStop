@@ -104,25 +104,54 @@ class StockBahanActivity : AppCompatActivity() {
 
     private fun simpanBahan() {
         val nama = binding.etNama.text.toString().trim()
+
         val satuan = when {
             binding.rbGram.isChecked -> "gram"
             binding.rbMl.isChecked -> "ml"
             else -> "pcs"
         }
-        val stock = binding.etStock.text.toString().toDoubleOrNull()
-        val harga = RupiahTextWatcher.parse(binding.etHargaPerSatuan.text.toString()).takeIf { binding.etHargaPerSatuan.text.isNotBlank() }
 
-        if (nama.isEmpty() || stock == null || harga == null) {
-            Toast.makeText(this, "Lengkapi semua data dengan benar", Toast.LENGTH_SHORT).show()
+        val stock = binding.etStock.text.toString().toDoubleOrNull()
+
+        val hargaModal = RupiahTextWatcher
+            .parse(binding.etHargaPerSatuan.text.toString())
+            .takeIf {
+                binding.etHargaPerSatuan.text.isNotBlank()
+            }
+
+        if (nama.isEmpty() || stock == null || stock <= 0 || hargaModal == null) {
+            Toast.makeText(
+                this,
+                "Lengkapi semua data dengan benar",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
-        viewModel.tambah(nama, satuan, stock, harga)
+        // Harga modal yang dimasukkan adalah harga TOTAL stock.
+        // Contoh:
+        // 1000 gram = Rp164.000
+        // Maka harga per gram = Rp164.000 / 1000 = Rp164
+        val hargaPerSatuan = hargaModal / stock
+
+        viewModel.tambah(
+            nama,
+            satuan,
+            stock,
+            hargaPerSatuan
+        )
+
         binding.etNama.text.clear()
         binding.etStock.text.clear()
         binding.etHargaPerSatuan.text.clear()
+
         binding.formTambah.visibility = View.GONE
-        Toast.makeText(this, "Bahan '$nama' tersimpan", Toast.LENGTH_SHORT).show()
+
+        Toast.makeText(
+            this,
+            "Bahan '$nama' tersimpan",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun tampilkanDialogTambahStock(
