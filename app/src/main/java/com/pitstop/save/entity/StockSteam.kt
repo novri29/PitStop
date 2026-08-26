@@ -13,7 +13,8 @@ data class StockSteam(
     val jenis: String,      // "Motor"
     val satuan: String,     // "ml" / "pcs"
     var stock: Double,
-    val hargaPerSatuan: Double = 0.0 // harga modal per satuan (ml/pcs)
+    val hargaPerSatuan: Double = 0.0, // harga modal per satuan (ml/pcs)
+    val initialStock: Double = stock // Stock awal / baseline untuk menentukan batas 30% (mirip Bahan)
 )
 
 /** Satuan stock barang steam dibatasi hanya "ml" dan "pcs" supaya konsisten. */

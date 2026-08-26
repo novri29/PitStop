@@ -43,6 +43,11 @@ class NotifikasiAdapter(
                 b.imgIcon.background = context.getDrawable(R.drawable.bg_icon_bubble_orange)
                 b.imgIcon.setColorFilter(context.getColor(R.color.orange))
             }
+            "LOW_STOCK_STEAM" -> {
+                b.imgIcon.setImageResource(R.drawable.ic_steam)
+                b.imgIcon.background = context.getDrawable(R.drawable.bg_icon_bubble_orange)
+                b.imgIcon.setColorFilter(context.getColor(R.color.orange))
+            }
             else -> {
                 b.imgIcon.setImageResource(R.drawable.ic_check_circle)
                 b.imgIcon.background = context.getDrawable(R.drawable.bg_icon_bubble_green)

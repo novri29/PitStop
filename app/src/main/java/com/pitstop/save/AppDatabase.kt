@@ -45,7 +45,7 @@ import androidx.room.migration.Migration
         Transaksi::class,
         TransaksiDetail::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -106,13 +106,32 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migrasi untuk fitur notifikasi Stock Steam Menipis (menyusul fitur yang sama
+         * di Bahan/Cafe pada MIGRATION_7_8):
+         * - stock_steam.initialStock: baseline "stok penuh" dipakai untuk menghitung ambang 30%.
+         * Karena fitur ini baru pertama kali ada di versi ini, tidak ada baseline lama yang
+         * "dirusak" seperti kasus MIGRATION_7_8 dulu — initialStock = stock saat migrasi adalah
+         * titik awal yang wajar untuk SEMUA item Stock Steam yang sudah ada.
+         */
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE stock_steam ADD COLUMN initialStock REAL NOT NULL DEFAULT 0"
+                )
+                database.execSQL(
+                    "UPDATE stock_steam SET initialStock = stock"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "cafesteam.db"
-                ).addMigrations(MIGRATION_7_8, MIGRATION_8_9)
+                ).addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .addCallback(seedCallback(context))
                     .build()
                 INSTANCE = instance

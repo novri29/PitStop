@@ -184,6 +184,11 @@ class DashboardKasirFragment : Fragment() {
                 viewModel.getSemuaBahan()
             )
 
+            NotificationHelper.checkAndNotifyLowStockSteam(
+                requireContext(),
+                viewModel.getSemuaStockSteam()
+            )
+
             updateNotificationBadge()
         }
     }

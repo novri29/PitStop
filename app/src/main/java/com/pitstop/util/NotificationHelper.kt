@@ -22,6 +22,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.Bahan
+import com.pitstop.save.entity.StockSteam
 import com.pitstop.util.Formatter
 
 /**
@@ -128,8 +129,12 @@ object NotificationHelper {
 
         val lowStock = bahanList.filter { bahan ->
 
+            // Catatan: sebelumnya syaratnya "bahan.stock > 0", yang membuat bahan yang
+            // langsung habis ke 0 dalam satu transaksi (tanpa sempat "singgah" di atas 0
+            // dulu) tidak pernah kebagian notifikasi sama sekali. Sekarang stock == 0
+            // (benar-benar habis) tetap dianggap "menipis" juga.
             bahan.initialStock > 0 &&
-                    bahan.stock > 0 &&
+                    bahan.stock >= 0 &&
                     bahan.stock <= bahan.initialStock * 0.30
         }
 
@@ -186,6 +191,8 @@ object NotificationHelper {
 
         simpanNotifikasiStock(
             context = context,
+            judul = "Stock Bahan Menipis",
+            jenis = "LOW_STOCK",
             isi = daftarItem
         )
 
@@ -196,8 +203,94 @@ object NotificationHelper {
         )
     }
 
+    /**
+     * Cek stok Steam (barang cuci motor: sabun, semir ban, dll) yang sudah menipis
+     * (≤ 30% dari initialStock) dan belum pernah dinotifikasi untuk baseline saat ini,
+     * lalu simpan + tampilkan notifikasinya. Pola & alur persis sama dengan
+     * checkAndNotifyLowStock (Bahan), hanya beda sumber data & namespace key supaya
+     * id StockSteam tidak pernah tertukar/bentrok dengan id Bahan.
+     */
+    fun checkAndNotifyLowStockSteam(
+        context: Context,
+        steamList: List<StockSteam>
+    ) {
+
+        val lowStock = steamList.filter { item ->
+
+            item.initialStock > 0 &&
+                    item.stock >= 0 &&
+                    item.stock <= item.initialStock * 0.30
+        }
+
+        if (lowStock.isEmpty()) {
+            return
+        }
+
+        val prefs = prefs(context)
+
+        val notified =
+            prefs.getStringSet(
+                "low_stock_steam_notified",
+                emptySet()
+            )?.toMutableSet()
+                ?: mutableSetOf()
+
+        val itemBaruMenipis = lowStock.filter { item ->
+
+            val key =
+                "steam_${item.id}_${item.initialStock}"
+
+            !notified.contains(key)
+        }
+
+        if (itemBaruMenipis.isEmpty()) {
+            return
+        }
+
+        itemBaruMenipis.forEach { item ->
+
+            notified.add(
+                "steam_${item.id}_${item.initialStock}"
+            )
+        }
+
+        prefs.edit()
+            .putStringSet(
+                "low_stock_steam_notified",
+                notified
+            )
+            .apply()
+
+        val daftarItem =
+            itemBaruMenipis.joinToString("\n") { item ->
+
+                val persen =
+                    ((item.stock / item.initialStock) * 100)
+                        .toInt()
+
+                "• ${item.nama}: " +
+                        "${item.stock.toInt()} ${item.satuan} " +
+                        "($persen%)"
+            }
+
+        simpanNotifikasiStock(
+            context = context,
+            judul = "Stock Steam Menipis",
+            jenis = "LOW_STOCK_STEAM",
+            isi = daftarItem
+        )
+
+        tampilkanNotifikasiSistem(
+            context = context,
+            judul = "Stock Steam Menipis",
+            isi = daftarItem
+        )
+    }
+
     private fun simpanNotifikasiStock(
         context: Context,
+        judul: String,
+        jenis: String,
         isi: String
     ) {
 
@@ -211,14 +304,14 @@ object NotificationHelper {
         val newObject = JSONObject().apply {
             put(
                 "judul",
-                "Stock Bahan Menipis"
+                judul
             )
 
             put("isi", isi)
 
             put(
                 "jenis",
-                "LOW_STOCK"
+                jenis
             )
 
             put(
@@ -463,10 +556,13 @@ object NotificationHelper {
             val isiMentah = item.optString("isi")
             val baris = isiMentah.split("\n").filter { it.isNotBlank() }
 
+            val isLowStockJenis = jenis == "LOW_STOCK" || jenis == "LOW_STOCK_STEAM"
+            val labelJamak = if (jenis == "LOW_STOCK_STEAM") "barang steam" else "bahan"
+
             val ringkasan = when {
-                jenis == "LOW_STOCK" && baris.size > 1 ->
-                    "${baris.size} bahan stoknya menipis, ketuk untuk lihat detail"
-                jenis == "LOW_STOCK" && baris.size == 1 ->
+                isLowStockJenis && baris.size > 1 ->
+                    "${baris.size} $labelJamak stoknya menipis, ketuk untuk lihat detail"
+                isLowStockJenis && baris.size == 1 ->
                     baris.first().removePrefix("• ").trim()
                 else ->
                     isiMentah.substringBefore("\n").trim()
@@ -603,6 +699,17 @@ object NotificationHelper {
             }
             "LOW_STOCK" -> {
                 binding.imgIconDetail.setImageResource(R.drawable.ic_stock_bahan)
+                binding.imgIconDetail.background = context.getDrawable(R.drawable.bg_icon_bubble_orange)
+                binding.imgIconDetail.setColorFilter(context.getColor(R.color.orange))
+
+                binding.sectionItem.visibility = android.view.View.GONE
+                binding.sectionAlasan.visibility = android.view.View.GONE
+
+                binding.tvIsiUmum.visibility = android.view.View.VISIBLE
+                binding.tvIsiUmum.text = item.isiLengkap
+            }
+            "LOW_STOCK_STEAM" -> {
+                binding.imgIconDetail.setImageResource(R.drawable.ic_steam)
                 binding.imgIconDetail.background = context.getDrawable(R.drawable.bg_icon_bubble_orange)
                 binding.imgIconDetail.setColorFilter(context.getColor(R.color.orange))
 

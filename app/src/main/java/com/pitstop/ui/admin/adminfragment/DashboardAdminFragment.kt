@@ -239,6 +239,11 @@ class DashboardAdminFragment : Fragment() {
                 viewModel.getSemuaBahan()
             )
 
+            NotificationHelper.checkAndNotifyLowStockSteam(
+                requireContext(),
+                viewModel.getSemuaStockSteam()
+            )
+
             // Update badge setelah pengecekan stock
             updateNotificationBadge()
         }

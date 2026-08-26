@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import com.pitstop.save.entity.Bahan
+import com.pitstop.save.entity.StockSteam
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.repository.AppRepository
 import com.pitstop.save.dao.DetailLaporanRow
@@ -102,6 +103,7 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
     fun getAllTransaksi() = repository.getAllTransaksiLive()
 
     suspend fun getSemuaBahan(): List<Bahan> = repository.getAllBahan()
+    suspend fun getSemuaStockSteam(): List<StockSteam> = repository.getAllStockSteam()
     suspend fun getSemuaTransaksi(): List<Transaksi> = repository.getAllTransaksi()
     suspend fun getDetail(transaksiId: Int) = repository.getDetailForTransaksi(transaksiId)
 

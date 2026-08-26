@@ -266,6 +266,11 @@ class AppRepository(context: Context) {
             bahanList = bahanDao.getAll()
         )
 
+        NotificationHelper.checkAndNotifyLowStockSteam(
+            context = appContext,
+            steamList = stockSteamDao.getAll()
+        )
+
         return transaksiId
     }
 
@@ -286,11 +291,11 @@ class AppRepository(context: Context) {
         detailList.forEach { detail ->
             detail.menuKopiId?.let { menuId ->
                 val usageList = menuKopiDao.getBahanUsageForMenu(menuId)
-                usageList.forEach { usage -> bahanDao.tambahStock(usage.bahanId, usage.jumlahDigunakan * detail.qty) }
+                usageList.forEach { usage -> bahanDao.kembalikanStock(usage.bahanId, usage.jumlahDigunakan * detail.qty) }
             }
             detail.layananId?.let { layananId ->
                 val usageList = stockSteamDao.getBahanUsageForLayanan(layananId)
-                usageList.forEach { usage -> stockSteamDao.tambahStock(usage.stockSteamId, usage.jumlahDigunakan * detail.qty) }
+                usageList.forEach { usage -> stockSteamDao.kembalikanStock(usage.stockSteamId, usage.jumlahDigunakan * detail.qty) }
             }
         }
 

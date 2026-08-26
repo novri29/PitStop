@@ -35,8 +35,19 @@ interface StockSteamDao {
     @Query("UPDATE stock_steam SET stock = stock - :jumlah WHERE id = :id")
     suspend fun kurangiStock(id: Int, jumlah: Double)
 
-    @Query("UPDATE stock_steam SET stock = stock + :jumlah WHERE id = :id")
+    /**
+     * Restock ASLI (dipakai kalau suatu saat ada menu "tambah stok item yang sudah ada").
+     * initialStock ikut di-reset karena ini titik "stok penuh" yang baru.
+     */
+    @Query("""UPDATE stock_steam SET stock = stock + :jumlah, initialStock = stock + :jumlah WHERE id = :id""")
     suspend fun tambahStock(id: Int, jumlah: Double)
+
+    /**
+     * Pengembalian stok akibat REFUND transaksi (bukan restock asli).
+     * Sengaja TIDAK menyentuh initialStock, sama seperti BahanDao.kembalikanStock.
+     */
+    @Query("UPDATE stock_steam SET stock = stock + :jumlah WHERE id = :id")
+    suspend fun kembalikanStock(id: Int, jumlah: Double)
 
     // ---------- Layanan (harga per ukuran motor) ----------
     @Query("SELECT * FROM layanan ORDER BY ukuran ASC")
