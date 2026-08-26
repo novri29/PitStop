@@ -182,9 +182,8 @@ interface TransaksiDao {
         AND (:tipe = 'SEMUA' OR (:tipe = 'Cuci Motor' AND d.layananId IS NOT NULL) OR (:tipe = 'Cafe' AND d.menuKopiId IS NOT NULL))
         GROUP BY d.namaItem
         ORDER BY totalQty DESC
-        LIMIT :limit
     """)
-    suspend fun getProdukTerlaris(awal: Long, akhir: Long, tipe: String, limit: Int): List<ProdukTerlarisRow>
+    suspend fun getProdukTerlaris(awal: Long, akhir: Long, tipe: String): List<ProdukTerlarisRow>
 
     // ---------- Detail item per transaksi dalam rentang tanggal (untuk export laporan lengkap) ----------
     @Query("""

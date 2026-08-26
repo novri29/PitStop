@@ -116,9 +116,9 @@ class LaporanFragment : Fragment() {
         binding.rowNavigasiPeriode.visibility = View.VISIBLE
 
         binding.tvLabelProdukTerlaris.text = when (tipe) {
-            TipePeriode.HARIAN -> "Produk Terlaris (Hari Ini)"
-            TipePeriode.BULANAN -> "Produk Terlaris (Bulan Ini)"
-            TipePeriode.TAHUNAN -> "Produk Terlaris (Tahun Ini)"
+            TipePeriode.HARIAN -> "Semua Produk Terjual (Hari Ini)"
+            TipePeriode.BULANAN -> "Semua Produk Terjual (Bulan Ini)"
+            TipePeriode.TAHUNAN -> "Semua Produk Terjual (Tahun Ini)"
         }
 
         resetToggle(binding.btnHarian); resetToggle(binding.btnBulanan)
@@ -136,7 +136,7 @@ class LaporanFragment : Fragment() {
     private fun pilihSemua() {
         modeSemua = true
         binding.rowNavigasiPeriode.visibility = View.GONE
-        binding.tvLabelProdukTerlaris.text = "Produk Terlaris (Semua)"
+        binding.tvLabelProdukTerlaris.text = "Semua Produk Terjual (Semua)"
         binding.tvLabelGrafik.text = "Tren Omzet 7 Hari Terakhir"
         binding.tvLabelGrafikLaba.text = "Tren Laba Bersih 7 Hari Terakhir"
 

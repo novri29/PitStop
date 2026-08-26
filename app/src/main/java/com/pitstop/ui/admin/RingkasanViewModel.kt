@@ -154,17 +154,17 @@ class RingkasanViewModel(private val repository: AppRepository) : ViewModel() {
         }
     }
 
-    suspend fun getProdukTerlarisPeriode(limit: Int = 5): List<ProdukTerlarisRow> {
+    suspend fun getProdukTerlarisPeriode(): List<ProdukTerlarisRow> {
         val tipe = tipePeriode.value ?: TipePeriode.HARIAN
         val kalender = kalenderAcuan.value ?: Calendar.getInstance()
         val unit = unitPeriode.value ?: "SEMUA"
         val (awal, akhir) = PeriodeUtil.rentang(tipe, kalender)
-        return repository.getProdukTerlaris(awal, akhir, unit, limit)
+        return repository.getProdukTerlaris(awal, akhir, unit)
     }
 
-    /** Produk terlaris untuk seluruh riwayat (dipakai saat mode "Semua" di Laporan). */
-    suspend fun getProdukTerlarisSemua(limit: Int = 5): List<ProdukTerlarisRow> =
-        repository.getProdukTerlaris(0L, Long.MAX_VALUE, "SEMUA", limit)
+    /** Semua produk terjual untuk seluruh riwayat (dipakai saat mode "Semua" di Laporan). */
+    suspend fun getProdukTerlarisSemua(): List<ProdukTerlarisRow> =
+        repository.getProdukTerlaris(0L, Long.MAX_VALUE, "SEMUA") // Parameter limit dihapus
 
     // ---------- Export Laporan Lengkap (rekap semua produk + detail item, sesuai filter aktif) ----------
     suspend fun getProdukTerjualLengkapPeriode(): List<ProdukTerlarisRow> {

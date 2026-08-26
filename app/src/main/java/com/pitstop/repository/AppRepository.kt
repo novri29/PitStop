@@ -568,12 +568,12 @@ class AppRepository(context: Context) {
     }
 
     // ---------- Produk Terlaris ----------
-    suspend fun getProdukTerlaris(awal: Long, akhir: Long, tipe: String = "SEMUA", limit: Int = 5) =
-        transaksiDao.getProdukTerlaris(awal, akhir, tipe, limit)
+    suspend fun getProdukTerlaris(awal: Long, akhir: Long, tipe: String = "SEMUA") =
+        transaksiDao.getProdukTerlaris(awal, akhir, tipe) // Parameter limit dihapus
 
     /** Semua produk terjual (tanpa batas jumlah), dipakai untuk rekap lengkap saat export laporan. */
     suspend fun getProdukTerjualLengkap(awal: Long, akhir: Long, tipe: String = "SEMUA"): List<ProdukTerlarisRow> =
-        transaksiDao.getProdukTerlaris(awal, akhir, tipe, Int.MAX_VALUE)
+        transaksiDao.getProdukTerlaris(awal, akhir, tipe) // Parameter Int.MAX_VALUE dihapus
 
     /** Detail item per transaksi dalam rentang tanggal, dipakai untuk export laporan lengkap. */
     suspend fun getDetailLaporanPeriode(awal: Long, akhir: Long, tipe: String = "SEMUA"): List<DetailLaporanRow> =
