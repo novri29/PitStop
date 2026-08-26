@@ -50,6 +50,7 @@ class ResepMinumanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityResepMinumanBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupKeyboardAutoScroll()
 
         // Fix: dorong toolbar agar tidak ketutupan status bar / icon baterai di SDK 35+
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarHeader) { view, insets ->
@@ -117,7 +118,11 @@ class ResepMinumanActivity : AppCompatActivity() {
         }
 
         binding.btnTambah.setOnClickListener {
-            binding.formTambah.visibility = if (binding.formTambah.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            // tampilkan form
+            binding.formTambah.visibility = View.VISIBLE
+
+            // sembunyikan daftar resep
+            binding.rvMenu.visibility = View.GONE
         }
 
         binding.etSearch.addTextChangedListener(object : TextWatcher {
@@ -133,6 +138,85 @@ class ResepMinumanActivity : AppCompatActivity() {
 
         binding.btnTambahBahan.setOnClickListener { tambahPemakaian() }
         binding.btnSimpanMenu.setOnClickListener { simpanMenu() }
+    }
+
+    private fun setupKeyboardAutoScroll() {
+
+        val editTexts = listOf(
+            binding.etNamaMenu,
+            binding.etJumlahPakai,
+            binding.etHargaJual,
+            binding.etHargaPromo
+        )
+
+        editTexts.forEach { editText ->
+
+            editText.setOnFocusChangeListener { view, hasFocus ->
+
+                if (hasFocus) {
+
+                    binding.formTambah.postDelayed({
+
+                        val rect = android.graphics.Rect(
+                            0,
+                            0,
+                            view.width,
+                            view.height
+                        )
+
+                        view.requestRectangleOnScreen(
+                            rect,
+                            true
+                        )
+
+                    }, 300)
+                }
+            }
+        }
+
+        // Pastikan bagian bawah ScrollView mendapatkan ruang
+        // ketika keyboard muncul.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.formTambah) { view, insets ->
+
+            val imeInsets = insets.getInsets(
+                WindowInsetsCompat.Type.ime()
+            )
+
+            val bottomPadding = imeInsets.bottom
+
+            view.setPadding(
+                view.paddingLeft,
+                view.paddingTop,
+                view.paddingRight,
+                bottomPadding
+            )
+
+            if (imeInsets.bottom > 0) {
+
+                val focusedView = currentFocus
+
+                if (focusedView != null) {
+
+                    view.postDelayed({
+
+                        val rect = android.graphics.Rect(
+                            0,
+                            0,
+                            focusedView.width,
+                            focusedView.height
+                        )
+
+                        focusedView.requestRectangleOnScreen(
+                            rect,
+                            true
+                        )
+
+                    }, 100)
+                }
+            }
+
+            insets
+        }
     }
 
     private fun terapkanFilter(keyword: String) {
@@ -204,6 +288,7 @@ class ResepMinumanActivity : AppCompatActivity() {
                 pemakaianAdapter.setItems(emptyList())
                 updateEstimasiModal()
                 binding.formTambah.visibility = View.GONE
+                binding.rvMenu.visibility = View.VISIBLE
 
                 gambarPathBaru = null
                 binding.imgPreviewBaru.setImageResource(R.drawable.ic_cafe_cup)
