@@ -22,54 +22,120 @@ import com.pitstop.util.BluetoothPrinterHelper
 object StrukPrintHelper {
 
     private const val CSS = """
-        body {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            color: #111;
+    body {
+            font-family: 'Courier New', monospace;
+            font-size: 22px;
+            font-weight: bold;
+            color: #000;
             margin: 0;
             padding: 0;
             background-color: #fff;
             width: 384px;
             box-sizing: border-box;
         }
+    
         .receipt {
             width: 384px;
             max-width: 384px;
             margin: 0;
-            padding: 16px 24px;
+            padding: 12px 10px 45px 10px;
             box-sizing: border-box;
         }
+    
         .receipt.batch {
             page-break-after: always;
-            border-bottom: 1px dashed #999;
+            border-bottom: 2px dashed #000;
             padding-bottom: 14px;
         }
-        .header { text-align: center; margin-bottom: 12px; }
-        .logo { max-width: 180px; max-height: 55px; margin: 0 auto 4px auto; display: block; }
-        .subtitle { font-size: 11px; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.5px; }
-        .divider { border-top: 1px dashed #000; margin: 8px 0; }
-        .meta-table, .item-table, .total-table { width: 100%; border-collapse: collapse; }
-        .meta-table td { font-size: 11px; padding: 1px 0; }
-        .item-table td { font-size: 12px; }
-        .total-table td { font-size: 12px; }
-        .bold { font-weight: bold; }
-        .footer { text-align: center; margin-top: 15px; font-size: 11px; }
-        .banner-refund {
-            border: 1.5px dashed #d32f2f;
-            color: #d32f2f;
+    
+        .header {
             text-align: center;
-            padding: 6px;
-            margin-bottom: 10px;
-            font-size: 11px;
+            margin-bottom: 12px;
+        }
+    
+        .logo {
+            width: 310px;
+            max-width: 310px;
+            max-height: 95px;
+            margin: 0 auto 8px auto;
+            display: block;
+        }
+    
+        .subtitle {
+            font-size: 21px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+    
+        .divider {
+            border-top: 2px dashed #000;
+            margin: 8px 0;
+        }
+    
+        .meta-table,
+        .item-table,
+        .total-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        .meta-table td {
+            font-size: 21px;
+            font-weight: bold;
+            padding: 3px 0;
+        }
+    
+        .item-table td {
+            font-size: 21px;
+            font-weight: bold;
+            padding: 4px 0;
+        }
+    
+        .total-table td {
+            font-size: 22px;
+            font-weight: bold;
+            padding: 4px 0;
+        }
+    
+        .bold {
             font-weight: bold;
         }
+    
+        .footer {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 19px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+    
+        .banner-refund {
+            border: 2px dashed #000;
+            color: #000;
+            text-align: center;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    
         .batch-cover {
             text-align: center;
             margin-bottom: 20px;
             page-break-after: always;
         }
-        .batch-cover .subtitle { font-size: 13px; }
-        .batch-cover .info { font-size: 12px; color: #333; margin-top: 10px; }
+    
+        .batch-cover .subtitle {
+            font-size: 22px;
+        }
+    
+        .batch-cover .info {
+            font-size: 19px;
+            color: #000;
+            margin-top: 10px;
+        }
     """
 
     /**
@@ -181,9 +247,7 @@ object StrukPrintHelper {
 
                 <div class="footer">
                     Terima kasih atas kunjungan Anda<br/>
-                        <span style="font-size: 9px;">
-                    JL. Turi Raya No.102 Tanjung Senang
-                        </span><br/>
+                    JL. Turi Raya No.102 Tanjung Senang<br/>
                     ~ Pitstop ~
                 </div>
             </div>
