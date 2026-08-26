@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dialog progress sederhana buat proses "Download PDF" struk di Laporan. containerWebViewPdf
+    ditempel dengan ukuran NYATA (bukan 0x0) karena WebView render sementara ditaruh di situ.
+    WebView modern (Chromium) sengaja tidak merender konten kalau dianggap tidak terlihat, jadi
+    tidak boleh diberi ukuran 0x0/visibility=gone. Overlay putih di atasnya (drawn belakangan,
+    jadi menutupi secara visual) yang bikin user cuma lihat progress bar + status text, bukan
+    HTML struk yang lagi dirender di baliknya.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="260dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card">
+
+    <FrameLayout
+        android:id="@+id/containerWebViewPdf"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:minHeight="180dp"
+        android:padding="24dp">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvStatusPdf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="Membuat PDF..."
+            android:textColor="@color/black"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+</FrameLayout>
