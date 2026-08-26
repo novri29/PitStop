@@ -31,6 +31,7 @@ import com.pitstop.pitstop.R
 import java.io.IOException
 import java.io.OutputStream
 import java.util.UUID
+import java.util.concurrent.Executors
 
 object BluetoothPrinterHelper {
 
@@ -64,6 +65,16 @@ object BluetoothPrinterHelper {
      */
     private const val PREVIEW_SCALE = 2.5f
 
+    /*
+     * Kadang postVisualStateCallback() sudah bilang "selesai render", tapi capture
+     * webView.draw(canvas) berikutnya masih menangkap frame kosong/putih polos --
+     * race condition antara compositor thread WebView dan main thread (lihat detail
+     * di captureWebViewDenganRetry). Untuk itu capture dicoba beberapa kali sebelum
+     * benar-benar menyerah, bukan langsung menampilkan hasil kosong sebagai "berhasil".
+     */
+    private const val MAKS_PERCOBAAN_CAPTURE = 3
+    private const val JEDA_RETRY_CAPTURE_MS = 200L
+
     /**
      * Hitung lebar preview yang aman untuk device manapun: idealnya PRINTER_WIDTH_DOTS x
      * PREVIEW_SCALE, tapi dibatasi maksimal 90% lebar layar supaya tidak overflow di HP
@@ -78,6 +89,64 @@ object BluetoothPrinterHelper {
     private var selectedPrinterName: String? = null
 
     private var selectedPrinterMac: String? = null
+
+    /*
+     * FIX BUG "hasil cetak ulang kadang karakter acak/mojibake": sebelumnya setiap kali
+     * "Cetak Sekarang" (atau Test Print) ditekan, kode langsung membuka Thread baru yang
+     * membuka SOCKET Bluetooth sendiri ke printer. Kalau ada 2 proses cetak yang jalan
+     * bersamaan (mis. reprint beberapa struk lama berturut-turut dengan cepat, atau tap
+     * dobel karena tidak sadar sudah terkirim), dua socket berbeda menulis ke printer yang
+     * sama secara bersamaan -- byte dari kedua job SALING MENYISIP (interleave) di buffer
+     * printer, sehingga perintah cetak gambar (GS v 0) jadi rusak/tidak dikenali dan printer
+     * malah menafsirkan sisa datanya sebagai TEKS biasa -> keluar sebagai karakter acak.
+     * Dengan single-thread executor ini, SEMUA job cetak (test print maupun cetak struk,
+     * dari layar manapun) dipaksa berjalan satu-per-satu secara berurutan -- job berikutnya
+     * baru mulai buka socket setelah job sebelumnya benar-benar selesai & socket ditutup.
+     */
+    private val printExecutor = Executors.newSingleThreadExecutor()
+
+    /*
+     * FIX BUG "pembeli 1 berhasil cetak, pembeli 2 cetak-nya jadi karakter acak": beda
+     * dengan kasus di atas (yang soal 2 job BERBARENGAN), ini kejadian meski tiap job cetak
+     * sudah berjalan berurutan (tidak overlap) -- pembeli 2 baru mulai transaksi & cetak
+     * SETELAH pembeli 1 selesai. Ini gejala khas printer thermal murah: begitu 1 sesi Bluetooth
+     * ditutup, firmware printer butuh JEDA SEJENAK untuk benar-benar reset & siap menerima
+     * koneksi baru dengan bersih. Kalau koneksi berikutnya datang terlalu cepat (dalam hitungan
+     * detik), firmware bisa "nyangkut" di state sisa sesi sebelumnya, sehingga sesi baru
+     * (walau sudah kirim ESC @ reset di awal) tetap salah tafsir sebagai teks acak. Waktu
+     * selesainya sesi cetak TERAKHIR dicatat di sini, lalu dipakai untuk memberi jeda minimum
+     * sebelum sesi berikutnya mulai membuka socket -- lihat tungguJedaAntarSesiCetak().
+     */
+    @Volatile
+    private var waktuSelesaiSesiCetakTerakhir: Long = 0L
+
+    private const val JEDA_MINIMUM_ANTAR_SESI_CETAK_MS = 1200L
+
+    private fun tungguJedaAntarSesiCetakJikaPerlu() {
+        val sejakSesiTerakhir = System.currentTimeMillis() - waktuSelesaiSesiCetakTerakhir
+        val sisaJeda = JEDA_MINIMUM_ANTAR_SESI_CETAK_MS - sejakSesiTerakhir
+        if (sisaJeda > 0) {
+            Log.d(TAG, "Memberi jeda ${sisaJeda}ms sebelum sesi cetak berikutnya (settle time printer).")
+            try {
+                Thread.sleep(sisaJeda)
+            } catch (_: InterruptedException) {
+            }
+        }
+    }
+
+    /*
+     * LAPIS FIX KEDUA untuk bug yang sama: ternyata walau job sudah tidak overlap (lihat
+     * printExecutor di atas), job cetak KEDUA yang langsung nyambung lagi ke printer yang
+     * sama TEPAT setelah job pertama menutup socket-nya masih bisa gagal handshake dan
+     * hasilnya karakter acak -- ini keterbatasan umum Bluetooth Classic (RFCOMM) di Android:
+     * setelah socket.close() dipanggil, stack Bluetooth & printer butuh sedikit waktu untuk
+     * benar-benar "settle" sebelum siap menerima koneksi baru; socket.close() yang me-return
+     * TIDAK berarti proses teardown-nya sudah 100% selesai di level radio/firmware printer.
+     * Cooldown singkat ini dijalankan di akhir SETIAP job cetak (lihat pemanggilan
+     * printExecutor.execute di bawah) supaya job berikutnya di antrian punya jeda "napas"
+     * yang cukup sebelum mencoba connect lagi ke printer yang sama.
+     */
+    private const val COOLDOWN_ANTAR_JOB_CETAK_MS = 900L
 
 
     // ============================================================
@@ -238,17 +307,6 @@ object BluetoothPrinterHelper {
     // RENDER HTML -> BITMAP -> TAMPILKAN PREVIEW -> KIRIM SETELAH DIKONFIRMASI
     // ============================================================
 
-    /**
-     * Render HTML struk ke [Bitmap] lalu tampilkan dialog preview sebelum benar-benar
-     * dikirim ke printer. Tombol "Cetak Sekarang" baru aktif setelah render benar-benar
-     * selesai (dideteksi lewat [WebView.postVisualStateCallback], BUKAN delay tebakan seperti
-     * sebelumnya), dan bitmap yang ditampilkan di preview adalah PERSIS bitmap yang dikirim
-     * ke printer -- jadi WYSIWYG: apa yang tampil di preview = apa yang keluar di kertas.
-     *
-     * WebView-nya sengaja ditempel ke dalam hierarchy dialog ini (bukan dibuat lepas tanpa
-     * parent seperti implementasi sebelumnya), karena postVisualStateCallback() hanya bisa
-     * diandalkan kalau WebView benar-benar bagian dari window yang aktif.
-     */
     private fun showPreviewThenPrint(
         activity: Activity,
         html: String,
@@ -264,26 +322,11 @@ object BluetoothPrinterHelper {
         val webView = WebView(activity)
         webView.settings.javaScriptEnabled = true
         webView.settings.loadWithOverviewMode = false
-        // FIX BUG "teks/kolom kanan kepotong": harus true supaya WebView memakai lebar
-        // yang kita tentukan lewat <meta name="viewport" content="width=384"> di HTML
-        // sebagai acuan CSS viewport, BUKAN lebar View dalam satuan dp (yang nilainya beda-beda
-        // tergantung density layar device, itulah penyebab kolom kanan struk kepotong).
         webView.settings.useWideViewPort = true
-        // Kunci skala render ke 100% supaya tidak ada scaling tambahan dari density layar --
-        // 384 CSS px di HTML harus persis sama dengan 384 pixel fisik yang kita capture.
         webView.setInitialScale(100)
         webView.setBackgroundColor(Color.WHITE)
-
-        // FIX BUG "hasil preview putih kosong": paksa WebView pakai software rendering.
-        // WebView modern (berbasis Chromium) merender via hardware compositor terpisah, dan
-        // canvas.draw() ke Bitmap biasa (software canvas) bisa gagal menangkap isinya kalau
-        // WebView masih pakai hardware layer -- hasilnya blank putih. Dengan LAYER_TYPE_SOFTWARE,
-        // WebView dipaksa gambar ke software canvas, jadi captured Bitmap-nya benar isinya.
         webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 
-        // Ditempel LANGSUNG ke area yang benar-benar tampil di layar (bukan container
-        // tersembunyi 0x0 seperti sebelumnya) -- WebView bisa menganggap dirinya "tidak
-        // terlihat" kalau parent-nya berukuran nol, dan ikut tidak merender apa pun.
         val webViewWidth = previewWidthDotsUntuk(activity)
 
         containerWebViewPreview.addView(
@@ -298,8 +341,6 @@ object BluetoothPrinterHelper {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        // Kalau dialog ditutup (Batal / ditekan di luar) sebelum render selesai,
-        // hentikan WebView supaya tidak terus bekerja & membocorkan resource di background.
         dialog.setOnDismissListener {
             webView.stopLoading()
             webView.destroy()
@@ -311,13 +352,11 @@ object BluetoothPrinterHelper {
         btnCetak.setOnClickListener {
             val bmpPreview = bitmapSiapCetak
             if (bmpPreview != null) {
+                btnCetak.isEnabled = false
                 dialog.dismiss()
-                // Bitmap preview ukurannya diperbesar biar enak dilihat. Downscale dulu ke
-                // PRINTER_WIDTH_DOTS (ukuran fisik printer sesungguhnya) sebelum dikirim,
-                // supaya hasil cetak fisiknya tetap pas di kertas 58mm.
                 val tinggiCetak = (bmpPreview.height.toFloat() * PRINTER_WIDTH_DOTS / bmpPreview.width).toInt()
                 val bmpUntukCetak = Bitmap.createScaledBitmap(bmpPreview, PRINTER_WIDTH_DOTS, tinggiCetak, true)
-                Thread { sendBitmapToPrinter(activity, macAddress, bmpUntukCetak) }.start()
+                printExecutor.execute { sendBitmapToPrinter(activity, macAddress, bmpUntukCetak) }
             }
         }
 
@@ -326,22 +365,22 @@ object BluetoothPrinterHelper {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-
-                // Menunggu VISUAL STATE benar-benar siap digambar -- ini deteksi render
-                // selesai yang SEBENARNYA, menggantikan delay tebakan 500ms yang lama.
-                // onPageFinished() sendiri TIDAK menjamin layout & paint sudah selesai,
-                // itulah sumber bug "hasil cetak kadang tidak sesuai desain" sebelumnya.
                 webView.postVisualStateCallback(0L, object : WebView.VisualStateCallback() {
                     override fun onComplete(requestId: Long) {
-                        if (!dialog.isShowing) return // dialog sudah ditutup user, tidak perlu lanjut
-                        renderWebViewKeBitmapDanTampilkan(
-                            webView = webView,
-                            previewWidth = webViewWidth,
-                            progressPreview = progressPreview,
-                            tvStatusPreview = tvStatusPreview,
-                            btnCetak = btnCetak,
-                            onBitmapSiap = { bitmap -> bitmapSiapCetak = bitmap }
-                        )
+                        if (!dialog.isShowing) return
+
+                        webView.post {
+                            if (!dialog.isShowing) return@post
+                            captureWebViewDenganRetry(
+                                webView = webView,
+                                previewWidth = webViewWidth,
+                                progressPreview = progressPreview,
+                                tvStatusPreview = tvStatusPreview,
+                                btnCetak = btnCetak,
+                                percobaanKe = 1,
+                                onBitmapSiap = { bitmap -> bitmapSiapCetak = bitmap }
+                            )
+                        }
                     }
                 })
             }
@@ -350,21 +389,13 @@ object BluetoothPrinterHelper {
         webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
     }
 
-    /**
-     * Ukur & gambar isi WebView (yang sudah dipastikan selesai render lewat
-     * postVisualStateCallback) menjadi [Bitmap] berukuran preview (lebih besar dari ukuran
-     * fisik printer, supaya enak dilihat). WebView tetap ditampilkan hidup di layar sebagai
-     * preview-nya sendiri, ukurannya di-set ulang di sini supaya proporsinya sama persis
-     * dengan bitmap yang ditangkap. Bitmap preview ini di-downscale ke ukuran fisik printer
-     * (PRINTER_WIDTH_DOTS) baru saat benar-benar dikirim ke printer -- lihat callback
-     * onBitmapSiap() di showPreviewThenPrint().
-     */
-    private fun renderWebViewKeBitmapDanTampilkan(
+    private fun captureWebViewDenganRetry(
         webView: WebView,
         previewWidth: Int,
         progressPreview: ProgressBar,
         tvStatusPreview: TextView,
         btnCetak: Button,
+        percobaanKe: Int,
         onBitmapSiap: (Bitmap) -> Unit
     ) {
         val widthSpec = View.MeasureSpec.makeMeasureSpec(previewWidth, View.MeasureSpec.EXACTLY)
@@ -375,20 +406,40 @@ object BluetoothPrinterHelper {
         val height = webView.measuredHeight
 
         if (height <= 0) {
+            if (percobaanKe < MAKS_PERCOBAAN_CAPTURE) {
+                Log.w(TAG, "Preview struk: tinggi WebView masih 0, coba lagi ($percobaanKe/$MAKS_PERCOBAAN_CAPTURE)...")
+                jadwalkanRetryCapture(webView, previewWidth, progressPreview, tvStatusPreview, btnCetak, percobaanKe, onBitmapSiap)
+                return
+            }
             progressPreview.visibility = View.GONE
-            tvStatusPreview.text = "Gagal membuat preview struk."
+            tvStatusPreview.visibility = View.VISIBLE
+            tvStatusPreview.text = "Gagal membuat preview struk, coba lagi."
             return
         }
 
         webView.layout(0, 0, width, height)
-        // Samakan ukuran tampil WebView di layar dengan ukuran hasil measure, supaya tidak
-        // terpotong/kosong di bagian bawah saat di-scroll.
         webView.layoutParams = FrameLayout.LayoutParams(width, height)
+        webView.invalidate()
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.WHITE)
         webView.draw(canvas)
+
+        if (bitmapPolosPutih(bitmap)) {
+            if (percobaanKe < MAKS_PERCOBAAN_CAPTURE) {
+                Log.w(TAG, "Preview struk hasil capture kosong, coba lagi ($percobaanKe/$MAKS_PERCOBAAN_CAPTURE)...")
+                jadwalkanRetryCapture(webView, previewWidth, progressPreview, tvStatusPreview, btnCetak, percobaanKe, onBitmapSiap)
+                return
+            }
+
+            Log.e(TAG, "Preview struk tetap kosong setelah $MAKS_PERCOBAAN_CAPTURE percobaan.")
+            progressPreview.visibility = View.GONE
+            tvStatusPreview.visibility = View.VISIBLE
+            tvStatusPreview.text = "Gagal membuat preview struk, coba lagi."
+            btnCetak.isEnabled = false
+            return
+        }
 
         progressPreview.visibility = View.GONE
         tvStatusPreview.visibility = View.GONE
@@ -397,10 +448,49 @@ object BluetoothPrinterHelper {
         onBitmapSiap(bitmap)
     }
 
+    private fun jadwalkanRetryCapture(
+        webView: WebView,
+        previewWidth: Int,
+        progressPreview: ProgressBar,
+        tvStatusPreview: TextView,
+        btnCetak: Button,
+        percobaanKe: Int,
+        onBitmapSiap: (Bitmap) -> Unit
+    ) {
+        Handler(Looper.getMainLooper()).postDelayed({
+            captureWebViewDenganRetry(
+                webView = webView,
+                previewWidth = previewWidth,
+                progressPreview = progressPreview,
+                tvStatusPreview = tvStatusPreview,
+                btnCetak = btnCetak,
+                percobaanKe = percobaanKe + 1,
+                onBitmapSiap = onBitmapSiap
+            )
+        }, JEDA_RETRY_CAPTURE_MS)
+    }
 
-    // ============================================================
-    // TEST PRINT (tetap mode teks, cukup untuk cek koneksi)
-    // ============================================================
+    private fun bitmapPolosPutih(bitmap: Bitmap): Boolean {
+        val langkahX = maxOf(1, bitmap.width / 40)
+        val langkahY = maxOf(1, bitmap.height / 80)
+
+        var x = 0
+        while (x < bitmap.width) {
+            var y = 0
+            while (y < bitmap.height) {
+                val pixel = bitmap.getPixel(x, y)
+                val r = Color.red(pixel)
+                val g = Color.green(pixel)
+                val b = Color.blue(pixel)
+                if (r < 250 || g < 250 || b < 250) {
+                    return false
+                }
+                y += langkahY
+            }
+            x += langkahX
+        }
+        return true
+    }
 
     fun testPrint(activity: Activity) {
         if (selectedPrinterMac.isNullOrBlank()) {
@@ -432,15 +522,10 @@ object BluetoothPrinterHelper {
             ~ Pitstop ~
         """.trimIndent()
 
-        Thread {
+        printExecutor.execute {
             sendTextToPrinter(activity, selectedPrinterMac!!, testText)
-        }.start()
+        }
     }
-
-
-    // ============================================================
-    // KONEKSI: SECURE lalu fallback INSECURE RFCOMM
-    // ============================================================
 
     @SuppressLint("MissingPermission")
     private fun openSocket(activity: Activity, macAddress: String): BluetoothSocket {
@@ -473,11 +558,6 @@ object BluetoothPrinterHelper {
         return socket
     }
 
-
-    // ============================================================
-    // KIRIM GAMBAR STRUK (logo + layout sesuai desain HTML/CSS)
-    // ============================================================
-
     @SuppressLint("MissingPermission")
     private fun sendBitmapToPrinter(
         activity: Activity,
@@ -493,6 +573,8 @@ object BluetoothPrinterHelper {
         var outputStream: OutputStream? = null
 
         try {
+            tungguJedaAntarSesiCetakJikaPerlu()
+
             socket = openSocket(activity, macAddress)
             outputStream = socket.outputStream
 
@@ -501,16 +583,23 @@ object BluetoothPrinterHelper {
             outputStream.flush()
             Thread.sleep(150)
 
-            // Kirim gambar per-chunk supaya buffer printer tidak overflow
-            // (penyebab umum "printer terdeteksi tapi tidak keluar cetakan").
             writeInChunks(outputStream, bitmapToEscPos(bitmap))
 
             // Feed paper
             outputStream.write(byteArrayOf(0x0A, 0x0A, 0x0A))
             outputStream.flush()
 
-            // Beri jeda supaya printer sempat selesai mencetak sebelum socket ditutup
-            Thread.sleep(500)
+            // [PERBAIKAN] JEDA DINAMIS
+            // Hitung estimasi waktu cetak fisik berdasarkan tinggi gambar.
+            // Asumsi kecepatan printer thermal portabel: ~400 dot/pixel per detik.
+            val estimasiWaktuCetakMs = (bitmap.height / 400.0 * 1000).toLong()
+
+            // Tambahkan waktu penyangga (buffer) 1 detik, dengan batas minimal delay 2500ms.
+            val delayAman = maxOf(2500L, estimasiWaktuCetakMs + 1000L)
+
+            Log.d(TAG, "Menunggu ${delayAman}ms agar fisik printer selesai mencetak sebelum socket ditutup...")
+            Thread.sleep(delayAman)
+            // [AKHIR PERBAIKAN]
 
             showToast(activity, "Struk berhasil dikirim ke printer.", Toast.LENGTH_SHORT)
 
@@ -527,14 +616,10 @@ object BluetoothPrinterHelper {
             try { outputStream?.flush() } catch (_: Exception) {}
             try { outputStream?.close() } catch (_: Exception) {}
             try { socket?.close() } catch (_: Exception) {}
+            waktuSelesaiSesiCetakTerakhir = System.currentTimeMillis()
         }
     }
 
-    /**
-     * Kirim data besar ke printer per-potongan kecil (chunk) dengan jeda singkat.
-     * Mencegah buffer printer/Bluetooth stack overflow yang membuat sebagian data
-     * hilang saat dikirim sekaligus.
-     */
     private fun writeInChunks(
         outputStream: OutputStream,
         data: ByteArray,
@@ -546,7 +631,12 @@ object BluetoothPrinterHelper {
             outputStream.write(data, offset, length)
             outputStream.flush()
             offset += length
-            Thread.sleep(10)
+
+            // [PERBAIKAN] PELAMBATAN PACING DATA
+            // Naikkan jeda dari 10ms menjadi 40ms agar memori
+            // hardware printer punya cukup waktu untuk mengosongkan antrean.
+            Thread.sleep(40)
+            // [AKHIR PERBAIKAN]
         }
     }
 
@@ -591,11 +681,6 @@ object BluetoothPrinterHelper {
         return data.toByteArray()
     }
 
-
-    // ============================================================
-    // KIRIM TEKS (dipakai untuk Test Print saja)
-    // ============================================================
-
     @SuppressLint("MissingPermission")
     private fun sendTextToPrinter(
         activity: Activity,
@@ -611,6 +696,8 @@ object BluetoothPrinterHelper {
         var outputStream: OutputStream? = null
 
         try {
+            tungguJedaAntarSesiCetakJikaPerlu()
+
             socket = openSocket(activity, macAddress)
             outputStream = socket.outputStream
 
@@ -618,8 +705,8 @@ object BluetoothPrinterHelper {
             outputStream.flush()
             Thread.sleep(150)
 
-            outputStream.write(byteArrayOf(0x1B, 0x61, 0x00)) // align left
-            outputStream.write(byteArrayOf(0x1B, 0x45, 0x00)) // bold off
+            outputStream.write(byteArrayOf(0x1B, 0x61, 0x00))
+            outputStream.write(byteArrayOf(0x1B, 0x45, 0x00))
 
             val textBytes = text.toByteArray(charset("windows-1252"))
             writeInChunks(outputStream, textBytes)
@@ -646,13 +733,9 @@ object BluetoothPrinterHelper {
             try { outputStream?.flush() } catch (_: Exception) {}
             try { outputStream?.close() } catch (_: Exception) {}
             try { socket?.close() } catch (_: Exception) {}
+            waktuSelesaiSesiCetakTerakhir = System.currentTimeMillis()
         }
     }
-
-
-    // ============================================================
-    // TOAST
-    // ============================================================
 
     private fun showToast(
         activity: Activity,
