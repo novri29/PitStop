@@ -24,6 +24,7 @@ import com.pitstop.util.StrukPdfExporter
 import com.pitstop.util.StrukPrintHelper
 import com.pitstop.util.TipePeriode
 import com.pitstop.util.ViewModelFactory
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class LaporanFragment : Fragment() {
@@ -36,6 +37,22 @@ class LaporanFragment : Fragment() {
 
     /** true = tampilkan seluruh riwayat tanpa filter tanggal (mode lama) */
     private var modeSemua = false
+
+    /*
+     * FIX BUG "Produk Terlaris terkadang tidak muncul semua, kadang cuma 1 produk yang
+     * kelihatan": setiap tap Harian/Bulanan/Tahunan/Semua/panah geser periode membuka
+     * coroutine BARU lewat viewLifecycleOwner.lifecycleScope.launch{}, TANPA membatalkan
+     * coroutine SEBELUMNYA yang mungkin masih berjalan. Kalau user pindah tab dengan cepat
+     * (mis. tap Harian lalu langsung tap Bulanan sebelum query Harian selesai), 2 coroutine
+     * jalan BERBARENGAN dan sama-sama menulis ke produkTerlarisAdapter yang SAMA -- siapa pun
+     * yang lebih dulu SELESAI (bukan yang terakhir DITEKAN) yang "menang" dan menentukan isi
+     * daftar akhir yang tampil, sehingga label tab & data yang tampil bisa tidak sinkron (mis.
+     * label bilang "Bulan Ini" tapi datanya ketiban hasil query Harian yang kebetulan lebih
+     * cepat, atau sebaliknya). Job yang sedang berjalan sekarang dilacak & dibatalkan dulu
+     * sebelum memulai load baru, supaya HANYA tab yang terakhir ditekan yang boleh
+     * memperbarui tampilan -- lihat muatGrafikDanProdukTerlaris() & pilihSemua().
+     */
+    private var jobMuatProdukDanGrafik: Job? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentLaporanBinding.inflate(inflater, container, false)
@@ -57,6 +74,7 @@ class LaporanFragment : Fragment() {
 
         produkTerlarisAdapter = ProdukTerlarisAdapter()
         binding.rvProdukTerlaris.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvProdukTerlaris.isNestedScrollingEnabled = false
         binding.rvProdukTerlaris.adapter = produkTerlarisAdapter
 
         binding.btnHarian.setOnClickListener { pilihPeriode(TipePeriode.HARIAN) }
@@ -145,7 +163,8 @@ class LaporanFragment : Fragment() {
         resetToggle(binding.btnTahunan); resetToggle(binding.btnSemua)
         setToggleAktif(binding.btnSemua)
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        jobMuatProdukDanGrafik?.cancel()
+        jobMuatProdukDanGrafik = viewLifecycleOwner.lifecycleScope.launch {
             val produk = viewModel.getProdukTerlarisSemua()
             produkTerlarisAdapter.submitList(produk)
             binding.tvProdukTerlarisKosong.visibility = if (produk.isEmpty()) View.VISIBLE else View.GONE
@@ -166,7 +185,9 @@ class LaporanFragment : Fragment() {
         if (modeSemua) return
         binding.tvLabelGrafik.text = viewModel.getLabelGrafik()
         binding.tvLabelGrafikLaba.text = viewModel.getLabelGrafik().replace("Omzet", "Laba Bersih")
-        viewLifecycleOwner.lifecycleScope.launch {
+
+        jobMuatProdukDanGrafik?.cancel()
+        jobMuatProdukDanGrafik = viewLifecycleOwner.lifecycleScope.launch {
             val produk = viewModel.getProdukTerlarisPeriode()
             produkTerlarisAdapter.submitList(produk)
             binding.tvProdukTerlarisKosong.visibility = if (produk.isEmpty()) View.VISIBLE else View.GONE
