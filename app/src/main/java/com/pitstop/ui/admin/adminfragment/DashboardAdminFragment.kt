@@ -34,6 +34,11 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
+import android.app.AlertDialog
+import android.widget.LinearLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.pitstop.adapter.ProdukTerlarisAdapter
 
 
 class DashboardAdminFragment : Fragment() {
@@ -79,6 +84,10 @@ class DashboardAdminFragment : Fragment() {
 
         binding.unitMotor.setOnClickListener { pilihUnit(TIPE_MOTOR) }
         binding.unitCafe.setOnClickListener { pilihUnit(TIPE_CAFE) }
+
+        binding.cardTotalTransaksi.setOnClickListener {
+            tampilkanProdukTerjual()
+        }
 
         // ---------- Filter Periode: Harian / Bulanan / Tahunan ----------
         pilihPeriode(TipePeriode.HARIAN)
@@ -138,6 +147,76 @@ class DashboardAdminFragment : Fragment() {
         // ---------- Menu Admin (Cuci Motor): dipindahkan dari halaman Pengaturan ----------
         binding.menuLayananSteam.setOnClickListener { startActivity(Intent(requireContext(), LayananSteamActivity::class.java)) }
         binding.menuStockSteam.setOnClickListener { startActivity(Intent(requireContext(), StockSteamActivity::class.java)) }
+    }
+
+    private fun tampilkanProdukTerjual() {
+
+        val tipeUnit = viewModel.unitPeriode.value ?: TIPE_CAFE
+
+        val namaUnit = when (tipeUnit) {
+            TIPE_MOTOR -> "Cuci Motor"
+            TIPE_CAFE -> "Cafe"
+            else -> tipeUnit
+        }
+
+        val recyclerView = RecyclerView(requireContext()).apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            setPadding(16, 8, 16, 8)
+            clipToPadding = false
+        }
+
+        val adapter = ProdukTerlarisAdapter()
+        recyclerView.adapter = adapter
+
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(8, 0, 8, 8)
+
+            addView(
+                recyclerView,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    500
+                )
+            )
+        }
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Produk Terjual - $namaUnit")
+            .setView(container)
+            .setNegativeButton("Tutup", null)
+            .create()
+
+        dialog.show()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            try {
+
+                val data = viewModel.getProdukTerlarisPeriode()
+
+                adapter.submitList(data)
+
+                if (data.isEmpty()) {
+                    // Tidak ada data pada periode/unit yang dipilih
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "Belum ada produk terjual untuk $namaUnit pada periode ini",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+
+                android.widget.Toast.makeText(
+                    requireContext(),
+                    "Gagal mengambil data produk terjual",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+
+                dialog.dismiss()
+            }
+        }
     }
 
     private fun muatGrafikOmzet() {
