@@ -17,6 +17,7 @@ import com.pitstop.pitstop.databinding.ActivityLayananSteamBinding
 import com.pitstop.save.entity.DAFTAR_UKURAN_MOTOR
 import com.pitstop.save.entity.Layanan
 import com.pitstop.save.entity.StockSteam
+import com.pitstop.util.Formatter
 import com.pitstop.util.RupiahTextWatcher
 import com.pitstop.util.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -62,6 +63,7 @@ class LayananSteamActivity : AppCompatActivity() {
             val current = pemakaianAdapter.getItems().toMutableList()
             current.removeAt(index)
             pemakaianAdapter.setItems(current)
+            updateEstimasiModal()
         })
         binding.rvPemakaian.layoutManager = LinearLayoutManager(this)
         binding.rvPemakaian.adapter = pemakaianAdapter
@@ -102,6 +104,7 @@ class LayananSteamActivity : AppCompatActivity() {
 
         if (layanan == null) {
             pemakaianAdapter.setItems(emptyList())
+            updateEstimasiModal()
             return
         }
         lifecycleScope.launch {
@@ -109,7 +112,18 @@ class LayananSteamActivity : AppCompatActivity() {
             val stockMap = daftarStock.associateBy { it.id }
             val items = usage.mapNotNull { u -> stockMap[u.stockSteamId]?.let { PemakaianStockItem(it, u.jumlahDigunakan) } }
             pemakaianAdapter.setItems(items)
+            updateEstimasiModal()
         }
+    }
+
+    /**
+     * Total estimasi harga modal (HPP) dari seluruh komposisi bahan steam yang sedang
+     * disusun untuk ukuran terpilih, dihitung live (SUM jumlahDigunakan * hargaPerSatuan),
+     * sama persis polanya dengan ResepMinumanActivity.updateEstimasiModal() di sisi Cafe.
+     */
+    private fun updateEstimasiModal() {
+        val total = pemakaianAdapter.getItems().sumOf { it.jumlah * it.stockSteam.hargaPerSatuan }
+        binding.tvEstimasiModal.text = "Estimasi Harga Modal (HPP): ${Formatter.rupiah(total)}"
     }
 
     private fun tambahPemakaian() {
@@ -128,6 +142,7 @@ class LayananSteamActivity : AppCompatActivity() {
         current.add(PemakaianStockItem(stock, jumlah))
         pemakaianAdapter.setItems(current)
         binding.etJumlahPakai.text.clear()
+        updateEstimasiModal()
     }
 
     private fun simpanHarga() {

@@ -9,7 +9,8 @@ import com.pitstop.save.entity.StockSteam
 import com.pitstop.pitstop.databinding.ItemStockSteamBinding
 
 class StockSteamAdapter(
-    private val onDelete: (StockSteam) -> Unit
+    private val onDelete: (StockSteam) -> Unit,
+    private val onTambahStock: (StockSteam) -> Unit
 ) : ListAdapter<StockSteam, StockSteamAdapter.VH>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -22,6 +23,7 @@ class StockSteamAdapter(
         holder.binding.tvNama.text = "${item.nama} (${item.jenis})"
         holder.binding.tvStock.text = "Stock: ${item.stock} ${item.satuan}"
         holder.binding.btnDelete.setOnClickListener { onDelete(item) }
+        holder.binding.btnEditStock.setOnClickListener { onTambahStock(item) }
     }
 
     class VH(val binding: ItemStockSteamBinding) : RecyclerView.ViewHolder(binding.root)

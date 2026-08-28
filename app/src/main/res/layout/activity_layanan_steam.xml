@@ -150,6 +150,17 @@
                 android:layout_marginTop="10dp"
                 android:nestedScrollingEnabled="false" />
 
+            <!-- ===== Total estimasi harga modal (HPP) dari komposisi di atas, dihitung live
+                 saat bahan ditambah/dihapus - sama seperti Estimasi Harga Modal di Resep Minuman ===== -->
+            <TextView
+                android:id="@+id/tvEstimasiModal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/estimasi_harga_modal_hpp_rp0"
+                android:textColor="@color/green"
+                android:textStyle="bold" />
+
             <Button
                 android:id="@+id/btnSimpanKomposisi"
                 android:layout_width="match_parent"

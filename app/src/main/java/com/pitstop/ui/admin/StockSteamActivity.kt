@@ -1,8 +1,11 @@
 package com.pitstop.ui.admin
 
 import android.os.Bundle
+import android.text.InputType
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.StockSteamAdapter
 import com.pitstop.save.entity.DAFTAR_SATUAN_STOCK_STEAM
 import com.pitstop.save.entity.JENIS_MOTOR
+import com.pitstop.save.entity.StockSteam
 import com.pitstop.pitstop.databinding.ActivityStockSteamBinding
 import com.pitstop.util.RupiahTextWatcher
 import com.pitstop.util.ViewModelFactory
@@ -47,7 +51,10 @@ class StockSteamActivity : AppCompatActivity() {
 
         binding.etHargaModalStock.addTextChangedListener(RupiahTextWatcher(binding.etHargaModalStock))
 
-        adapter = StockSteamAdapter(onDelete = { viewModel.hapusStock(it) })
+        adapter = StockSteamAdapter(
+            onDelete = { viewModel.hapusStock(it) },
+            onTambahStock = { tampilkanDialogTambahStock(it) }
+        )
         binding.rvStockSteam.layoutManager = LinearLayoutManager(this)
         binding.rvStockSteam.adapter = adapter
 
@@ -72,5 +79,33 @@ class StockSteamActivity : AppCompatActivity() {
         binding.etJumlahStock.text.clear()
         binding.etHargaModalStock.text.clear()
         Toast.makeText(this, "Stock '$nama' tersimpan", Toast.LENGTH_SHORT).show()
+    }
+
+    /** Update stock barang steam yang sudah ada (mis. shampo motor) tanpa perlu hapus lalu buat baru. */
+    private fun tampilkanDialogTambahStock(item: StockSteam) {
+        val input = EditText(this).apply {
+            hint = "Jumlah yang ditambahkan"
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+        val container = android.widget.FrameLayout(this).apply {
+            setPadding(48, 0, 48, 0)
+            addView(input)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Update Stock")
+            .setMessage("Stock saat ini: ${item.stock} ${item.satuan}\n\nMasukkan jumlah stock yang ingin ditambahkan.")
+            .setView(container)
+            .setNegativeButton("Batal", null)
+            .setPositiveButton("Tambah") { _, _ ->
+                val jumlah = input.text.toString().toDoubleOrNull()
+                if (jumlah == null || jumlah <= 0) {
+                    Toast.makeText(this, "Jumlah stock tidak valid", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                viewModel.tambahStock(item.id, jumlah)
+                Toast.makeText(this, "Stock ${item.nama} ditambahkan $jumlah ${item.satuan}", Toast.LENGTH_SHORT).show()
+            }
+            .show()
     }
 }
