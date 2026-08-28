@@ -28,34 +28,44 @@
         android:layout_weight="1"
         android:background="#EEEEEE">
 
-        <ScrollView
+        <!-- Lebar preview (PREVIEW_WIDTH_DOTS di BluetoothPrinterHelper.kt) sengaja DIBUAT
+             TETAP di semua device (tidak lagi ikut lebar layar) supaya struk yang sama selalu
+             terlihat sama besar baik dibuka di tablet maupun HP. HorizontalScrollView di sini
+             cuma jaga-jaga: kalau lebar tetap itu kebetulan lebih lebar dari layar device yang
+             sangat kecil, preview tetap bisa digeser lihat semua sisinya (bukan terpotong). -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:layout_height="match_parent">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp">
+            <ScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
 
-                <!-- WebView-nya ditempel LANGSUNG di sini (area yang benar-benar tampil di
-                     layar), bukan di container tersembunyi 0x0 seperti sebelumnya.
-                     WebView modern (berbasis Chromium) SENGAJA tidak merender konten kalau
-                     dianggap "tidak terlihat di layar", itu penyebab preview kemarin
-                     hasilnya putih kosong. Dengan ditaruh di sini, preview jadi WebView yang
-                     hidup sungguhan, bukan sekadar bitmap statis. -->
-                <FrameLayout
-                    android:id="@+id/containerWebViewPreview"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@android:color/white"
-                    android:elevation="3dp" />
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp">
 
-            </LinearLayout>
-        </ScrollView>
+                    <!-- WebView-nya ditempel LANGSUNG di sini (area yang benar-benar tampil di
+                         layar), bukan di container tersembunyi 0x0 seperti sebelumnya.
+                         WebView modern (berbasis Chromium) SENGAJA tidak merender konten kalau
+                         dianggap "tidak terlihat di layar", itu penyebab preview kemarin
+                         hasilnya putih kosong. Dengan ditaruh di sini, preview jadi WebView yang
+                         hidup sungguhan, bukan sekadar bitmap statis. -->
+                    <FrameLayout
+                        android:id="@+id/containerWebViewPreview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/white"
+                        android:elevation="3dp" />
+
+                </LinearLayout>
+            </ScrollView>
+        </HorizontalScrollView>
 
         <ProgressBar
             android:id="@+id/progressPreview"

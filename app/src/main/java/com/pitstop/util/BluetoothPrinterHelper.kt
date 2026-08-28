@@ -55,31 +55,26 @@ object BluetoothPrinterHelper {
 
     /*
      * Preview dirender lebih besar dari ukuran fisik printer (384px) supaya enak dilihat di
-     * layar HP -- 384px asli kelihatan kecil terutama di layar density tinggi. Karena HTML
-     * struk sudah punya <meta name="viewport" content="width=384">, WebView otomatis
-     * scale-up konten dengan tajam (bukan di-zoom paksa / blur) mengikuti lebar View ini.
-     * Saat "Cetak Sekarang" ditekan, bitmap preview yang lebih besar ini di-downscale balik
-     * ke PRINTER_WIDTH_DOTS sebelum dikirim ke printer, supaya ukuran fisik hasil cetak
-     * tetap sama persis seperti sebelumnya.
+     * layar -- 384px asli kelihatan kecil terutama di layar density tinggi. Karena HTML struk
+     * sudah punya <meta name="viewport" content="width=384">, WebView otomatis scale-up konten
+     * dengan tajam (bukan di-zoom paksa / blur) mengikuti lebar View ini. Saat "Cetak Sekarang"
+     * ditekan, bitmap preview yang lebih besar ini di-downscale balik ke PRINTER_WIDTH_DOTS
+     * sebelum dikirim ke printer, supaya ukuran fisik hasil cetak tetap sama persis.
+     *
+     * FIX BUG "ukuran preview struk beda antara tablet & HP": dulu lebar ini dihitung dari
+     * activity.resources.displayMetrics.widthPixels (lebar layar device), jadi preview-nya
+     * ikut membesar/mengecil tergantung device dipakai untuk lihat struk yang SAMA. Sekarang
+     * dibuat TETAP (tidak lagi bergantung ukuran layar) supaya preview struk konsisten di
+     * device manapun -- dialog_preview_struk.xml dibungkus HorizontalScrollView sebagai jaga-
+     * jaga kalau lebar tetap ini kebetulan lebih lebar dari layar device yang sangat kecil.
      */
-    private const val PREVIEW_SCALE = 2.5f
+    private const val PREVIEW_WIDTH_DOTS = (PRINTER_WIDTH_DOTS * 2.5f).toInt()
 
     /*
      * Logic capture WebView -> Bitmap (termasuk retry & deteksi "render belum selesai")
      * dipindah ke WebViewRenderHelper supaya bisa dipakai bersama oleh StrukPdfExporter
      * (fitur "Download PDF"), lihat komentar di sana untuk detail alasannya.
      */
-
-    /**
-     * Hitung lebar preview yang aman untuk device manapun: idealnya PRINTER_WIDTH_DOTS x
-     * PREVIEW_SCALE, tapi dibatasi maksimal 90% lebar layar supaya tidak overflow di HP
-     * dengan resolusi/densitas kecil, dan minimal PRINTER_WIDTH_DOTS itu sendiri.
-     */
-    private fun previewWidthDotsUntuk(activity: Activity): Int {
-        val target = (PRINTER_WIDTH_DOTS * PREVIEW_SCALE).toInt()
-        val maksimalDiLayar = (activity.resources.displayMetrics.widthPixels * 0.9f).toInt()
-        return target.coerceAtMost(maksimalDiLayar).coerceAtLeast(PRINTER_WIDTH_DOTS)
-    }
 
     private var selectedPrinterName: String? = null
 
@@ -322,7 +317,7 @@ object BluetoothPrinterHelper {
         webView.setBackgroundColor(Color.WHITE)
         webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 
-        val webViewWidth = previewWidthDotsUntuk(activity)
+        val webViewWidth = PREVIEW_WIDTH_DOTS
 
         containerWebViewPreview.addView(
             webView,

@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.core.content.FileProvider
 import com.pitstop.save.dao.DetailLaporanRow
 import com.pitstop.save.dao.ProdukTerlarisRow
+import com.pitstop.save.entity.STATUS_REFUND
 import com.pitstop.save.entity.Transaksi
 import java.io.File
 import java.io.FileWriter
@@ -34,10 +35,18 @@ object ExcelExporter {
         val dir = context.getExternalFilesDir(null)
         val file = File(dir, fileName)
 
-        val totalOmzet = transaksiList.sumOf { it.total }
+        // Transaksi yang sudah direfund TIDAK boleh ikut masuk ke laporan Excel (baik ke
+        // perhitungan total maupun ke daftar "RINGKASAN TRANSAKSI"), sama seperti produk
+        // terjual & detail item yang query-nya sudah otomatis exclude status Refund.
+        // transaksiList yang diterima di sini bisa saja masih mengandung transaksi Refund
+        // (dipakai juga oleh fitur backup struk PDF yang sengaja menyertakan semua transaksi
+        // termasuk yang direfund untuk keperluan arsip), jadi filter dilakukan di sini saja.
+        val transaksiAktif = transaksiList.filterNot { it.status == STATUS_REFUND }
+
+        val totalOmzet = transaksiAktif.sumOf { it.total }
         val totalModal = detailItem.sumOf { it.hargaModal * it.qty }
         val totalLaba = totalOmzet - totalModal
-        val totalTransaksi = transaksiList.size
+        val totalTransaksi = transaksiAktif.size
         val rataRata = if (totalTransaksi > 0) totalOmzet / totalTransaksi else 0.0
         val maxQty = produkTerjual.maxOfOrNull { it.totalQty } ?: 0
 
@@ -104,7 +113,7 @@ object ExcelExporter {
 
             writer.append("=== RINGKASAN TRANSAKSI ===\n")
             writer.append("No,Tanggal,Tipe Transaksi,Kasir,Total\n")
-            transaksiList.forEachIndexed { index, t ->
+            transaksiAktif.forEachIndexed { index, t ->
                 writer.append("${index + 1},")
                 writer.append("${csv(Formatter.tanggalWaktu(t.tanggal))},")
                 writer.append("${csv(t.tipe)},")
