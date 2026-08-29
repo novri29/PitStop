@@ -18,11 +18,6 @@ import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.User
 import java.util.Calendar
 import com.pitstop.util.NotificationHelper
-import kotlin.text.get
-import kotlin.text.insert
-import kotlin.text.toInt
-import kotlin.times
-import kotlin.toString
 
 /**
  * Satu pintu akses data untuk seluruh aplikasi (Admin & Kasir).
@@ -47,7 +42,11 @@ class AppRepository(context: Context) {
     suspend fun insertBahan(bahan: Bahan) = bahanDao.insert(bahan)
     suspend fun updateBahan(bahan: Bahan) = bahanDao.update(bahan)
     suspend fun deleteBahan(bahan: Bahan) = bahanDao.delete(bahan)
-    suspend fun tambahStockBahan(id: Int, jumlah: Double) = bahanDao.tambahStock(id, jumlah)
+    suspend fun tambahStockBahan(id: Int, jumlah: Double, hargaModalBaru: Double) = bahanDao.tambahStock(
+        id,
+        jumlah,
+        hargaModalBaru
+    )
 
     // ---------- Menu Kopi (Stock Cafe) ----------
     fun getMenuKopiLive(): LiveData<List<MenuKopi>> = menuKopiDao.getAllLive()

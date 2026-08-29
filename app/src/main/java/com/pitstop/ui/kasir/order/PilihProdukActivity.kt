@@ -6,7 +6,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,7 +14,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.pitstop.adapter.ProdukGridAdapter
-import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.ActivityPilihProdukBinding
 import com.pitstop.save.entity.KATEGORI_COFFEE
 import com.pitstop.save.entity.KATEGORI_NON_COFFEE

@@ -27,10 +27,15 @@ class BahanViewModel(private val repository: AppRepository) : ViewModel() {
 
     fun tambahStock(
         id: Int,
-        jumlah: Double
+        jumlah: Double,
+        hargaModalBaru: Double
     ) {
         viewModelScope.launch {
-            repository.tambahStockBahan(id, jumlah)
+            repository.tambahStockBahan(
+                id,
+                jumlah,
+                hargaModalBaru
+            )
         }
     }
 }

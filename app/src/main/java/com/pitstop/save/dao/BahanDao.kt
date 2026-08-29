@@ -28,11 +28,31 @@ interface BahanDao {
     suspend fun kurangiStock(id: Int, jumlah: Double)
 
     /**
-     * Restock ASLI (admin menambah stok baru lewat menu Stock Bahan).
-     * initialStock ikut di-reset karena ini memang titik "stok penuh" yang baru.
+     * Restock dengan harga modal baru.
+     *
+     * Menggunakan metode weighted average:
+     *
+     * nilai stok lama  = stock lama × harga modal lama
+     * nilai stok baru  = harga modal pembelian baru
+     *
+     * harga modal baru =
+     * (nilai stok lama + nilai stok baru) / total stok
      */
-    @Query("""UPDATE bahan SET stock = stock + :jumlah, initialStock = stock + :jumlah WHERE id = :id""")
-    suspend fun tambahStock(id: Int, jumlah: Double)
+    @Query("""
+            UPDATE bahan
+            SET
+                stock = stock + :jumlah,
+                hargaPerSatuan = (
+                    (stock * hargaPerSatuan) + :hargaModalBaru
+                ) / (stock + :jumlah),
+                initialStock = stock + :jumlah
+            WHERE id = :id
+        """)
+    suspend fun tambahStock(
+        id: Int,
+        jumlah: Double,
+        hargaModalBaru: Double
+    )
 
     /**
      * Pengembalian stok akibat REFUND transaksi (bukan restock asli).

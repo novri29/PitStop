@@ -18,6 +18,7 @@ import com.pitstop.util.ViewModelFactory
 import android.text.InputType
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import com.pitstop.util.Formatter
 
 class StockBahanActivity : AppCompatActivity() {
 
@@ -158,30 +159,65 @@ class StockBahanActivity : AppCompatActivity() {
         bahan: Bahan
     ) {
 
-        val input = EditText(this).apply {
-            hint = "Jumlah yang ditambahkan"
+        val inputJumlah = EditText(this).apply {
+            hint = "Jumlah stock baru"
             inputType =
                 InputType.TYPE_CLASS_NUMBER or
                         InputType.TYPE_NUMBER_FLAG_DECIMAL
         }
 
-        val container = android.widget.FrameLayout(this).apply {
+        val inputHarga = EditText(this).apply {
+            hint = "Harga modal stock baru"
+            inputType =
+                InputType.TYPE_CLASS_NUMBER or
+                        InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+
+        // Format rupiah untuk harga modal
+        inputHarga.addTextChangedListener(
+            RupiahTextWatcher(inputHarga)
+        )
+
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
             setPadding(48, 0, 48, 0)
-            addView(input)
+
+            addView(
+                inputJumlah,
+                android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
+
+            addView(
+                inputHarga,
+                android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
         }
 
         AlertDialog.Builder(this)
             .setTitle("Tambah Stock")
             .setMessage(
-                "Stock saat ini: ${bahan.stock} ${bahan.satuan}\n\n" +
-                        "Masukkan jumlah stock yang ingin ditambahkan."
+                "Stock saat ini: ${bahan.stock} ${bahan.satuan}\n" +
+                        "Harga modal saat ini: ${
+                            Formatter.rupiah(bahan.hargaPerSatuan)
+                        } / ${bahan.satuan}\n\n" +
+                        "Masukkan jumlah dan harga modal stock baru."
             )
             .setView(container)
             .setNegativeButton("Batal", null)
             .setPositiveButton("Tambah") { _, _ ->
 
                 val jumlah =
-                    input.text.toString().toDoubleOrNull()
+                    inputJumlah.text.toString().toDoubleOrNull()
+
+                val hargaModalBaru =
+                    RupiahTextWatcher
+                        .parse(inputHarga.text.toString())
 
                 if (jumlah == null || jumlah <= 0) {
 
@@ -194,9 +230,21 @@ class StockBahanActivity : AppCompatActivity() {
                     return@setPositiveButton
                 }
 
+                if (hargaModalBaru <= 0) {
+
+                    Toast.makeText(
+                        this,
+                        "Harga modal tidak valid",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@setPositiveButton
+                }
+
                 viewModel.tambahStock(
                     bahan.id,
-                    jumlah
+                    jumlah,
+                    hargaModalBaru
                 )
 
                 Toast.makeText(

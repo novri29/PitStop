@@ -2,17 +2,12 @@ package com.pitstop.util
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.print.PrintAttributes
-import android.print.PrintManager
 import android.util.Base64
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import com.pitstop.pitstop.R
 import com.pitstop.save.entity.METODE_CASH
 import com.pitstop.save.entity.STATUS_REFUND
 import com.pitstop.save.entity.Transaksi
 import com.pitstop.save.entity.TransaksiDetail
-import com.pitstop.util.BluetoothPrinterHelper
 
 /**
  * Membangun HTML struk (satuan maupun gabungan/backup banyak struk sekaligus) dan

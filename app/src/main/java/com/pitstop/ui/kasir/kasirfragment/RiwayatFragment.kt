@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pitstop.adapter.LaporanAdapter
-import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.FragmentRiwayatBinding
 import com.pitstop.ui.admin.DetailTransaksiDialog
 import com.pitstop.ui.admin.RingkasanViewModel
