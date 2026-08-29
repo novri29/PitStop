@@ -99,6 +99,35 @@
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 
+            <!-- ===== Upah Karyawan untuk ukuran yang sedang dipilih (ikut masuk ke HPP) ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="@string/upah_karyawan"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etUpahKaryawan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:background="@drawable/bg_edittext"
+                android:hint="@string/upah_karyawan_hint"
+                android:inputType="numberDecimal" />
+
+            <Button
+                android:id="@+id/btnSimpanUpah"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_button_accent"
+                android:text="@string/simpan_upah_karyawan"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+
             <!-- ===== Komposisi bahan (dipotong otomatis dari stock saat layanan terjual) ===== -->
             <TextView
                 android:layout_width="wrap_content"

@@ -24,5 +24,6 @@ data class Layanan(
     val nama: String,    // contoh: "Cuci Motor Kecil"
     val ukuran: String,  // Motor Kecil / Motor Sedang / Motor Besar
     val harga: Double,
-    val hargaModal: Double = 0.0 // dihitung otomatis dari total pemakaian StockSteam (mirip MenuKopi.hargaModal)
+    val upahKaryawan: Double = 0.0, // upah/jasa karyawan untuk 1x pengerjaan, beda2 per ukuran motor
+    val hargaModal: Double = 0.0 // HPP = total pemakaian StockSteam (bahan) + upahKaryawan, dihitung otomatis
 )

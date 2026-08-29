@@ -58,6 +58,7 @@ class LayananSteamActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
 
         binding.etHarga.addTextChangedListener(RupiahTextWatcher(binding.etHarga))
+        binding.etUpahKaryawan.addTextChangedListener(RupiahTextWatcher(binding.etUpahKaryawan) { updateEstimasiModal() })
 
         pemakaianAdapter = PemakaianStockAdapter(onDelete = { index ->
             val current = pemakaianAdapter.getItems().toMutableList()
@@ -91,6 +92,7 @@ class LayananSteamActivity : AppCompatActivity() {
 
         binding.btnTambahBahan.setOnClickListener { tambahPemakaian() }
         binding.btnSimpanHarga.setOnClickListener { simpanHarga() }
+        binding.btnSimpanUpah.setOnClickListener { simpanUpah() }
         binding.btnSimpanKomposisi.setOnClickListener { simpanKomposisi() }
 
         binding.btnStockSteam.setOnClickListener {
@@ -101,6 +103,7 @@ class LayananSteamActivity : AppCompatActivity() {
     private fun muatFormUntukUkuranTerpilih() {
         val layanan = layananMap[ukuranTerpilih]
         binding.etHarga.setText(layanan?.harga?.toInt()?.toString() ?: "")
+        binding.etUpahKaryawan.setText(layanan?.upahKaryawan?.takeIf { it > 0 }?.toInt()?.toString() ?: "")
 
         if (layanan == null) {
             pemakaianAdapter.setItems(emptyList())
@@ -117,12 +120,15 @@ class LayananSteamActivity : AppCompatActivity() {
     }
 
     /**
-     * Total estimasi harga modal (HPP) dari seluruh komposisi bahan steam yang sedang
-     * disusun untuk ukuran terpilih, dihitung live (SUM jumlahDigunakan * hargaPerSatuan),
-     * sama persis polanya dengan ResepMinumanActivity.updateEstimasiModal() di sisi Cafe.
+     * Total estimasi HPP = biaya bahan (komposisi StockSteam yang sedang disusun) + upah
+     * karyawan yang sedang diisi untuk ukuran terpilih, dihitung live saat bahan/upah
+     * ditambah/diubah -- sama pola dengan ResepMinumanActivity.updateEstimasiModal() di
+     * sisi Cafe, ditambah komponen upah karena Steam butuh biaya jasa/tenaga kerja juga.
      */
     private fun updateEstimasiModal() {
-        val total = pemakaianAdapter.getItems().sumOf { it.jumlah * it.stockSteam.hargaPerSatuan }
+        val biayaBahan = pemakaianAdapter.getItems().sumOf { it.jumlah * it.stockSteam.hargaPerSatuan }
+        val upah = RupiahTextWatcher.parse(binding.etUpahKaryawan.text.toString())
+        val total = biayaBahan + upah
         binding.tvEstimasiModal.text = "Estimasi Harga Modal (HPP): ${Formatter.rupiah(total)}"
     }
 
@@ -153,6 +159,20 @@ class LayananSteamActivity : AppCompatActivity() {
         }
         viewModel.simpanHargaLayanan("Cuci $ukuranTerpilih", ukuranTerpilih, harga)
         Toast.makeText(this, "Harga '$ukuranTerpilih' tersimpan", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun simpanUpah() {
+        val layanan = layananMap[ukuranTerpilih]
+        if (layanan == null) {
+            Toast.makeText(this, "Simpan harga layanan ini dulu sebelum mengatur upah karyawan", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val upah = RupiahTextWatcher.parse(binding.etUpahKaryawan.text.toString())
+        viewModel.simpanUpahKaryawan(layanan.id, upah) {
+            runOnUiThread {
+                Toast.makeText(this, "Upah karyawan '$ukuranTerpilih' tersimpan, HPP diperbarui", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun simpanKomposisi() {

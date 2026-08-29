@@ -82,6 +82,17 @@ interface StockSteamDao {
     @Query("UPDATE layanan SET hargaModal = :hargaModal WHERE id = :id")
     suspend fun updateHargaModalLayanan(id: Int, hargaModal: Double)
 
+    @Query("UPDATE layanan SET upahKaryawan = :upah WHERE id = :id")
+    suspend fun updateUpahKaryawan(id: Int, upah: Double)
+
+    /** Total biaya bahan (komposisi StockSteam) saja untuk 1 layanan, TANPA upah karyawan. */
+    @Query("""
+        SELECT COALESCE(SUM(lb.jumlahDigunakan * s.hargaPerSatuan), 0)
+        FROM layanan_bahan lb INNER JOIN stock_steam s ON s.id = lb.stockSteamId
+        WHERE lb.layananId = :layananId
+    """)
+    suspend fun getTotalBiayaBahanLayanan(layananId: Int): Double
+
     // ---------- Komposisi bahan per layanan (mirip menu_kopi_bahan di Cafe) ----------
     @Insert
     suspend fun insertLayananBahan(usage: LayananBahan)

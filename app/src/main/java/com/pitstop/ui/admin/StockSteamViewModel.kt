@@ -47,6 +47,14 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
         }
     }
 
+    /** Simpan upah karyawan untuk 1 layanan (beda2 per ukuran motor); HPP ikut dihitung ulang. */
+    fun simpanUpahKaryawan(layananId: Int, upah: Double, onDone: () -> Unit) {
+        viewModelScope.launch {
+            repository.simpanUpahKaryawan(layananId, upah)
+            onDone()
+        }
+    }
+
     suspend fun getKomposisiMap(): Map<Int, String> = repository.getKomposisiSteamMap()
 
     suspend fun getBahanUsageUntukLayanan(layananId: Int) = repository.getBahanUsageForLayanan(layananId)

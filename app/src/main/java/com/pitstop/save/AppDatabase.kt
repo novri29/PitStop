@@ -45,7 +45,7 @@ import androidx.room.migration.Migration
         Transaksi::class,
         TransaksiDetail::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -125,13 +125,28 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migrasi untuk fitur Upah Karyawan per ukuran motor, supaya ikut dihitung ke HPP:
+         * - layanan.upahKaryawan: upah/jasa karyawan untuk 1x pengerjaan ukuran motor ini.
+         * - layanan.hargaModal (HPP) sejak migrasi ini = total pemakaian StockSteam (bahan) + upahKaryawan.
+         * Data lama otomatis dapat upahKaryawan = 0 (HPP lama tetap sama seperti sebelumnya,
+         * hanya bahan, sampai admin mengisi upah karyawan untuk tiap ukuran).
+         */
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE layanan ADD COLUMN upahKaryawan REAL NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "cafesteam.db"
-                ).addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                ).addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .addCallback(seedCallback(context))
                     .build()
                 INSTANCE = instance

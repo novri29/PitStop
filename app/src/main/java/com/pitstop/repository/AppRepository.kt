@@ -197,8 +197,28 @@ class AppRepository(context: Context) {
                 LayananBahan(layananId = layananId, stockSteamId = stockSteam.id, jumlahDigunakan = jumlah)
             )
         }
-        val hargaModal = pemakaian.sumOf { (stockSteam, jumlah) -> jumlah * stockSteam.hargaPerSatuan }
-        stockSteamDao.updateHargaModalLayanan(layananId, hargaModal)
+        hitungUlangHargaModalLayanan(layananId)
+    }
+
+    /**
+     * Simpan upah karyawan untuk 1 layanan (ukuran motor). Tiap ukuran bisa punya upah
+     * berbeda (mis. Motor Besar lebih berat jadi upahnya lebih tinggi dari Motor Kecil).
+     * HPP layanan ini otomatis dihitung ulang supaya upah ikut masuk ke HPP.
+     */
+    suspend fun simpanUpahKaryawan(layananId: Int, upah: Double) {
+        stockSteamDao.updateUpahKaryawan(layananId, upah)
+        hitungUlangHargaModalLayanan(layananId)
+    }
+
+    /**
+     * HPP (hargaModal) 1 layanan = total biaya bahan (komposisi StockSteam yang dipakai)
+     * + upah karyawan untuk ukuran tersebut. Dipanggil ulang setiap kali salah satu dari
+     * dua komponen itu berubah (komposisi bahan ATAU upah karyawan), supaya HPP selalu akurat.
+     */
+    private suspend fun hitungUlangHargaModalLayanan(layananId: Int) {
+        val biayaBahan = stockSteamDao.getTotalBiayaBahanLayanan(layananId)
+        val upah = stockSteamDao.getLayananById(layananId)?.upahKaryawan ?: 0.0
+        stockSteamDao.updateHargaModalLayanan(layananId, biayaBahan + upah)
     }
 
     /** Dipanggil saat layanan steam terjual: mengurangi stock tiap bahan sesuai qty terjual */

@@ -154,6 +154,9 @@
     <string name="motor_sedang">Motor Sedang</string>
     <string name="motor_besar">Motor Besar</string>
     <string name="harga_layanan">Harga Layanan</string>
+    <string name="upah_karyawan">Upah Karyawan (untuk ukuran ini)</string>
+    <string name="upah_karyawan_hint">Contoh: 10000</string>
+    <string name="simpan_upah_karyawan">Simpan Upah Karyawan</string>
     <string name="bahan_yang_dipakai">Bahan yang Dipakai (opsional, otomatis potong stock)</string>
     <string name="jumlah_dipakai_ml_pcs">Jumlah dipakai (ml/pcs)</string>
     <string name="simpan_komposisi_bahan">Simpan Komposisi Bahan</string>
