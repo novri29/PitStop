@@ -28,8 +28,18 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
 
     /** Update stock barang steam yang SUDAH ADA (mis. shampo motor restock/koreksi jumlah),
      *  jadi tidak perlu hapus lalu buat baru lagi. Sama pola dengan BahanViewModel.tambahStock di sisi Cafe. */
-    fun tambahStock(id: Int, jumlah: Double) {
-        viewModelScope.launch { repository.tambahStockSteam(id, jumlah) }
+    fun tambahStock(
+        id: Int,
+        jumlah: Double,
+        hargaModalBaru: Double
+    ) {
+        viewModelScope.launch {
+            repository.tambahStockSteam(
+                id = id,
+                jumlah = jumlah,
+                hargaModalBaru = hargaModalBaru
+            )
+        }
     }
 
     /** Simpan/perbarui harga layanan untuk 1 ukuran motor (Kecil/Sedang/Besar). */

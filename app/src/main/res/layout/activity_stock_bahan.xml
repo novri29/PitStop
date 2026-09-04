@@ -145,14 +145,14 @@
             android:layout_marginBottom="6dp"
             android:autofillHints=""
             android:background="@drawable/bg_edittext"
-            android:hint="@string/harga_modal_per_satuan_gram_ml_pcs"
+            android:hint="@string/harga_modal"
             android:inputType="numberDecimal" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:text="@string/tips_untuk_barang_satuan_snack_air_mineral_dll_pilih_pcs_lalu_isi_harga_modal_per_pcs_contoh_1kg_kopi_rp160_000_gt_harga_per_gram_rp160"
+            android:text="@string/ketika_memasukkan_harga_modal_sudah_otomatis_terhitung_hpp"
             android:textColor="@color/grey"
             android:textSize="11sp" />
 

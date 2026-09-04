@@ -39,8 +39,23 @@ interface StockSteamDao {
      * Restock ASLI (dipakai kalau suatu saat ada menu "tambah stok item yang sudah ada").
      * initialStock ikut di-reset karena ini titik "stok penuh" yang baru.
      */
-    @Query("""UPDATE stock_steam SET stock = stock + :jumlah, initialStock = stock + :jumlah WHERE id = :id""")
-    suspend fun tambahStock(id: Int, jumlah: Double)
+    @Query("""
+        UPDATE stock_steam
+        SET
+            stock = stock + :jumlah,
+            hargaPerSatuan =
+                (
+                    (stock * hargaPerSatuan) + :hargaModalBaru
+                )
+                /
+                (stock + :jumlah),
+            initialStock = initialStock + :jumlah
+        WHERE id = :id""")
+    suspend fun tambahStock(
+        id: Int,
+        jumlah: Double,
+        hargaModalBaru: Double
+    )
 
     /**
      * Pengembalian stok akibat REFUND transaksi (bukan restock asli).

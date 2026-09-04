@@ -31,6 +31,7 @@ import java.io.IOException
 import java.io.OutputStream
 import java.util.UUID
 import java.util.concurrent.Executors
+import kotlin.math.roundToInt
 
 object BluetoothPrinterHelper {
 
@@ -69,6 +70,33 @@ object BluetoothPrinterHelper {
      * jaga kalau lebar tetap ini kebetulan lebih lebar dari layar device yang sangat kecil.
      */
     private const val PREVIEW_WIDTH_DOTS = (PRINTER_WIDTH_DOTS * 2.5f).toInt()
+
+    /*
+     * FIX BUG "hasil cetak di tablet jadi kecil & ada area putih kosong di kanan struk":
+     *
+     * WebView.setInitialScale(100) itu artinya "1 CSS px dirender = 1 dip (density-independent
+     * pixel)", BUKAN "1 CSS px = 1 pixel fisik". Konversi dip -> pixel fisik tetap dikalikan
+     * displayMetrics.density milik device yang sedang dipakai. Jadi lebar fisik hasil render
+     * HTML struk (viewport width=384 CSS px) sebenarnya adalah `384 * density` pixel, BUKAN
+     * selalu 960 (PREVIEW_WIDTH_DOTS) seperti asumsi lama.
+     *
+     * Angka PREVIEW_WIDTH_DOTS = 384*2.5 = 960 itu cuma pas kalau density device = 2.5 (xhdpi,
+     * kebetulan HP yang dipakai waktu develop fitur ini). Banyak tablet Android (terutama yang
+     * murah/generik, umum dipakai sebagai mesin kasir) melaporkan density lebih rendah (mis.
+     * 1.0-1.5) -- di device begitu, konten struk cuma "mengisi" sebagian kecil dari WebView
+     * selebar 960px, sisanya kosong putih. Bitmap 960px (yang sebagian besar kosong itu) lalu
+     * di-downscale paksa ke PRINTER_WIDTH_DOTS (384) sebelum dikirim ke printer -- akibatnya
+     * konten struk yang aslinya sudah kecil ikut menyusut lagi jadi tambah kecil di kertas.
+     *
+     * Fix: hitung persentase skala WebView SECARA DINAMIS berdasarkan density device saat itu,
+     * supaya 384 CSS px SELALU dipetakan ke persis PREVIEW_WIDTH_DOTS pixel fisik, di device
+     * manapun (bukan cuma yang density-nya kebetulan 2.5).
+     */
+    private fun hitungSkalaWebViewPersen(activity: Activity): Int {
+        val density = activity.resources.displayMetrics.density
+        if (density <= 0f) return 100
+        return ((PREVIEW_WIDTH_DOTS.toFloat() / PRINTER_WIDTH_DOTS) / density * 100f).roundToInt()
+    }
 
     /*
      * Logic capture WebView -> Bitmap (termasuk retry & deteksi "render belum selesai")
@@ -313,7 +341,7 @@ object BluetoothPrinterHelper {
         webView.settings.javaScriptEnabled = true
         webView.settings.loadWithOverviewMode = false
         webView.settings.useWideViewPort = true
-        webView.setInitialScale(100)
+        webView.setInitialScale(hitungSkalaWebViewPersen(activity))
         webView.setBackgroundColor(Color.WHITE)
         webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 

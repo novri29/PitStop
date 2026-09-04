@@ -145,7 +145,17 @@ class AppRepository(context: Context) {
     suspend fun insertStockSteam(item: StockSteam) = stockSteamDao.insert(item)
     suspend fun updateStockSteam(item: StockSteam) = stockSteamDao.update(item)
     /** Restock ASLI: menambah jumlah stock yang sudah ada (mis. beli ulang shampo motor), initialStock ikut naik. */
-    suspend fun tambahStockSteam(id: Int, jumlah: Double) = stockSteamDao.tambahStock(id, jumlah)
+    suspend fun tambahStockSteam(
+        id: Int,
+        jumlah: Double,
+        hargaModalBaru: Double
+    ) {
+        stockSteamDao.tambahStock(
+            id = id,
+            jumlah = jumlah,
+            hargaModalBaru = hargaModalBaru
+        )
+    }
     suspend fun deleteStockSteam(item: StockSteam) = stockSteamDao.deleteStockSteamWithUsage(item)
 
     fun getLayananLive(): LiveData<List<Layanan>> = stockSteamDao.getAllLayananLive()

@@ -252,16 +252,41 @@ object StrukPrintHelper {
     /** Bungkus 1 potongan body HTML jadi dokumen HTML lengkap siap-render (dipakai struk satuan maupun tiap halaman batch). */
     private fun wrapHtml(bodyContent: String): String {
         return """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=384, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                <style>$CSS</style>
-            </head>
-            <body>$bodyContent</body>
-            </html>
-        """.trimIndent()
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+
+            <!--
+                Jangan menggunakan initial-scale=1.0 di sini.
+
+                Skala WebView untuk preview/cetak sudah diatur oleh
+                BluetoothPrinterHelper.setInitialScale() berdasarkan
+                density perangkat.
+
+                Pada beberapa tablet Android/generic Android,
+                initial-scale=1.0 dapat membuat WebView mengabaikan
+                setInitialScale(). Akibatnya lebar 384 CSS px tidak
+                mengisi area bitmap preview 960 px.
+
+                Ketika bitmap tersebut kemudian diubah kembali menjadi
+                384 dots untuk printer, isi struk ikut menjadi terlalu kecil.
+
+                Dengan hanya menggunakan width=384, WebView dapat
+                mengikuti skala yang diberikan oleh aplikasi.
+            -->
+            <meta name="viewport" content="width=384">
+
+            <style>
+                $CSS
+            </style>
+        </head>
+
+        <body>
+            $bodyContent
+        </body>
+        </html>
+    """.trimIndent()
     }
 
     /** HTML lengkap untuk 1 struk (dipakai NotaStrukActivity: lihat & cetak 1 transaksi). */

@@ -83,8 +83,8 @@
     <string name="ml">Ml</string>
     <string name="pcs">Pcs</string>
     <string name="jumlah_stock_contoh_1000">Jumlah stock (contoh: 1000)</string>
-    <string name="harga_modal_per_satuan_gram_ml_pcs">Harga modal per satuan (gram/ml/pcs)</string>
-    <string name="tips_untuk_barang_satuan_snack_air_mineral_dll_pilih_pcs_lalu_isi_harga_modal_per_pcs_contoh_1kg_kopi_rp160_000_gt_harga_per_gram_rp160"><![CDATA[Tips: untuk barang satuan (snack, air mineral, dll) pilih Pcs lalu isi harga modal per pcs. Contoh: 1kg kopi = Rp160.000 -> harga per gram = Rp160]]></string>
+    <string name="harga_modal">Harga Modal (gram/ml/pcs)</string>
+    <string name="ketika_memasukkan_harga_modal_sudah_otomatis_terhitung_hpp"><![CDATA[Tips: Langsung Masukkan Harga Modal Maka akan Otomatis Terhitung HPP]]></string>
     <string name="simpan_bahan">Simpan Bahan</string>
     <string name="stock_steam_cuci_motor">Stock Steam (Cuci Motor)</string>
     <string name="input_stock_barang_shampo_dll">Input Stock Barang (Shampo, dll)</string>

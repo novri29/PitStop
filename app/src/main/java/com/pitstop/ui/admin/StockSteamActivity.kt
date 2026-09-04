@@ -64,48 +64,197 @@ class StockSteamActivity : AppCompatActivity() {
     }
 
     private fun simpanStock() {
-        val nama = binding.etNamaStock.text.toString().trim()
-        val posisiSatuan = binding.spinnerSatuanStock.selectedItemPosition
-        val jumlah = binding.etJumlahStock.text.toString().toDoubleOrNull()
-        val hargaModal = RupiahTextWatcher.parse(binding.etHargaModalStock.text.toString())
 
-        if (nama.isEmpty() || posisiSatuan < 0 || jumlah == null) {
-            Toast.makeText(this, "Lengkapi semua data dengan benar", Toast.LENGTH_SHORT).show()
+        val nama =
+            binding.etNamaStock.text.toString().trim()
+
+        val posisiSatuan =
+            binding.spinnerSatuanStock.selectedItemPosition
+
+        val jumlah =
+            binding.etJumlahStock.text
+                .toString()
+                .replace(",", ".")
+                .toDoubleOrNull()
+
+        val hargaModalTotal =
+            RupiahTextWatcher.parse(
+                binding.etHargaModalStock.text.toString()
+            )
+
+        if (
+            nama.isEmpty() ||
+            posisiSatuan < 0 ||
+            jumlah == null ||
+            jumlah <= 0 ||
+            hargaModalTotal == null ||
+            hargaModalTotal <= 0
+        ) {
+            Toast.makeText(
+                this,
+                "Lengkapi semua data dengan benar",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
-        val satuan = DAFTAR_SATUAN_STOCK_STEAM[posisiSatuan]
-        viewModel.tambahStock(nama, JENIS_MOTOR, satuan, jumlah, hargaModal)
+
+        val satuan =
+            DAFTAR_SATUAN_STOCK_STEAM[posisiSatuan]
+
+        // HPP per satuan
+        val hargaPerSatuan =
+            hargaModalTotal / jumlah
+
+        viewModel.tambahStock(
+            nama = nama,
+            jenis = JENIS_MOTOR,
+            satuan = satuan,
+            stock = jumlah,
+            hargaPerSatuan = hargaPerSatuan
+        )
+
         binding.etNamaStock.text.clear()
         binding.etJumlahStock.text.clear()
         binding.etHargaModalStock.text.clear()
-        Toast.makeText(this, "Stock '$nama' tersimpan", Toast.LENGTH_SHORT).show()
-    }
 
+        Toast.makeText(
+            this,
+            "Stock '$nama' tersimpan\n" +
+                    "HPP: ${com.pitstop.util.Formatter.rupiah(hargaPerSatuan)} / $satuan",
+            Toast.LENGTH_LONG
+        ).show()
+    }
     /** Update stock barang steam yang sudah ada (mis. shampo motor) tanpa perlu hapus lalu buat baru. */
     private fun tampilkanDialogTambahStock(item: StockSteam) {
-        val input = EditText(this).apply {
+
+        // Input jumlah stock baru
+        val inputJumlah = EditText(this).apply {
             hint = "Jumlah yang ditambahkan"
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+            inputType =
+                InputType.TYPE_CLASS_NUMBER or
+                        InputType.TYPE_NUMBER_FLAG_DECIMAL
         }
-        val container = android.widget.FrameLayout(this).apply {
+
+        // Input harga modal stock baru
+        val inputHargaModal = EditText(this).apply {
+            hint = "Harga modal stock baru"
+            inputType =
+                InputType.TYPE_CLASS_NUMBER
+            setSingleLine(true)
+        }
+
+        // Agar input harga otomatis memakai format Rupiah
+        inputHargaModal.addTextChangedListener(
+            RupiahTextWatcher(inputHargaModal)
+        )
+
+        // Container dialog
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
             setPadding(48, 0, 48, 0)
-            addView(input)
+
+            addView(
+                inputJumlah,
+                android.widget.LinearLayout.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+
+            addView(
+                inputHargaModal,
+                android.widget.LinearLayout.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = 16
+                }
+            )
         }
+
+        val hppSaatIni = item.hargaPerSatuan
+
+        val pesan = """
+        Stock saat ini: ${formatJumlah(item.stock)} ${item.satuan}
+        HPP saat ini: ${com.pitstop.util.Formatter.rupiah(hppSaatIni)} / ${item.satuan}
+        
+        Masukkan jumlah stock dan harga modal stock yang baru ditambahkan.
+    """.trimIndent()
 
         AlertDialog.Builder(this)
             .setTitle("Update Stock")
-            .setMessage("Stock saat ini: ${item.stock} ${item.satuan}\n\nMasukkan jumlah stock yang ingin ditambahkan.")
+            .setMessage(pesan)
             .setView(container)
             .setNegativeButton("Batal", null)
             .setPositiveButton("Tambah") { _, _ ->
-                val jumlah = input.text.toString().toDoubleOrNull()
+
+                val jumlah =
+                    inputJumlah.text
+                        .toString()
+                        .replace(",", ".")
+                        .toDoubleOrNull()
+
+                val hargaModalBaru =
+                    RupiahTextWatcher.parse(
+                        inputHargaModal.text.toString()
+                    )
+
+                // Validasi jumlah
                 if (jumlah == null || jumlah <= 0) {
-                    Toast.makeText(this, "Jumlah stock tidak valid", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Jumlah stock tidak valid",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@setPositiveButton
                 }
-                viewModel.tambahStock(item.id, jumlah)
-                Toast.makeText(this, "Stock ${item.nama} ditambahkan $jumlah ${item.satuan}", Toast.LENGTH_SHORT).show()
+
+                // Validasi harga modal
+                if (hargaModalBaru == null || hargaModalBaru <= 0) {
+                    Toast.makeText(
+                        this,
+                        "Harga modal tidak valid",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@setPositiveButton
+                }
+
+                // Hitung HPP baru untuk ditampilkan
+                val modalLama =
+                    item.stock * item.hargaPerSatuan
+
+                val modalTotal =
+                    modalLama + hargaModalBaru
+
+                val stockTotal =
+                    item.stock + jumlah
+
+                val hppBaru =
+                    modalTotal / stockTotal
+
+                // Simpan ke database
+                viewModel.tambahStock(
+                    id = item.id,
+                    jumlah = jumlah,
+                    hargaModalBaru = hargaModalBaru
+                )
+
+                Toast.makeText(
+                    this,
+                    "Stock ${item.nama} berhasil ditambahkan\n" +
+                            "Stock: ${formatJumlah(stockTotal)} ${item.satuan}\n" +
+                            "HPP baru: ${com.pitstop.util.Formatter.rupiah(hppBaru)} / ${item.satuan}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
             .show()
+    }
+
+    private fun formatJumlah(value: Double): String {
+        return if (value == value.toLong().toDouble()) {
+            value.toLong().toString()
+        } else {
+            value.toString()
+        }
     }
 }
