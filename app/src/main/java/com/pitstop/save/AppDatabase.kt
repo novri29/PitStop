@@ -27,6 +27,9 @@ import com.pitstop.save.entity.TransaksiDetail
 import com.pitstop.save.entity.UKURAN_MOTOR_BESAR
 import com.pitstop.save.entity.UKURAN_MOTOR_KECIL
 import com.pitstop.save.entity.UKURAN_MOTOR_SEDANG
+import com.pitstop.save.entity.UKURAN_PREMIUM_BESAR
+import com.pitstop.save.entity.UKURAN_PREMIUM_KECIL
+import com.pitstop.save.entity.UKURAN_PREMIUM_SEDANG
 import com.pitstop.save.entity.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +48,7 @@ import androidx.room.migration.Migration
         Transaksi::class,
         TransaksiDetail::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -140,13 +143,33 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migrasi untuk fitur Biaya Listrik per Pencucian, komponen HPP ke-3 untuk Steam
+         * (melengkapi biaya bahan + upah karyawan yang sudah ada di MIGRATION_10_11):
+         * - layanan.biayaListrik: biaya listrik pompa air/vacuum untuk 1x pencucian ukuran
+         *   ini, boleh diisi manual ATAU dihitung otomatis dari Daya (Watt) x Lama Pencucian
+         *   x Tarif PLN per kWh (lihat kalkulator di LayananSteamActivity).
+         * - layanan.hargaModal (HPP) sejak migrasi ini = biaya bahan + upahKaryawan + biayaListrik.
+         * Data lama otomatis dapat biayaListrik = 0 (HPP lama tidak berubah sampai admin
+         * mengisi biaya listrik untuk tiap ukuran).
+         */
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE layanan ADD COLUMN biayaListrik REAL NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "cafesteam.db"
-                ).addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                ).addMigrations(
+                    MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12
+                )
                     .addCallback(seedCallback(context))
                     .build()
                 INSTANCE = instance
@@ -180,16 +203,28 @@ abstract class AppDatabase : RoomDatabase() {
                 )
 
                 // --- Layanan Steam ---
+                // biayaListrik contoh di bawah = estimasi Daya x Lama Pencucian x Tarif PLN
+                // golongan bisnis B-2/TR 2026 (Rp1.444,70/kWh): admin bisa hitung ulang lewat
+                // kalkulator di layar "Kelola Layanan Steam" begitu daya alat aslinya diketahui.
                 val stockSteamDao = database.stockSteamDao()
                 stockSteamDao.insertLayanan(
-                    Layanan(nama = "Cuci Motor Kecil", ukuran = UKURAN_MOTOR_KECIL, harga = 35000.0)
+                    Layanan(nama = "Cuci Motor Kecil", ukuran = UKURAN_MOTOR_KECIL, harga = 35000.0, biayaListrik = 1000.0)
                 )
                 stockSteamDao.insertLayanan(
-                    Layanan(nama = "Cuci Motor Sedang", ukuran = UKURAN_MOTOR_SEDANG, harga = 45000.0)
+                    Layanan(nama = "Cuci Motor Sedang", ukuran = UKURAN_MOTOR_SEDANG, harga = 45000.0, biayaListrik = 1500.0)
                 )
                 val idLayananBesar = stockSteamDao.insertLayanan(
-                    Layanan(nama = "Cuci Motor Besar", ukuran = UKURAN_MOTOR_BESAR, harga = 60000.0)
+                    Layanan(nama = "Cuci Motor Besar", ukuran = UKURAN_MOTOR_BESAR, harga = 60000.0, biayaListrik = 2000.0)
                 ).toInt()
+                stockSteamDao.insertLayanan(
+                    Layanan(nama = "Cuci Motor Premium Kecil", ukuran = UKURAN_PREMIUM_KECIL, harga = 55000.0, biayaListrik = 1500.0)
+                )
+                stockSteamDao.insertLayanan(
+                    Layanan(nama = "Cuci Motor Premium Sedang", ukuran = UKURAN_PREMIUM_SEDANG, harga = 70000.0, biayaListrik = 2000.0)
+                )
+                stockSteamDao.insertLayanan(
+                    Layanan(nama = "Cuci Motor Premium Besar", ukuran = UKURAN_PREMIUM_BESAR, harga = 90000.0, biayaListrik = 3000.0)
+                )
 
                 // --- Stock barang steam ---
                 val idSabunMotor = stockSteamDao.insert(

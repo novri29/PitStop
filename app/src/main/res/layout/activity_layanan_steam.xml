@@ -40,6 +40,7 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         app:tabIndicatorColor="@color/primary"
+        app:tabMode="scrollable"
         app:tabSelectedTextColor="@color/primary"
         app:tabTextColor="@color/grey">
 
@@ -57,6 +58,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/motor_besar" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/premium_kecil" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/premium_sedang" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/premium_besar" />
     </com.google.android.material.tabs.TabLayout>
 
     <ScrollView
@@ -128,6 +144,137 @@
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
 
+            <!-- ===== Biaya Listrik per Pencucian untuk ukuran yang sedang dipilih (ikut
+                 masuk ke HPP) - bisa dihitung otomatis dari Daya x Durasi x Tarif, atau
+                 diisi manual langsung ke kolom Biaya Listrik di bawah kalkulator. ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="@string/biaya_listrik_per_pencucian"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="@string/biaya_listrik_kalkulator_desc"
+                android:textColor="@color/grey"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:text="@string/daya_listrik_watt"
+                        android:textColor="@color/black"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/etDayaListrik"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints=""
+                        android:background="@drawable/bg_edittext"
+                        android:hint="@string/daya_listrik_watt_hint"
+                        android:inputType="numberDecimal" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:text="@string/durasi_pencucian_menit"
+                        android:textColor="@color/black"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/etDurasiPencucian"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints=""
+                        android:background="@drawable/bg_edittext"
+                        android:hint="@string/durasi_pencucian_menit_hint"
+                        android:inputType="numberDecimal" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:text="@string/tarif_listrik_per_kwh"
+                android:textColor="@color/black"
+                android:textSize="12sp" />
+
+            <EditText
+                android:id="@+id/etTarifListrik"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:background="@drawable/bg_edittext"
+                android:hint="@string/tarif_listrik_per_kwh_hint"
+                android:inputType="numberDecimal" />
+
+            <Button
+                android:id="@+id/btnHitungListrik"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_button_primary"
+                android:text="@string/hitung_otomatis"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="4dp"
+                android:text="@string/biaya_listrik_hasil"
+                android:textColor="@color/black"
+                android:textSize="12sp" />
+
+            <EditText
+                android:id="@+id/etBiayaListrik"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:background="@drawable/bg_edittext"
+                android:hint="@string/biaya_listrik_hasil_hint"
+                android:inputType="numberDecimal" />
+
+            <Button
+                android:id="@+id/btnSimpanListrik"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_button_accent"
+                android:text="@string/simpan_biaya_listrik"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+
             <!-- ===== Komposisi bahan (dipotong otomatis dari stock saat layanan terjual) ===== -->
             <TextView
                 android:layout_width="wrap_content"
@@ -179,14 +326,15 @@
                 android:layout_marginTop="10dp"
                 android:nestedScrollingEnabled="false" />
 
-            <!-- ===== Total estimasi harga modal (HPP) dari komposisi di atas, dihitung live
-                 saat bahan ditambah/dihapus - sama seperti Estimasi Harga Modal di Resep Minuman ===== -->
+            <!-- ===== Total estimasi Harga Dasar (HPP) = bahan + upah karyawan + biaya listrik,
+                 dihitung live saat salah satunya ditambah/diubah - sama seperti Estimasi Harga
+                 Modal di Resep Minuman, ditambah komponen upah & listrik ===== -->
             <TextView
                 android:id="@+id/tvEstimasiModal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/estimasi_harga_modal_hpp_rp0"
+                android:text="@string/estimasi_harga_dasar_hpp_rp0"
                 android:textColor="@color/green"
                 android:textStyle="bold" />
 

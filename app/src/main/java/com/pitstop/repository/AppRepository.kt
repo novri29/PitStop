@@ -162,7 +162,7 @@ class AppRepository(context: Context) {
     suspend fun getAllLayanan(): List<Layanan> = stockSteamDao.getAllLayanan()
 
     /**
-     * Simpan harga layanan berdasarkan ukuran (Motor Kecil/Sedang/Besar).
+     * Simpan harga layanan berdasarkan ukuran (Motor/Premium Kecil/Sedang/Besar).
      * Kalau baris untuk ukuran ini sudah ada, pakai id yang sama supaya harga di-UPDATE
      * (menimpa baris lama), bukan malah nambah baris baru dengan harga baru.
      */
@@ -221,14 +221,27 @@ class AppRepository(context: Context) {
     }
 
     /**
+     * Simpan biaya listrik (pompa air/vacuum) untuk 1x pencucian 1 layanan (ukuran motor).
+     * Tiap ukuran bisa beda (mis. Premium Besar butuh waktu cuci lebih lama jadi listriknya
+     * lebih besar dari Motor Kecil). HPP layanan ini otomatis dihitung ulang.
+     */
+    suspend fun simpanBiayaListrik(layananId: Int, biayaListrik: Double) {
+        stockSteamDao.updateBiayaListrik(layananId, biayaListrik)
+        hitungUlangHargaModalLayanan(layananId)
+    }
+
+    /**
      * HPP (hargaModal) 1 layanan = total biaya bahan (komposisi StockSteam yang dipakai)
-     * + upah karyawan untuk ukuran tersebut. Dipanggil ulang setiap kali salah satu dari
-     * dua komponen itu berubah (komposisi bahan ATAU upah karyawan), supaya HPP selalu akurat.
+     * + upah karyawan + biaya listrik untuk ukuran tersebut. Dipanggil ulang setiap kali
+     * salah satu dari ketiga komponen itu berubah (komposisi bahan, upah karyawan, ATAU
+     * biaya listrik), supaya HPP selalu akurat.
      */
     private suspend fun hitungUlangHargaModalLayanan(layananId: Int) {
         val biayaBahan = stockSteamDao.getTotalBiayaBahanLayanan(layananId)
-        val upah = stockSteamDao.getLayananById(layananId)?.upahKaryawan ?: 0.0
-        stockSteamDao.updateHargaModalLayanan(layananId, biayaBahan + upah)
+        val layanan = stockSteamDao.getLayananById(layananId)
+        val upah = layanan?.upahKaryawan ?: 0.0
+        val listrik = layanan?.biayaListrik ?: 0.0
+        stockSteamDao.updateHargaModalLayanan(layananId, biayaBahan + upah + listrik)
     }
 
     /** Dipanggil saat layanan steam terjual: mengurangi stock tiap bahan sesuai qty terjual */

@@ -14,15 +14,18 @@ import com.pitstop.save.entity.TIPE_MOTOR
 import com.pitstop.save.entity.UKURAN_MOTOR_BESAR
 import com.pitstop.save.entity.UKURAN_MOTOR_KECIL
 import com.pitstop.save.entity.UKURAN_MOTOR_SEDANG
+import com.pitstop.save.entity.UKURAN_PREMIUM_BESAR
+import com.pitstop.save.entity.UKURAN_PREMIUM_KECIL
+import com.pitstop.save.entity.UKURAN_PREMIUM_SEDANG
 import com.pitstop.ui.admin.StockSteamViewModel
 import com.pitstop.util.CartManager
 import com.pitstop.util.Formatter
 import com.pitstop.util.ViewModelFactory
 
 /**
- * Layar Kasir untuk memilih ukuran Cuci Motor (Kecil/Sedang/Besar) beserta plat nomor
- * kendaraan sebelum ditambahkan ke keranjang. Menggantikan dialog konfirmasi lama yang
- * cuma punya 1 harga tunggal.
+ * Layar Kasir untuk memilih ukuran Cuci Motor (Motor Kecil/Sedang/Besar atau
+ * Premium Kecil/Sedang/Besar) beserta plat nomor kendaraan sebelum ditambahkan ke
+ * keranjang. Menggantikan dialog konfirmasi lama yang cuma punya 1 harga tunggal.
  */
 class PilihLayananSteamActivity : AppCompatActivity() {
 
@@ -62,6 +65,15 @@ class PilihLayananSteamActivity : AppCompatActivity() {
             layananMap[UKURAN_MOTOR_BESAR]?.let {
                 binding.radioMotorBesar.text = "${UKURAN_MOTOR_BESAR} - ${Formatter.rupiah(it.harga)}"
             }
+            layananMap[UKURAN_PREMIUM_KECIL]?.let {
+                binding.radioPremiumKecil.text = "${UKURAN_PREMIUM_KECIL} - ${Formatter.rupiah(it.harga)}"
+            }
+            layananMap[UKURAN_PREMIUM_SEDANG]?.let {
+                binding.radioPremiumSedang.text = "${UKURAN_PREMIUM_SEDANG} - ${Formatter.rupiah(it.harga)}"
+            }
+            layananMap[UKURAN_PREMIUM_BESAR]?.let {
+                binding.radioPremiumBesar.text = "${UKURAN_PREMIUM_BESAR} - ${Formatter.rupiah(it.harga)}"
+            }
         }
 
         binding.btnTambahKeranjang.setOnClickListener { tambahKeKeranjang() }
@@ -70,6 +82,9 @@ class PilihLayananSteamActivity : AppCompatActivity() {
     private fun ukuranTerpilih(): String = when (binding.rgUkuran.checkedRadioButtonId) {
         R.id.radioMotorSedang -> UKURAN_MOTOR_SEDANG
         R.id.radioMotorBesar -> UKURAN_MOTOR_BESAR
+        R.id.radioPremiumKecil -> UKURAN_PREMIUM_KECIL
+        R.id.radioPremiumSedang -> UKURAN_PREMIUM_SEDANG
+        R.id.radioPremiumBesar -> UKURAN_PREMIUM_BESAR
         else -> UKURAN_MOTOR_KECIL
     }
 

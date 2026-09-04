@@ -100,6 +100,9 @@ interface StockSteamDao {
     @Query("UPDATE layanan SET upahKaryawan = :upah WHERE id = :id")
     suspend fun updateUpahKaryawan(id: Int, upah: Double)
 
+    @Query("UPDATE layanan SET biayaListrik = :biayaListrik WHERE id = :id")
+    suspend fun updateBiayaListrik(id: Int, biayaListrik: Double)
+
     /** Total biaya bahan (komposisi StockSteam) saja untuk 1 layanan, TANPA upah karyawan. */
     @Query("""
         SELECT COALESCE(SUM(lb.jumlahDigunakan * s.hargaPerSatuan), 0)

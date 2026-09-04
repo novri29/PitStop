@@ -94,6 +94,7 @@
                     android:id="@+id/radioMotorBesar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_radio_option"
                     android:button="@null"
                     android:drawableStart="@drawable/ic_motorcycle"
@@ -101,6 +102,50 @@
                     android:drawableTint="@color/primary"
                     android:padding="14dp"
                     android:text="@string/motor_besar"
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/radioPremiumKecil"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_radio_option"
+                    android:button="@null"
+                    android:drawableStart="@drawable/ic_motorcycle"
+                    android:drawablePadding="10dp"
+                    android:drawableTint="@color/primary"
+                    android:padding="14dp"
+                    android:text="@string/premium_kecil"
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/radioPremiumSedang"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_radio_option"
+                    android:button="@null"
+                    android:drawableStart="@drawable/ic_motorcycle"
+                    android:drawablePadding="10dp"
+                    android:drawableTint="@color/primary"
+                    android:padding="14dp"
+                    android:text="@string/premium_sedang"
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/radioPremiumBesar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_radio_option"
+                    android:button="@null"
+                    android:drawableStart="@drawable/ic_motorcycle"
+                    android:drawablePadding="10dp"
+                    android:drawableTint="@color/primary"
+                    android:padding="14dp"
+                    android:text="@string/premium_besar"
                     android:textColor="@color/black"
                     android:textStyle="bold" />
             </RadioGroup>

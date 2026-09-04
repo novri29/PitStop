@@ -42,7 +42,7 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
         }
     }
 
-    /** Simpan/perbarui harga layanan untuk 1 ukuran motor (Kecil/Sedang/Besar). */
+    /** Simpan/perbarui harga layanan untuk 1 ukuran motor (Motor/Premium Kecil/Sedang/Besar). */
     fun simpanHargaLayanan(nama: String, ukuran: String, harga: Double) {
         viewModelScope.launch {
             repository.simpanLayanan(Layanan(nama = nama, ukuran = ukuran, harga = harga))
@@ -61,6 +61,14 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
     fun simpanUpahKaryawan(layananId: Int, upah: Double, onDone: () -> Unit) {
         viewModelScope.launch {
             repository.simpanUpahKaryawan(layananId, upah)
+            onDone()
+        }
+    }
+
+    /** Simpan biaya listrik per pencucian untuk 1 layanan (beda2 per ukuran motor); HPP ikut dihitung ulang. */
+    fun simpanBiayaListrik(layananId: Int, biayaListrik: Double, onDone: () -> Unit) {
+        viewModelScope.launch {
+            repository.simpanBiayaListrik(layananId, biayaListrik)
             onDone()
         }
     }
