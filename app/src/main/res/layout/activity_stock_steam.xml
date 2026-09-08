@@ -93,7 +93,7 @@
                 android:layout_marginTop="8dp"
                 android:autofillHints=""
                 android:background="@drawable/bg_edittext"
-                android:hint="@string/harga_modal_per_satuan"
+                android:hint="@string/harga_modal_steam"
                 android:inputType="numberDecimal" />
 
             <Button

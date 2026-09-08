@@ -91,7 +91,7 @@
     <string name="input_stock_barang_shampo_dll">Input Stock Barang (Shampo, dll)</string>
     <string name="nama_barang_contoh_shampo_motor">Nama barang (contoh: Shampo Motor)</string>
     <string name="satuan_ml_botol">Satuan (ml/botol)</string>
-    <string name="harga_modal_per_satuan">Harga modal per satuan (Rp)</string>
+    <string name="harga_modal_steam">Harga modal (Rp)</string>
     <string name="jumlah_stock">Jumlah stock</string>
     <string name="simpan_stock">Simpan Stock</string>
     <string name="daftar_stock_steam">Daftar Stock Steam</string>
