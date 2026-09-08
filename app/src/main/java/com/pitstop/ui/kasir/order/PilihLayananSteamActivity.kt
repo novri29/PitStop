@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.pitstop.pitstop.databinding.ActivityPilihLayananSteamBinding
 import com.pitstop.pitstop.R
 import com.pitstop.save.entity.Layanan
@@ -21,6 +22,7 @@ import com.pitstop.ui.admin.StockSteamViewModel
 import com.pitstop.util.CartManager
 import com.pitstop.util.Formatter
 import com.pitstop.util.ViewModelFactory
+import kotlinx.coroutines.launch
 
 /**
  * Layar Kasir untuk memilih ukuran Cuci Motor (Motor Kecil/Sedang/Besar atau
@@ -102,11 +104,27 @@ class PilihLayananSteamActivity : AppCompatActivity() {
             return
         }
 
-        CartManager.platNomor = platNomor.uppercase()
-        CartManager.tambahItem(layanan.nama, layanan.harga, TIPE_MOTOR, layananId = layanan.id)
+        lifecycleScope.launch {
+            // Qty layanan ukuran ini yang SUDAH ada di keranjang + 1 unit yang mau ditambahkan.
+            val qtyDiKeranjang = CartManager.items
+                .filter { it.layananId == layanan.id }
+                .sumOf { it.qty }
+            val stokCukup = viewModel.cekStokCukup(layanan.id, qtyDiKeranjang + 1)
+            if (!stokCukup) {
+                Toast.makeText(
+                    this@PilihLayananSteamActivity,
+                    "Stok bahan steam untuk \"${layanan.nama}\" tidak cukup",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@launch
+            }
 
-        Toast.makeText(this, "${layanan.nama} ditambahkan", Toast.LENGTH_SHORT).show()
-        startActivity(Intent(this, KeranjangActivity::class.java))
-        finish()
+            CartManager.platNomor = platNomor.uppercase()
+            CartManager.tambahItem(layanan.nama, layanan.harga, TIPE_MOTOR, layananId = layanan.id)
+
+            Toast.makeText(this@PilihLayananSteamActivity, "${layanan.nama} ditambahkan", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this@PilihLayananSteamActivity, KeranjangActivity::class.java))
+            finish()
+        }
     }
 }

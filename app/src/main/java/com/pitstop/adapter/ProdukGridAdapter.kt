@@ -2,7 +2,9 @@ package com.pitstop.adapter
 
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.pitstop.pitstop.R
 import com.pitstop.pitstop.databinding.ItemProdukGridBinding
@@ -12,11 +14,16 @@ import com.pitstop.util.ImageUtil
 
 class ProdukGridAdapter(
     private var items: List<MenuKopi> = emptyList(),
+    /** menuId -> apakah stok bahan cukup untuk minimal 1 unit. Menu yang belum ada datanya
+     *  (belum sempat dihitung / belum punya komposisi bahan) dianggap tersedia (fail-open utk
+     *  tampilan, tetap dicek ulang secara ketat di AppRepository.simpanTransaksi). */
+    private var ketersediaan: Map<Int, Boolean> = emptyMap(),
     private val onTambah: (MenuKopi) -> Unit
 ) : RecyclerView.Adapter<ProdukGridAdapter.VH>() {
 
-    fun submitList(list: List<MenuKopi>) {
+    fun submitList(list: List<MenuKopi>, ketersediaanMap: Map<Int, Boolean> = ketersediaan) {
         items = list
+        ketersediaan = ketersediaanMap
         notifyDataSetChanged()
     }
 
@@ -44,8 +51,23 @@ class ProdukGridAdapter(
             )
         }
 
-        holder.binding.btnTambah.setOnClickListener { onTambah(menu) }
-        holder.binding.root.setOnClickListener { onTambah(menu) }
+        val tersedia = ketersediaan[menu.id] ?: true
+        holder.binding.tvStokHabis.visibility = if (tersedia) View.GONE else View.VISIBLE
+        holder.binding.root.alpha = if (tersedia) 1f else 0.5f
+
+        val handleTap = {
+            if (tersedia) {
+                onTambah(menu)
+            } else {
+                Toast.makeText(
+                    holder.binding.root.context,
+                    "Stok bahan untuk \"${menu.nama}\" habis",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        holder.binding.btnTambah.setOnClickListener { handleTap() }
+        holder.binding.root.setOnClickListener { handleTap() }
     }
 
     override fun getItemCount(): Int = items.size

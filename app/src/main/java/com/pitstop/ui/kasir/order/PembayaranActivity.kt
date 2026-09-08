@@ -125,7 +125,19 @@ class PembayaranActivity : AppCompatActivity() {
             metodePembayaran = metodeTerpilih,
             jumlahDibayar = jumlahDibayar,
             kembalian = kembalian,
-            platNomor = CartManager.platNomor
+            platNomor = CartManager.platNomor,
+            onGagal = { pesan ->
+                runOnUiThread {
+                    // Stok bahan ternyata tidak cukup (mis. berubah sejak item dimasukkan ke
+                    // keranjang) -> keranjang SENGAJA tidak direset supaya kasir bisa mengurangi
+                    // qty / hapus item bermasalah lalu coba bayar lagi.
+                    androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Stok tidak cukup")
+                        .setMessage("$pesan.\nKurangi jumlah pesanan atau hapus item tersebut dari keranjang, lalu coba bayar lagi.")
+                        .setPositiveButton("OK", null)
+                        .show()
+                }
+            }
         ) { transaksiId ->
             runOnUiThread {
                 val intent = Intent(this, NotaStrukActivity::class.java)

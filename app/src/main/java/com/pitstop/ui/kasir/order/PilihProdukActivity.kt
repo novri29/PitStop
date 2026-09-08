@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.pitstop.adapter.ProdukGridAdapter
@@ -24,6 +25,7 @@ import com.pitstop.ui.admin.MenuKopiViewModel
 import com.pitstop.util.CartManager
 import com.pitstop.util.Formatter
 import com.pitstop.util.ViewModelFactory
+import kotlinx.coroutines.launch
 
 class PilihProdukActivity : AppCompatActivity() {
 
@@ -31,6 +33,7 @@ class PilihProdukActivity : AppCompatActivity() {
     private lateinit var viewModel: MenuKopiViewModel
     private lateinit var adapter: ProdukGridAdapter
     private var semuaMenu: List<MenuKopi> = emptyList()
+    private var ketersediaanMap: Map<Int, Boolean> = emptyMap()
     private var kategoriTerpilih: String? = null
     private var keyword: String = ""
 
@@ -94,38 +97,64 @@ class PilihProdukActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateBottomBar()
+        refreshKetersediaan()
+    }
+
+    /** Ambil ulang peta ketersediaan stok bahan tiap menu, lalu terapkan lagi ke grid produk. */
+    private fun refreshKetersediaan() {
+        lifecycleScope.launch {
+            ketersediaanMap = viewModel.getKetersediaanMap()
+            terapkanFilter()
+        }
     }
 
     private fun tambahKeKeranjang(menu: MenuKopi) {
-        val hargaPromo = menu.hargaPromo
-        if (hargaPromo == null) {
-            CartManager.tambahItem(menu.nama, menu.hargaJual, TIPE_CAFE, menu.id)
-            updateBottomBar()
-            Toast.makeText(this, "${menu.nama} ditambahkan", Toast.LENGTH_SHORT).show()
-            return
-        }
+        lifecycleScope.launch {
+            // Qty yang SUDAH ada di keranjang untuk menu ini (promo maupun normal, sama-sama
+            // memotong stock bahan yang sama) + 1 unit yang mau ditambahkan sekarang.
+            val qtyDiKeranjang = CartManager.items
+                .filter { it.menuKopiId == menu.id }
+                .sumOf { it.qty }
+            val stokCukup = viewModel.cekStokCukup(menu.id, qtyDiKeranjang + 1)
+            if (!stokCukup) {
+                Toast.makeText(
+                    this@PilihProdukActivity,
+                    "Stok bahan untuk \"${menu.nama}\" tidak cukup",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@launch
+            }
 
-        AlertDialog.Builder(this)
-            .setTitle(menu.nama)
-            .setMessage("Pilih harga untuk item ini:")
-            .setPositiveButton("Promo ${Formatter.rupiah(hargaPromo)}") { _, _ ->
-                CartManager.tambahItem(menu.nama, hargaPromo, TIPE_CAFE, menu.id, isPromo = true)
+            val hargaPromo = menu.hargaPromo
+            if (hargaPromo == null) {
+                CartManager.tambahItem(menu.nama, menu.hargaJual, TIPE_CAFE, menu.id)
                 updateBottomBar()
-                Toast.makeText(this, "${menu.nama} (Promo) ditambahkan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@PilihProdukActivity, "${menu.nama} ditambahkan", Toast.LENGTH_SHORT).show()
+                return@launch
             }
-            .setNegativeButton("Normal ${Formatter.rupiah(menu.hargaJual)}") { _, _ ->
-                CartManager.tambahItem(menu.nama, menu.hargaJual, TIPE_CAFE, menu.id, isPromo = false)
-                updateBottomBar()
-                Toast.makeText(this, "${menu.nama} ditambahkan", Toast.LENGTH_SHORT).show()
-            }
-            .show()
+
+            AlertDialog.Builder(this@PilihProdukActivity)
+                .setTitle(menu.nama)
+                .setMessage("Pilih harga untuk item ini:")
+                .setPositiveButton("Promo ${Formatter.rupiah(hargaPromo)}") { _, _ ->
+                    CartManager.tambahItem(menu.nama, hargaPromo, TIPE_CAFE, menu.id, isPromo = true)
+                    updateBottomBar()
+                    Toast.makeText(this@PilihProdukActivity, "${menu.nama} (Promo) ditambahkan", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Normal ${Formatter.rupiah(menu.hargaJual)}") { _, _ ->
+                    CartManager.tambahItem(menu.nama, menu.hargaJual, TIPE_CAFE, menu.id, isPromo = false)
+                    updateBottomBar()
+                    Toast.makeText(this@PilihProdukActivity, "${menu.nama} ditambahkan", Toast.LENGTH_SHORT).show()
+                }
+                .show()
+        }
     }
 
     private fun terapkanFilter() {
         var hasil = semuaMenu
         kategoriTerpilih?.let { kat -> hasil = hasil.filter { it.kategori == kat } }
         if (keyword.isNotBlank()) hasil = hasil.filter { it.nama.contains(keyword, ignoreCase = true) }
-        adapter.submitList(hasil)
+        adapter.submitList(hasil, ketersediaanMap)
     }
 
     private fun updateBottomBar() {

@@ -24,7 +24,11 @@ interface BahanDao {
     @Delete
     suspend fun delete(bahan: Bahan)
 
-    @Query("UPDATE bahan SET stock = stock - :jumlah WHERE id = :id")
+    /**
+     * Dijaga tidak boleh minus (MAX(0, ...)) sebagai lapisan pertahanan terakhir,
+     * seandainya ada jalur lain yang lolos dari validasi stok di AppRepository.simpanTransaksi.
+     */
+    @Query("UPDATE bahan SET stock = MAX(0, stock - :jumlah) WHERE id = :id")
     suspend fun kurangiStock(id: Int, jumlah: Double)
 
     /**

@@ -48,4 +48,8 @@ class MenuKopiViewModel(private val repository: AppRepository) : ViewModel() {
 
     suspend fun getKomposisiMap(): Map<Int, String> = repository.getKomposisiMap()
     suspend fun getKetersediaanMap(): Map<Int, Boolean> = repository.getKetersediaanMap()
+
+    /** Cek stok bahan cukup untuk [qtyDiminta] unit menu [menuId], dipakai sebelum tambah ke keranjang. */
+    suspend fun cekStokCukup(menuId: Int, qtyDiminta: Int): Boolean =
+        repository.cekStokCukupUntukMenu(menuId, qtyDiminta)
 }

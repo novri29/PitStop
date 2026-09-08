@@ -206,6 +206,7 @@
     <string name="refund_transaksi">Refund Transaksi</string>
     <string name="status_selesai">Selesai</string>
     <string name="status_refund">Refund</string>
+    <string name="stok_habis">Stok Habis</string>
     <string name="alasan_refund">Alasan Refund</string>
     <string name="keterangan_refund_hint">Contoh: Pelanggan tidak jadi melakukan pesanan</string>
     <string name="keterangan_refund_label">Keterangan (wajib diisi)</string>

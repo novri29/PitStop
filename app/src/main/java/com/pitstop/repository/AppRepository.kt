@@ -90,6 +90,21 @@ class AppRepository(context: Context) {
             .mapValues { (_, list) -> list.all { (stockMap[it.bahanId] ?: 0.0) >= it.jumlahDigunakan } }
     }
 
+    /**
+     * Cek apakah stock bahan cukup untuk menjual [qtyDiminta] unit menu kopi [menuId] SEKALIGUS
+     * (bukan cuma 1 unit seperti getKetersediaanMap). Dipakai kasir sebelum menambahkan item ke
+     * keranjang (qtyDiminta = qty yang sudah ada di keranjang + 1) dan sekali lagi sebagai
+     * validasi terakhir di simpanTransaksi, supaya stock bahan tidak pernah jadi minus.
+     * Menu tanpa komposisi bahan (belum diisi resepnya) dianggap selalu tersedia.
+     */
+    suspend fun cekStokCukupUntukMenu(menuId: Int, qtyDiminta: Int): Boolean {
+        if (qtyDiminta <= 0) return true
+        val usageList = menuKopiDao.getBahanUsageForMenu(menuId)
+        if (usageList.isEmpty()) return true
+        val stockMap = bahanDao.getAll().associate { it.id to it.stock }
+        return usageList.all { usage -> (stockMap[usage.bahanId] ?: 0.0) >= usage.jumlahDigunakan * qtyDiminta }
+    }
+
     suspend fun updateMenuKopi(menuKopi: MenuKopi) = menuKopiDao.updateMenu(menuKopi)
 
     /**
@@ -244,6 +259,19 @@ class AppRepository(context: Context) {
         stockSteamDao.updateHargaModalLayanan(layananId, biayaBahan + upah + listrik)
     }
 
+    /**
+     * Versi Steam dari cekStokCukupUntukMenu: cek apakah stock bahan cukup untuk menjual
+     * [qtyDiminta] unit layanan cuci motor [layananId] sekaligus. Layanan tanpa komposisi
+     * bahan (belum diisi resepnya) dianggap selalu tersedia.
+     */
+    suspend fun cekStokCukupUntukLayanan(layananId: Int, qtyDiminta: Int): Boolean {
+        if (qtyDiminta <= 0) return true
+        val usageList = stockSteamDao.getBahanUsageForLayanan(layananId)
+        if (usageList.isEmpty()) return true
+        val stockMap = stockSteamDao.getAll().associate { it.id to it.stock }
+        return usageList.all { usage -> (stockMap[usage.stockSteamId] ?: 0.0) >= usage.jumlahDigunakan * qtyDiminta }
+    }
+
     /** Dipanggil saat layanan steam terjual: mengurangi stock tiap bahan sesuai qty terjual */
     suspend fun potongStockUntukLayanan(layananId: Int, qty: Int) {
         val usageList = stockSteamDao.getBahanUsageForLayanan(layananId)
@@ -266,6 +294,30 @@ class AppRepository(context: Context) {
         kembalian: Double = 0.0,
         platNomor: String = ""
     ): Long {
+        // Validasi stok bahan untuk SEMUA item dulu sebelum menyimpan apapun ke database.
+        // Ini pertahanan utama terhadap bug "kasir bisa checkout walau bahan sudah habis":
+        // kalau ada satu saja item yang stoknya tidak cukup, seluruh transaksi dibatalkan
+        // (tidak ada baris Transaksi/TransaksiDetail yang setengah tersimpan).
+        // Qty dijumlahkan dulu PER menu/layanan (bukan per baris) karena satu menu yang sama
+        // bisa muncul di lebih dari satu baris keranjang (mis. harga normal & promo terpisah),
+        // dan keduanya sama-sama memotong dari stock bahan yang sama.
+        items.filter { it.menuKopiId != null }
+            .groupBy { it.menuKopiId!! }
+            .forEach { (menuId, grup) ->
+                val totalQty = grup.sumOf { it.qty }
+                if (!cekStokCukupUntukMenu(menuId, totalQty)) {
+                    throw StokTidakCukupException(grup.first().nama)
+                }
+            }
+        items.filter { it.layananId != null }
+            .groupBy { it.layananId!! }
+            .forEach { (layananId, grup) ->
+                val totalQty = grup.sumOf { it.qty }
+                if (!cekStokCukupUntukLayanan(layananId, totalQty)) {
+                    throw StokTidakCukupException(grup.first().nama)
+                }
+            }
+
         val total = items.sumOf { it.hargaSatuan * it.qty }
         val transaksiId = transaksiDao.insertTransaksi(
             Transaksi(
@@ -623,6 +675,13 @@ class AppRepository(context: Context) {
     suspend fun getDetailLaporanPeriode(awal: Long, akhir: Long, tipe: String = "SEMUA"): List<DetailLaporanRow> =
         transaksiDao.getDetailLaporanPeriode(awal, akhir, tipe)
 }
+
+/**
+ * Dilempar oleh AppRepository.simpanTransaksi saat stok bahan/steam tidak cukup untuk salah
+ * satu item di keranjang. [namaItem] dipakai UI untuk menampilkan pesan ke kasir.
+ */
+class StokTidakCukupException(val namaItem: String) :
+    Exception("Stok bahan untuk \"$namaItem\" tidak cukup")
 
 data class TransaksiItemInput(
     val nama: String,

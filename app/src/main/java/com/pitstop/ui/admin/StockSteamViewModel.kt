@@ -76,4 +76,8 @@ class StockSteamViewModel(private val repository: AppRepository) : ViewModel() {
     suspend fun getKomposisiMap(): Map<Int, String> = repository.getKomposisiSteamMap()
 
     suspend fun getBahanUsageUntukLayanan(layananId: Int) = repository.getBahanUsageForLayanan(layananId)
+
+    /** Cek stok bahan cukup untuk [qtyDiminta] unit layanan [layananId], dipakai sebelum tambah ke keranjang. */
+    suspend fun cekStokCukup(layananId: Int, qtyDiminta: Int): Boolean =
+        repository.cekStokCukupUntukLayanan(layananId, qtyDiminta)
 }
