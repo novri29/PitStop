@@ -11,9 +11,16 @@ import com.pitstop.pitstop.databinding.ItemCartBinding
 /**
  * Menampilkan isi CartManager.items secara langsung (list dipegang oleh CartManager,
  * adapter ini hanya juru gambar + pemicu perubahan qty).
+ *
+ * Nambah qty (tombol +) SENGAJA tidak langsung mengubah data di sini -- diserahkan ke
+ * [onTambahQty] supaya activity pemanggil bisa mengecek dulu stok bahan tersedia atau
+ * tidak sebelum qty benar-benar bertambah (lihat KeranjangActivity.tambahQtyItem).
+ * Kurangi qty (tombol -) aman dilakukan langsung karena mengurangi tidak pernah
+ * membutuhkan stok tambahan.
  */
 class CartAdapter(
     private val items: MutableList<CartLineItem>,
+    private val onTambahQty: (item: CartLineItem) -> Unit,
     private val onChanged: () -> Unit
 ) : RecyclerView.Adapter<CartAdapter.VH>() {
 
@@ -31,9 +38,7 @@ class CartAdapter(
         holder.binding.tvSubtotal.text = Formatter.rupiah(item.harga * item.qty)
 
         holder.binding.btnPlus.setOnClickListener {
-            item.qty += 1
-            notifyItemChanged(position)
-            onChanged()
+            onTambahQty(item)
         }
         holder.binding.btnMinus.setOnClickListener {
             if (item.qty > 1) {
